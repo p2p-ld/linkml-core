@@ -1,0 +1,14 @@
+[package]
+name = "linkml-metamodel-rs"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+name = "meta"
+crate-type = ["cdylib"]
+
+[dependencies]
+
+[dependencies.pyo3]
+version = "0.22.0"
+# features = ["abi3-py39"]

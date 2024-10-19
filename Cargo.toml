@@ -1,0 +1,8 @@
+[workspace]
+members=[
+    "src/main",
+    "src/metamodel",
+    "src/schemaview",
+]
+resolver = "2"
+version="0.1.0"
