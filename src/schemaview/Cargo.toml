@@ -10,4 +10,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.22.0"
-linkml-metamodel-rs = { path = "../metamodel" }
+linkml_meta = { path = "../metamodel"}
+serde_yml = "0.0.12"
