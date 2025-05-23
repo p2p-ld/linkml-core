@@ -19,261 +19,1020 @@ use std::collections::BTreeMap;
 // Types
 
 pub type string = String;
+
+
+
 pub type integer = String;
+
+
+
 pub type boolean = String;
+
+
+
 pub type float = f64;
+
+
+
 pub type double = f64;
+
+
+
 pub type decimal = String;
+
+
+
 pub type time = String;
+
+
+
 pub type date = String;
+
+
+
 pub type datetime = String;
+
+
+
 pub type date_or_datetime = String;
+
+
+
 pub type uriorcurie = String;
+
+
+
 pub type curie = String;
+
+
+
 pub type uri = String;
+
+
+
 pub type ncname = String;
+
+
+
 pub type objectidentifier = String;
+
+
+
 pub type nodeidentifier = String;
+
+
+
 pub type jsonpointer = String;
+
+
+
 pub type jsonpath = String;
+
+
+
 pub type sparqlpath = String;
+
+
+
 
 // Slots
 
 pub type mappings = Vec<uriorcurie>;
+
+
+
 pub type exact_mappings = Vec<uriorcurie>;
+
+
+
 pub type close_mappings = Vec<uriorcurie>;
+
+
+
 pub type related_mappings = Vec<uriorcurie>;
+
+
+
 pub type narrow_mappings = Vec<uriorcurie>;
+
+
+
 pub type broad_mappings = Vec<uriorcurie>;
+
+
+
 pub type deprecated_element_has_exact_replacement = uriorcurie;
+
+
+
 pub type deprecated_element_has_possible_replacement = uriorcurie;
+
+
+
 pub type extensions = Vec<ExtensionOrSubtype>;
+
+
+
 pub type extension_tag = uriorcurie;
+
+
+
 pub type extension_value = AnyValue;
+
+
+
 pub type annotations = Vec<Annotation>;
+
+
+
 pub type unit = UnitOfMeasure;
+
+
+
 pub type ucum_code = String;
+
+
+
 pub type derivation = String;
+
+
+
 pub type has_quantity_kind = uriorcurie;
+
+
+
 pub type iec61360code = String;
+
+
+
 pub type symbol = String;
+
+
+
 pub type abbreviation = String;
+
+
+
 pub type descriptive_name = String;
+
+
+
 pub type name = String;
+
+
+
 pub type title = String;
+
+
+
 pub type conforms_to = String;
+
+
+
 pub type implements = Vec<uriorcurie>;
+
+
+
 pub type instantiates = Vec<uriorcurie>;
+
+
+
 pub type categories = Vec<uriorcurie>;
+
+
+
 pub type keywords = Vec<String>;
+
+
+
 pub type definition_uri = uriorcurie;
+
+
+
 pub type id_prefixes = Vec<ncname>;
+
+
+
 pub type id_prefixes_are_closed = bool;
+
+
+
 pub type description = String;
+
+
+
 pub type structured_aliases = Vec<StructuredAlias>;
+
+
+
 pub type aliases = Vec<String>;
+
+
+
 pub type deprecated = String;
+
+
+
 pub type todos = Vec<String>;
+
+
+
 pub type notes = Vec<String>;
+
+
+
 pub type comments = Vec<String>;
+
+
+
 pub type in_subset = Vec<SubsetDefinition>;
+
+
+
 pub type from_schema = uri;
+
+
+
 pub type imported_from = String;
+
+
+
 pub type see_also = Vec<uriorcurie>;
+
+
+
 pub type owned_by = uriorcurie;
+
+
+
 pub type created_by = uriorcurie;
+
+
+
 pub type contributors = Vec<uriorcurie>;
+
+
+
 pub type created_on = NaiveDateTime;
+
+
+
 pub type last_updated_on = NaiveDateTime;
+
+
+
 pub type modified_by = uriorcurie;
+
+
+
 pub type status = uriorcurie;
+
+
+
 pub type literal_form = String;
+
+
+
 pub type alias_predicate = String;
+
+
+
 pub type alias_contexts = Vec<uri>;
+
+
+
 pub type in_language = String;
+
+
+
 pub type source = uriorcurie;
+
+
+
 pub type publisher = uriorcurie;
+
+
+
 pub type is_a = DefinitionOrSubtype;
+
+
+
 pub type abstract_ = bool;
+
+
+
 pub type mixin = bool;
+
+
+
 pub type mixins = Vec<DefinitionOrSubtype>;
+
+
+
 pub type apply_to = Vec<DefinitionOrSubtype>;
+
+
+
 pub type values_from = Vec<uriorcurie>;
+
+
+
 pub type code_set = uriorcurie;
+
+
+
 pub type code_set_version = String;
+
+
+
 pub type code_set_tag = String;
+
+
+
 pub type pv_formula = String;
+
+
+
 pub type permissible_values = Vec<PermissibleValue>;
+
+
+
 pub type enum_uri = uriorcurie;
+
+
+
 pub type include = Vec<AnonymousEnumExpression>;
+
+
+
 pub type minus = Vec<AnonymousEnumExpression>;
+
+
+
 pub type inherits = Vec<EnumDefinition>;
+
+
+
 pub type matches = MatchQuery;
+
+
+
 pub type identifier_pattern = String;
+
+
+
 pub type concepts = Vec<uriorcurie>;
+
+
+
 pub type reachable_from = ReachabilityQuery;
+
+
+
 pub type source_ontology = uriorcurie;
+
+
+
 pub type is_direct = bool;
+
+
+
 pub type traverse_up = bool;
+
+
+
 pub type include_self = bool;
+
+
+
 pub type relationship_types = Vec<uriorcurie>;
+
+
+
 pub type source_nodes = Vec<uriorcurie>;
+
+
+
 pub type text = String;
+
+
+
 pub type meaning = uriorcurie;
+
+
+
 pub type id = uri;
+
+
+
 pub type emit_prefixes = Vec<ncname>;
+
+
+
 pub type version = String;
+
+
+
 pub type imports = Vec<uriorcurie>;
+
+
+
 pub type structured_imports = Vec<ImportExpression>;
+
+
+
 pub type license = String;
+
+
+
 pub type default_curi_maps = Vec<String>;
+
+
+
 pub type default_prefix = String;
+
+
+
 pub type default_range = TypeDefinition;
+
+
+
 pub type subsets = Vec<SubsetDefinition>;
+
+
+
 pub type types = Vec<TypeDefinition>;
+
+
+
 pub type enums = Vec<EnumDefinition>;
+
+
+
 pub type slot_definitions = Vec<SlotDefinition>;
+
+
+
 pub type classes = Vec<ClassDefinition>;
+
+
+
 pub type metamodel_version = String;
+
+
+
 pub type source_file = String;
+
+
+
 pub type source_file_date = NaiveDateTime;
+
+
+
 pub type source_file_size = isize;
+
+
+
 pub type generation_date = NaiveDateTime;
+
+
+
 pub type slots = Vec<SlotDefinition>;
+
+
+
 pub type slot_usage = Vec<SlotDefinition>;
+
+
+
 pub type enum_range = EnumExpressionOrSubtype;
+
+
+
 pub type range_expression = AnonymousClassExpression;
+
+
+
 pub type boolean_slot = Vec<ExpressionOrSubtype>;
+
+
+
 pub type any_of = Vec<ExpressionOrSubtype>;
+
+
+
 pub type exactly_one_of = Vec<ExpressionOrSubtype>;
+
+
+
 pub type none_of = Vec<ExpressionOrSubtype>;
+
+
+
 pub type all_of = Vec<ExpressionOrSubtype>;
+
+
+
 pub type preconditions = AnonymousClassExpression;
+
+
+
 pub type postconditions = AnonymousClassExpression;
+
+
+
 pub type elseconditions = AnonymousClassExpression;
+
+
+
 pub type bidirectional = bool;
+
+
+
 pub type open_world = bool;
+
+
+
 pub type rank = isize;
+
+
+
 pub type deactivated = bool;
+
+
+
 pub type rules = Vec<ClassRule>;
+
+
+
 pub type classification_rules = Vec<AnonymousClassExpression>;
+
+
+
 pub type slot_conditions = Vec<SlotDefinition>;
+
+
+
 pub type attributes = Vec<SlotDefinition>;
+
+
+
 pub type class_uri = uriorcurie;
+
+
+
 pub type subclass_of = uriorcurie;
+
+
+
 pub type defining_slots = Vec<SlotDefinition>;
+
+
+
 pub type union_of = Vec<ElementOrSubtype>;
+
+
+
 pub type tree_root = bool;
+
+
+
 pub type unique_keys = Vec<UniqueKey>;
+
+
+
 pub type unique_key_name = String;
+
+
+
 pub type consider_nulls_inequal = bool;
+
+
+
 pub type unique_key_slots = Vec<SlotDefinition>;
+
+
+
 pub type slot_names_unique = bool;
+
+
+
 pub type domain = ClassDefinition;
+
+
+
 pub type range = ElementOrSubtype;
+
+
+
 pub type slot_uri = uriorcurie;
+
+
+
 pub type multivalued = bool;
+
+
+
 pub type array = ArrayExpression;
+
+
+
 pub type dimensions = Vec<DimensionExpression>;
+
+
+
 pub type minimum_number_dimensions = isize;
+
+
+
 pub type maximum_number_dimensions = Anything;
+
+
+
 pub type exact_number_dimensions = isize;
+
+
+
 pub type inherited = bool;
+
+
+
 pub type readonly = String;
+
+
+
 pub type ifabsent = String;
+
+
+
 pub type implicit_prefix = String;
+
+
+
 pub type value_specification_constant = String;
+
+
+
 pub type list_value_specification_constant = String;
+
+
+
 pub type value_presence = String;
+
+
+
 pub type equals_string = String;
+
+
+
 pub type equals_number = isize;
+
+
+
 pub type equals_expression = String;
+
+
+
 pub type exact_cardinality = isize;
+
+
+
 pub type minimum_cardinality = isize;
+
+
+
 pub type maximum_cardinality = isize;
+
+
+
 pub type equals_string_in = Vec<String>;
+
+
+
 pub type equals_number_in = Vec<isize>;
+
+
+
 pub type has_member = AnonymousSlotExpression;
+
+
+
 pub type all_members = AnonymousSlotExpression;
+
+
+
 pub type singular_name = String;
+
+
+
 pub type required = bool;
+
+
+
 pub type recommended = bool;
+
+
+
 pub type inapplicable = bool;
+
+
+
 pub type inlined = bool;
+
+
+
 pub type inlined_as_list = bool;
+
+
+
 pub type inlined_as_simple_dict = bool;
+
+
+
 pub type list_elements_ordered = bool;
+
+
+
 pub type list_elements_unique = bool;
+
+
+
 pub type shared = bool;
+
+
+
 pub type key = bool;
+
+
+
 pub type identifier = bool;
+
+
+
 pub type designates_type = bool;
+
+
+
 pub type alias = String;
+
+
+
 pub type owner = DefinitionOrSubtype;
+
+
+
 pub type domain_of = Vec<ClassDefinition>;
+
+
+
 pub type is_usage_slot = bool;
+
+
+
 pub type usage_slot_name = String;
+
+
+
 pub type subproperty_of = SlotDefinition;
+
+
+
 pub type disjoint_with = Vec<DefinitionOrSubtype>;
+
+
+
 pub type children_are_mutually_disjoint = bool;
+
+
+
 pub type relational_logical_characteristic = bool;
+
+
+
 pub type symmetric = bool;
+
+
+
 pub type asymmetric = bool;
+
+
+
 pub type reflexive = bool;
+
+
+
 pub type irreflexive = bool;
+
+
+
 pub type locally_reflexive = bool;
+
+
+
 pub type transitive = bool;
+
+
+
 pub type transitive_form_of = SlotDefinition;
+
+
+
 pub type reflexive_transitive_form_of = SlotDefinition;
+
+
+
 pub type inverse = SlotDefinition;
+
+
+
 pub type is_class_field = bool;
+
+
+
 pub type role = String;
+
+
+
 pub type minimum_value = Anything;
+
+
+
 pub type maximum_value = Anything;
+
+
+
 pub type interpolated = bool;
+
+
+
 pub type partial_match = bool;
+
+
+
 pub type pattern = String;
+
+
+
 pub type syntax = String;
+
+
+
 pub type structured_pattern = PatternExpression;
+
+
+
 pub type string_serialization = String;
+
+
+
 pub type bindings = Vec<EnumBinding>;
+
+
+
 pub type binds_value_of = String;
+
+
+
 pub type obligation_level = String;
+
+
+
 pub type type_mappings = Vec<TypeMapping>;
+
+
+
 pub type framework_key = String;
+
+
+
 pub type mapped_type = TypeDefinition;
+
+
+
 pub type typeof_ = TypeDefinition;
+
+
+
 pub type base = String;
+
+
+
 pub type type_uri = uriorcurie;
+
+
+
 pub type repr = String;
+
+
+
 pub type alt_description_text = String;
+
+
+
 pub type alt_description_source = String;
+
+
+
 pub type alt_descriptions = Vec<AltDescription>;
+
+
+
 pub type value = String;
+
+
+
 pub type value_description = String;
+
+
+
 pub type value_object = Anything;
+
+
+
 pub type examples = Vec<Example>;
+
+
+
 pub type prefix_prefix = ncname;
+
+
+
 pub type prefix_reference = uri;
+
+
+
 pub type prefixes = Vec<Prefix>;
+
+
+
 pub type setting_key = ncname;
+
+
+
 pub type setting_value = String;
+
+
+
 pub type settings = Vec<Setting>;
+
+
+
 pub type import_from = uriorcurie;
+
+
+
 pub type import_as = ncname;
+
+
+
 pub type import_map = Vec<Setting>;
+
+
+
 pub type local_name_source = ncname;
+
+
+
 pub type local_name_value = String;
+
+
+
 pub type local_names = Vec<LocalName>;
+
+
+
 pub type slot_group = SlotDefinition;
+
+
+
 pub type is_grouping_slot = bool;
+
+
+
 pub type followed_by = ExpressionOrSubtype;
+
+
+
 pub type reversed = bool;
+
+
+
 pub type traverse = SlotDefinition;
+
+
+
 pub type path_rule = PathExpression;
+
+
+
 pub type represents_relationship = bool;
+
+
+
 pub type relational_role = String;
+
+
+
 
 // Enums
 
@@ -317,7 +1076,8 @@ pub enum ObligationLevelEnum {
 
 // Classes
 
-mod AnyValue_slots {
+pub mod any_value_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -330,7 +1090,8 @@ pub struct AnyValue {
 
 
 
-mod Extension_slots {
+pub mod extension_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -511,7 +1272,8 @@ impl serde_utils::InlinedPair for ExtensionOrSubtype {
 }
 
 
-mod Extensible_slots {
+pub mod extensible_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -682,7 +1444,8 @@ impl<'py> FromPyObject<'py> for Box<ExtensibleOrSubtype> {
 
 
 
-mod Annotatable_slots {
+pub mod annotatable_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -856,7 +1619,8 @@ impl<'py> FromPyObject<'py> for Box<AnnotatableOrSubtype> {
 
 
 
-mod Annotation_slots {
+pub mod annotation_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -950,7 +1714,8 @@ impl serde_utils::InlinedPair for Annotation {
 }
 
 
-mod UnitOfMeasure_slots {
+pub mod unit_of_measure_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -1014,7 +1779,8 @@ impl<'py> FromPyObject<'py> for Box<UnitOfMeasure> {
 
 
 
-mod Anything_slots {
+pub mod anything_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -1027,7 +1793,8 @@ pub struct Anything {
 
 
 
-mod CommonMetadata_slots {
+pub mod common_metadata_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -1262,7 +2029,8 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadataOrSubtype> {
 
 
 
-mod Element_slots {
+pub mod element_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -1587,7 +2355,8 @@ impl serde_utils::InlinedPair for ElementOrSubtype {
 }
 
 
-mod SchemaDefinition_slots {
+pub mod schema_definition_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -1812,7 +2581,8 @@ impl serde_utils::InlinedPair for SchemaDefinition {
 }
 
 
-mod AnonymousTypeExpression_slots {
+pub mod anonymous_type_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -1886,7 +2656,8 @@ impl<'py> FromPyObject<'py> for Box<AnonymousTypeExpression> {
 
 
 
-mod TypeDefinition_slots {
+pub mod type_definition_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -2097,7 +2868,8 @@ impl serde_utils::InlinedPair for TypeDefinition {
 }
 
 
-mod SubsetDefinition_slots {
+pub mod subset_definition_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -2272,7 +3044,8 @@ impl serde_utils::InlinedPair for SubsetDefinition {
 }
 
 
-mod Definition_slots {
+pub mod definition_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -2571,7 +3344,8 @@ impl serde_utils::InlinedPair for DefinitionOrSubtype {
 }
 
 
-mod AnonymousEnumExpression_slots {
+pub mod anonymous_enum_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -2642,7 +3416,8 @@ impl<'py> FromPyObject<'py> for Box<AnonymousEnumExpression> {
 
 
 
-mod EnumDefinition_slots {
+pub mod enum_definition_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -2856,7 +3631,8 @@ impl serde_utils::InlinedPair for EnumDefinition {
 }
 
 
-mod EnumBinding_slots {
+pub mod enum_binding_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -2985,7 +3761,8 @@ impl<'py> FromPyObject<'py> for Box<EnumBinding> {
 
 
 
-mod MatchQuery_slots {
+pub mod match_query_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -3037,7 +3814,8 @@ impl<'py> FromPyObject<'py> for Box<MatchQuery> {
 
 
 
-mod ReachabilityQuery_slots {
+pub mod reachability_query_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -3097,7 +3875,8 @@ impl<'py> FromPyObject<'py> for Box<ReachabilityQuery> {
 
 
 
-mod StructuredAlias_slots {
+pub mod structured_alias_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -3223,7 +4002,8 @@ impl<'py> FromPyObject<'py> for Box<StructuredAlias> {
 
 
 
-mod Expression_slots {
+pub mod expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -3329,7 +4109,8 @@ impl<'py> FromPyObject<'py> for Box<ExpressionOrSubtype> {
 
 
 
-mod TypeExpression_slots {
+pub mod type_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -3463,7 +4244,8 @@ impl<'py> FromPyObject<'py> for Box<TypeExpressionOrSubtype> {
 
 
 
-mod EnumExpression_slots {
+pub mod enum_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -3594,7 +4376,8 @@ impl<'py> FromPyObject<'py> for Box<EnumExpressionOrSubtype> {
 
 
 
-mod AnonymousExpression_slots {
+pub mod anonymous_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -3775,7 +4558,8 @@ impl<'py> FromPyObject<'py> for Box<AnonymousExpressionOrSubtype> {
 
 
 
-mod PathExpression_slots {
+pub mod path_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -3912,7 +4696,8 @@ impl<'py> FromPyObject<'py> for Box<PathExpression> {
 
 
 
-mod SlotExpression_slots {
+pub mod slot_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -4078,7 +4863,8 @@ impl<'py> FromPyObject<'py> for Box<SlotExpressionOrSubtype> {
 
 
 
-mod AnonymousSlotExpression_slots {
+pub mod anonymous_slot_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -4257,7 +5043,8 @@ impl<'py> FromPyObject<'py> for Box<AnonymousSlotExpression> {
 
 
 
-mod SlotDefinition_slots {
+pub mod slot_definition_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -4580,7 +5367,8 @@ impl serde_utils::InlinedPair for SlotDefinition {
 }
 
 
-mod ClassExpression_slots {
+pub mod class_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -4699,7 +5487,8 @@ impl<'py> FromPyObject<'py> for Box<ClassExpressionOrSubtype> {
 
 
 
-mod AnonymousClassExpression_slots {
+pub mod anonymous_class_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -4833,7 +5622,8 @@ impl<'py> FromPyObject<'py> for Box<AnonymousClassExpression> {
 
 
 
-mod ClassDefinition_slots {
+pub mod class_definition_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -5066,7 +5856,8 @@ impl serde_utils::InlinedPair for ClassDefinition {
 }
 
 
-mod ClassLevelRule_slots {
+pub mod class_level_rule_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -5136,7 +5927,8 @@ impl<'py> FromPyObject<'py> for Box<ClassLevelRuleOrSubtype> {
 
 
 
-mod ClassRule_slots {
+pub mod class_rule_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -5269,7 +6061,15 @@ impl<'py> FromPyObject<'py> for Box<ClassRule> {
 
 
 
-mod ArrayExpression_slots {
+pub mod array_expression_utl {
+    use super::*;
+    #[derive(Debug, Clone, PartialEq)]
+    #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+    pub enum maximum_number_dimensions_range {
+        Anything(Anything),
+        isize(isize),
+        bool(bool)    
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -5281,7 +6081,7 @@ pub struct ArrayExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub minimum_number_dimensions: Option<isize>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub maximum_number_dimensions: Option<Anything>,
+    pub maximum_number_dimensions: Option<array_expression_utl::maximum_number_dimensions_range>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub dimensions: Vec<DimensionExpression>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
@@ -5364,7 +6164,7 @@ pub struct ArrayExpression {
 #[pymethods]
 impl ArrayExpression {
     #[new]
-    pub fn new(exact_number_dimensions: Option<isize>, minimum_number_dimensions: Option<isize>, maximum_number_dimensions: Option<Anything>, dimensions: Vec<DimensionExpression>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
+    pub fn new(exact_number_dimensions: Option<isize>, minimum_number_dimensions: Option<isize>, maximum_number_dimensions: Option<array_expression_utl::maximum_number_dimensions_range>, dimensions: Vec<DimensionExpression>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
         ArrayExpression{exact_number_dimensions, minimum_number_dimensions, maximum_number_dimensions, dimensions, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, rank, categories, keywords}
     }
 }
@@ -5398,7 +6198,8 @@ impl<'py> FromPyObject<'py> for Box<ArrayExpression> {
 
 
 
-mod DimensionExpression_slots {
+pub mod dimension_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -5527,7 +6328,8 @@ impl<'py> FromPyObject<'py> for Box<DimensionExpression> {
 
 
 
-mod PatternExpression_slots {
+pub mod pattern_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -5654,7 +6456,8 @@ impl<'py> FromPyObject<'py> for Box<PatternExpression> {
 
 
 
-mod ImportExpression_slots {
+pub mod import_expression_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -5781,7 +6584,8 @@ impl<'py> FromPyObject<'py> for Box<ImportExpression> {
 
 
 
-mod Setting_slots {
+pub mod setting_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -5869,7 +6673,8 @@ impl serde_utils::InlinedPair for Setting {
 }
 
 
-mod Prefix_slots {
+pub mod prefix_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -5957,7 +6762,8 @@ impl serde_utils::InlinedPair for Prefix {
 }
 
 
-mod LocalName_slots {
+pub mod local_name_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -6045,7 +6851,8 @@ impl serde_utils::InlinedPair for LocalName {
 }
 
 
-mod Example_slots {
+pub mod example_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -6099,7 +6906,8 @@ impl<'py> FromPyObject<'py> for Box<Example> {
 
 
 
-mod AltDescription_slots {
+pub mod alt_description_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -6187,7 +6995,8 @@ impl serde_utils::InlinedPair for AltDescription {
 }
 
 
-mod PermissibleValue_slots {
+pub mod permissible_value_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -6359,7 +7168,8 @@ impl serde_utils::InlinedPair for PermissibleValue {
 }
 
 
-mod UniqueKey_slots {
+pub mod unique_key_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -6523,7 +7333,8 @@ impl serde_utils::InlinedPair for UniqueKey {
 }
 
 
-mod TypeMapping_slots {
+pub mod type_mapping_utl {
+    use super::*;
 }
 
 #[derive(Debug, Clone, PartialEq)]
