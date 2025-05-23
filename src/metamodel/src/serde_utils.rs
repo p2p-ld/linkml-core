@@ -44,8 +44,6 @@ where
 
 }
 
-
-#[cfg(any())]
 #[cfg(feature = "serde")]
 pub fn deserialize_inlined_dict_list<'de, D, T>(de: D) -> Result<Vec<T>, D::Error>
 where

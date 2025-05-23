@@ -19,1020 +19,261 @@ use std::collections::BTreeMap;
 // Types
 
 pub type string = String;
-
-
-
 pub type integer = String;
-
-
-
 pub type boolean = String;
-
-
-
 pub type float = f64;
-
-
-
 pub type double = f64;
-
-
-
 pub type decimal = String;
-
-
-
 pub type time = String;
-
-
-
 pub type date = String;
-
-
-
 pub type datetime = String;
-
-
-
 pub type date_or_datetime = String;
-
-
-
 pub type uriorcurie = String;
-
-
-
 pub type curie = String;
-
-
-
 pub type uri = String;
-
-
-
 pub type ncname = String;
-
-
-
 pub type objectidentifier = String;
-
-
-
 pub type nodeidentifier = String;
-
-
-
 pub type jsonpointer = String;
-
-
-
 pub type jsonpath = String;
-
-
-
 pub type sparqlpath = String;
-
-
-
 
 // Slots
 
 pub type mappings = Vec<uriorcurie>;
-
-
-
 pub type exact_mappings = Vec<uriorcurie>;
-
-
-
 pub type close_mappings = Vec<uriorcurie>;
-
-
-
 pub type related_mappings = Vec<uriorcurie>;
-
-
-
 pub type narrow_mappings = Vec<uriorcurie>;
-
-
-
 pub type broad_mappings = Vec<uriorcurie>;
-
-
-
 pub type deprecated_element_has_exact_replacement = uriorcurie;
-
-
-
 pub type deprecated_element_has_possible_replacement = uriorcurie;
-
-
-
 pub type extensions = Vec<ExtensionOrSubtype>;
-
-
-
 pub type extension_tag = uriorcurie;
-
-
-
 pub type extension_value = AnyValue;
-
-
-
 pub type annotations = Vec<Annotation>;
-
-
-
 pub type unit = UnitOfMeasure;
-
-
-
 pub type ucum_code = String;
-
-
-
 pub type derivation = String;
-
-
-
 pub type has_quantity_kind = uriorcurie;
-
-
-
 pub type iec61360code = String;
-
-
-
 pub type symbol = String;
-
-
-
 pub type abbreviation = String;
-
-
-
 pub type descriptive_name = String;
-
-
-
 pub type name = String;
-
-
-
 pub type title = String;
-
-
-
 pub type conforms_to = String;
-
-
-
 pub type implements = Vec<uriorcurie>;
-
-
-
 pub type instantiates = Vec<uriorcurie>;
-
-
-
 pub type categories = Vec<uriorcurie>;
-
-
-
 pub type keywords = Vec<String>;
-
-
-
 pub type definition_uri = uriorcurie;
-
-
-
 pub type id_prefixes = Vec<ncname>;
-
-
-
 pub type id_prefixes_are_closed = bool;
-
-
-
 pub type description = String;
-
-
-
 pub type structured_aliases = Vec<StructuredAlias>;
-
-
-
 pub type aliases = Vec<String>;
-
-
-
 pub type deprecated = String;
-
-
-
 pub type todos = Vec<String>;
-
-
-
 pub type notes = Vec<String>;
-
-
-
 pub type comments = Vec<String>;
-
-
-
 pub type in_subset = Vec<SubsetDefinition>;
-
-
-
 pub type from_schema = uri;
-
-
-
 pub type imported_from = String;
-
-
-
 pub type see_also = Vec<uriorcurie>;
-
-
-
 pub type owned_by = uriorcurie;
-
-
-
 pub type created_by = uriorcurie;
-
-
-
 pub type contributors = Vec<uriorcurie>;
-
-
-
 pub type created_on = NaiveDateTime;
-
-
-
 pub type last_updated_on = NaiveDateTime;
-
-
-
 pub type modified_by = uriorcurie;
-
-
-
 pub type status = uriorcurie;
-
-
-
 pub type literal_form = String;
-
-
-
 pub type alias_predicate = String;
-
-
-
 pub type alias_contexts = Vec<uri>;
-
-
-
 pub type in_language = String;
-
-
-
 pub type source = uriorcurie;
-
-
-
 pub type publisher = uriorcurie;
-
-
-
 pub type is_a = DefinitionOrSubtype;
-
-
-
 pub type abstract_ = bool;
-
-
-
 pub type mixin = bool;
-
-
-
 pub type mixins = Vec<DefinitionOrSubtype>;
-
-
-
 pub type apply_to = Vec<DefinitionOrSubtype>;
-
-
-
 pub type values_from = Vec<uriorcurie>;
-
-
-
 pub type code_set = uriorcurie;
-
-
-
 pub type code_set_version = String;
-
-
-
 pub type code_set_tag = String;
-
-
-
 pub type pv_formula = String;
-
-
-
 pub type permissible_values = Vec<PermissibleValue>;
-
-
-
 pub type enum_uri = uriorcurie;
-
-
-
 pub type include = Vec<AnonymousEnumExpression>;
-
-
-
 pub type minus = Vec<AnonymousEnumExpression>;
-
-
-
 pub type inherits = Vec<EnumDefinition>;
-
-
-
 pub type matches = MatchQuery;
-
-
-
 pub type identifier_pattern = String;
-
-
-
 pub type concepts = Vec<uriorcurie>;
-
-
-
 pub type reachable_from = ReachabilityQuery;
-
-
-
 pub type source_ontology = uriorcurie;
-
-
-
 pub type is_direct = bool;
-
-
-
 pub type traverse_up = bool;
-
-
-
 pub type include_self = bool;
-
-
-
 pub type relationship_types = Vec<uriorcurie>;
-
-
-
 pub type source_nodes = Vec<uriorcurie>;
-
-
-
 pub type text = String;
-
-
-
 pub type meaning = uriorcurie;
-
-
-
 pub type id = uri;
-
-
-
 pub type emit_prefixes = Vec<ncname>;
-
-
-
 pub type version = String;
-
-
-
 pub type imports = Vec<uriorcurie>;
-
-
-
 pub type structured_imports = Vec<ImportExpression>;
-
-
-
 pub type license = String;
-
-
-
 pub type default_curi_maps = Vec<String>;
-
-
-
 pub type default_prefix = String;
-
-
-
 pub type default_range = TypeDefinition;
-
-
-
 pub type subsets = Vec<SubsetDefinition>;
-
-
-
 pub type types = Vec<TypeDefinition>;
-
-
-
 pub type enums = Vec<EnumDefinition>;
-
-
-
 pub type slot_definitions = Vec<SlotDefinition>;
-
-
-
 pub type classes = Vec<ClassDefinition>;
-
-
-
 pub type metamodel_version = String;
-
-
-
 pub type source_file = String;
-
-
-
 pub type source_file_date = NaiveDateTime;
-
-
-
 pub type source_file_size = isize;
-
-
-
 pub type generation_date = NaiveDateTime;
-
-
-
 pub type slots = Vec<SlotDefinition>;
-
-
-
 pub type slot_usage = Vec<SlotDefinition>;
-
-
-
 pub type enum_range = EnumExpressionOrSubtype;
-
-
-
 pub type range_expression = AnonymousClassExpression;
-
-
-
 pub type boolean_slot = Vec<ExpressionOrSubtype>;
-
-
-
 pub type any_of = Vec<ExpressionOrSubtype>;
-
-
-
 pub type exactly_one_of = Vec<ExpressionOrSubtype>;
-
-
-
 pub type none_of = Vec<ExpressionOrSubtype>;
-
-
-
 pub type all_of = Vec<ExpressionOrSubtype>;
-
-
-
 pub type preconditions = AnonymousClassExpression;
-
-
-
 pub type postconditions = AnonymousClassExpression;
-
-
-
 pub type elseconditions = AnonymousClassExpression;
-
-
-
 pub type bidirectional = bool;
-
-
-
 pub type open_world = bool;
-
-
-
 pub type rank = isize;
-
-
-
 pub type deactivated = bool;
-
-
-
 pub type rules = Vec<ClassRule>;
-
-
-
 pub type classification_rules = Vec<AnonymousClassExpression>;
-
-
-
 pub type slot_conditions = Vec<SlotDefinition>;
-
-
-
 pub type attributes = Vec<SlotDefinition>;
-
-
-
 pub type class_uri = uriorcurie;
-
-
-
 pub type subclass_of = uriorcurie;
-
-
-
 pub type defining_slots = Vec<SlotDefinition>;
-
-
-
 pub type union_of = Vec<ElementOrSubtype>;
-
-
-
 pub type tree_root = bool;
-
-
-
 pub type unique_keys = Vec<UniqueKey>;
-
-
-
 pub type unique_key_name = String;
-
-
-
 pub type consider_nulls_inequal = bool;
-
-
-
 pub type unique_key_slots = Vec<SlotDefinition>;
-
-
-
 pub type slot_names_unique = bool;
-
-
-
 pub type domain = ClassDefinition;
-
-
-
 pub type range = ElementOrSubtype;
-
-
-
 pub type slot_uri = uriorcurie;
-
-
-
 pub type multivalued = bool;
-
-
-
 pub type array = ArrayExpression;
-
-
-
 pub type dimensions = Vec<DimensionExpression>;
-
-
-
 pub type minimum_number_dimensions = isize;
-
-
-
 pub type maximum_number_dimensions = Anything;
-
-
-
 pub type exact_number_dimensions = isize;
-
-
-
 pub type inherited = bool;
-
-
-
 pub type readonly = String;
-
-
-
 pub type ifabsent = String;
-
-
-
 pub type implicit_prefix = String;
-
-
-
 pub type value_specification_constant = String;
-
-
-
 pub type list_value_specification_constant = String;
-
-
-
 pub type value_presence = String;
-
-
-
 pub type equals_string = String;
-
-
-
 pub type equals_number = isize;
-
-
-
 pub type equals_expression = String;
-
-
-
 pub type exact_cardinality = isize;
-
-
-
 pub type minimum_cardinality = isize;
-
-
-
 pub type maximum_cardinality = isize;
-
-
-
 pub type equals_string_in = Vec<String>;
-
-
-
 pub type equals_number_in = Vec<isize>;
-
-
-
 pub type has_member = AnonymousSlotExpression;
-
-
-
 pub type all_members = AnonymousSlotExpression;
-
-
-
 pub type singular_name = String;
-
-
-
 pub type required = bool;
-
-
-
 pub type recommended = bool;
-
-
-
 pub type inapplicable = bool;
-
-
-
 pub type inlined = bool;
-
-
-
 pub type inlined_as_list = bool;
-
-
-
 pub type inlined_as_simple_dict = bool;
-
-
-
 pub type list_elements_ordered = bool;
-
-
-
 pub type list_elements_unique = bool;
-
-
-
 pub type shared = bool;
-
-
-
 pub type key = bool;
-
-
-
 pub type identifier = bool;
-
-
-
 pub type designates_type = bool;
-
-
-
 pub type alias = String;
-
-
-
 pub type owner = DefinitionOrSubtype;
-
-
-
 pub type domain_of = Vec<ClassDefinition>;
-
-
-
 pub type is_usage_slot = bool;
-
-
-
 pub type usage_slot_name = String;
-
-
-
 pub type subproperty_of = SlotDefinition;
-
-
-
 pub type disjoint_with = Vec<DefinitionOrSubtype>;
-
-
-
 pub type children_are_mutually_disjoint = bool;
-
-
-
 pub type relational_logical_characteristic = bool;
-
-
-
 pub type symmetric = bool;
-
-
-
 pub type asymmetric = bool;
-
-
-
 pub type reflexive = bool;
-
-
-
 pub type irreflexive = bool;
-
-
-
 pub type locally_reflexive = bool;
-
-
-
 pub type transitive = bool;
-
-
-
 pub type transitive_form_of = SlotDefinition;
-
-
-
 pub type reflexive_transitive_form_of = SlotDefinition;
-
-
-
 pub type inverse = SlotDefinition;
-
-
-
 pub type is_class_field = bool;
-
-
-
 pub type role = String;
-
-
-
 pub type minimum_value = Anything;
-
-
-
 pub type maximum_value = Anything;
-
-
-
 pub type interpolated = bool;
-
-
-
 pub type partial_match = bool;
-
-
-
 pub type pattern = String;
-
-
-
 pub type syntax = String;
-
-
-
 pub type structured_pattern = PatternExpression;
-
-
-
 pub type string_serialization = String;
-
-
-
 pub type bindings = Vec<EnumBinding>;
-
-
-
 pub type binds_value_of = String;
-
-
-
 pub type obligation_level = String;
-
-
-
 pub type type_mappings = Vec<TypeMapping>;
-
-
-
 pub type framework_key = String;
-
-
-
 pub type mapped_type = TypeDefinition;
-
-
-
 pub type typeof_ = TypeDefinition;
-
-
-
 pub type base = String;
-
-
-
 pub type type_uri = uriorcurie;
-
-
-
 pub type repr = String;
-
-
-
 pub type alt_description_text = String;
-
-
-
 pub type alt_description_source = String;
-
-
-
 pub type alt_descriptions = Vec<AltDescription>;
-
-
-
 pub type value = String;
-
-
-
 pub type value_description = String;
-
-
-
 pub type value_object = Anything;
-
-
-
 pub type examples = Vec<Example>;
-
-
-
 pub type prefix_prefix = ncname;
-
-
-
 pub type prefix_reference = uri;
-
-
-
 pub type prefixes = Vec<Prefix>;
-
-
-
 pub type setting_key = ncname;
-
-
-
 pub type setting_value = String;
-
-
-
 pub type settings = Vec<Setting>;
-
-
-
 pub type import_from = uriorcurie;
-
-
-
 pub type import_as = ncname;
-
-
-
 pub type import_map = Vec<Setting>;
-
-
-
 pub type local_name_source = ncname;
-
-
-
 pub type local_name_value = String;
-
-
-
 pub type local_names = Vec<LocalName>;
-
-
-
 pub type slot_group = SlotDefinition;
-
-
-
 pub type is_grouping_slot = bool;
-
-
-
 pub type followed_by = ExpressionOrSubtype;
-
-
-
 pub type reversed = bool;
-
-
-
 pub type traverse = SlotDefinition;
-
-
-
 pub type path_rule = PathExpression;
-
-
-
 pub type represents_relationship = bool;
-
-
-
 pub type relational_role = String;
-
-
-
 
 // Enums
 
@@ -1076,17 +317,11 @@ pub enum ObligationLevelEnum {
 
 // Classes
 
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnyValue {
 }
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -1098,8 +333,6 @@ pub struct Extension {
     #[cfg_attr(feature = "serde", serde(default))]
     pub extensions: HashMap<String, Box<ExtensionOrSubtype>>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl Extension {
@@ -1131,11 +364,6 @@ impl<'py> FromPyObject<'py> for Box<Extension> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Extension {
     type Key   = uriorcurie;
@@ -1174,7 +402,6 @@ impl serde_utils::InlinedPair for Extension {
 
     }
 }
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -1266,7 +493,6 @@ impl serde_utils::InlinedPair for ExtensionOrSubtype {
 }
 
 
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -1275,8 +501,6 @@ pub struct Extensible {
     #[cfg_attr(feature = "serde", serde(default))]
     pub extensions: HashMap<String, ExtensionOrSubtype>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl Extensible {
@@ -1308,12 +532,6 @@ impl<'py> FromPyObject<'py> for Box<Extensible> {
         ))
     }
 }
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -1435,7 +653,6 @@ impl<'py> FromPyObject<'py> for Box<ExtensibleOrSubtype> {
 
 
 
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -1444,8 +661,6 @@ pub struct Annotatable {
     #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl Annotatable {
@@ -1477,12 +692,6 @@ impl<'py> FromPyObject<'py> for Box<Annotatable> {
         ))
     }
 }
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -1607,7 +816,6 @@ impl<'py> FromPyObject<'py> for Box<AnnotatableOrSubtype> {
 
 
 
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -1621,8 +829,6 @@ pub struct Annotation {
     #[cfg_attr(feature = "serde", serde(default))]
     pub extensions: HashMap<String, ExtensionOrSubtype>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl Annotation {
@@ -1654,11 +860,6 @@ impl<'py> FromPyObject<'py> for Box<Annotation> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Annotation {
     type Key   = uriorcurie;
@@ -1698,8 +899,6 @@ impl serde_utils::InlinedPair for Annotation {
     }
 }
 
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -1721,8 +920,6 @@ pub struct UnitOfMeasure {
     #[cfg_attr(feature = "serde", serde(default))]
     pub iec61360code: Option<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl UnitOfMeasure {
@@ -1755,23 +952,11 @@ impl<'py> FromPyObject<'py> for Box<UnitOfMeasure> {
     }
 }
 
-
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Anything {
 }
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -1845,8 +1030,6 @@ pub struct CommonMetadata {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl CommonMetadata {
@@ -1878,12 +1061,6 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadata> {
         ))
     }
 }
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -2005,7 +1182,6 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadataOrSubtype> {
 
 
 
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -2100,8 +1276,6 @@ pub struct Element {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl Element {
@@ -2133,11 +1307,6 @@ impl<'py> FromPyObject<'py> for Box<Element> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Element {
     type Key   = String;
@@ -2176,7 +1345,6 @@ impl serde_utils::InlinedPair for Element {
 
     }
 }
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -2328,7 +1496,6 @@ impl serde_utils::InlinedPair for ElementOrSubtype {
 }
 
 
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -2473,8 +1640,6 @@ pub struct SchemaDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl SchemaDefinition {
@@ -2506,11 +1671,6 @@ impl<'py> FromPyObject<'py> for Box<SchemaDefinition> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for SchemaDefinition {
     type Key   = ncname;
@@ -2550,8 +1710,6 @@ impl serde_utils::InlinedPair for SchemaDefinition {
     }
 }
 
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -2583,8 +1741,6 @@ pub struct AnonymousTypeExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Vec<Box<AnonymousTypeExpression>>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl AnonymousTypeExpression {
@@ -2616,13 +1772,6 @@ impl<'py> FromPyObject<'py> for Box<AnonymousTypeExpression> {
         ))
     }
 }
-
-
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -2754,8 +1903,6 @@ pub struct TypeDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl TypeDefinition {
@@ -2787,11 +1934,6 @@ impl<'py> FromPyObject<'py> for Box<TypeDefinition> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for TypeDefinition {
     type Key   = String;
@@ -2830,8 +1972,6 @@ impl serde_utils::InlinedPair for TypeDefinition {
 
     }
 }
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -2927,8 +2067,6 @@ pub struct SubsetDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl SubsetDefinition {
@@ -2960,11 +2098,6 @@ impl<'py> FromPyObject<'py> for Box<SubsetDefinition> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for SubsetDefinition {
     type Key   = String;
@@ -3003,8 +2136,6 @@ impl serde_utils::InlinedPair for SubsetDefinition {
 
     }
 }
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3114,8 +2245,6 @@ pub struct Definition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl Definition {
@@ -3147,11 +2276,6 @@ impl<'py> FromPyObject<'py> for Box<Definition> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Definition {
     type Key   = String;
@@ -3190,7 +2314,6 @@ impl serde_utils::InlinedPair for Definition {
 
     }
 }
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -3302,7 +2425,6 @@ impl serde_utils::InlinedPair for DefinitionOrSubtype {
 }
 
 
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -3331,8 +2453,6 @@ pub struct AnonymousEnumExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub concepts: Vec<uriorcurie>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl AnonymousEnumExpression {
@@ -3364,13 +2484,6 @@ impl<'py> FromPyObject<'py> for Box<AnonymousEnumExpression> {
         ))
     }
 }
-
-
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3505,8 +2618,6 @@ pub struct EnumDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl EnumDefinition {
@@ -3538,11 +2649,6 @@ impl<'py> FromPyObject<'py> for Box<EnumDefinition> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for EnumDefinition {
     type Key   = String;
@@ -3581,8 +2687,6 @@ impl serde_utils::InlinedPair for EnumDefinition {
 
     }
 }
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3670,8 +2774,6 @@ pub struct EnumBinding {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl EnumBinding {
@@ -3704,13 +2806,6 @@ impl<'py> FromPyObject<'py> for Box<EnumBinding> {
     }
 }
 
-
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -3720,8 +2815,6 @@ pub struct MatchQuery {
     #[cfg_attr(feature = "serde", serde(default))]
     pub source_ontology: Option<uriorcurie>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl MatchQuery {
@@ -3754,13 +2847,6 @@ impl<'py> FromPyObject<'py> for Box<MatchQuery> {
     }
 }
 
-
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -3778,8 +2864,6 @@ pub struct ReachabilityQuery {
     #[cfg_attr(feature = "serde", serde(default))]
     pub traverse_up: Option<bool>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl ReachabilityQuery {
@@ -3811,13 +2895,6 @@ impl<'py> FromPyObject<'py> for Box<ReachabilityQuery> {
         ))
     }
 }
-
-
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3902,8 +2979,6 @@ pub struct StructuredAlias {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl StructuredAlias {
@@ -3936,22 +3011,11 @@ impl<'py> FromPyObject<'py> for Box<StructuredAlias> {
     }
 }
 
-
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Expression {
 }
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -4046,7 +3110,6 @@ impl<'py> FromPyObject<'py> for Box<ExpressionOrSubtype> {
 
 
 
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -4078,8 +3141,6 @@ pub struct TypeExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Vec<AnonymousTypeExpression>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl TypeExpression {
@@ -4111,12 +3172,6 @@ impl<'py> FromPyObject<'py> for Box<TypeExpression> {
         ))
     }
 }
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -4178,7 +3233,6 @@ impl<'py> FromPyObject<'py> for Box<TypeExpressionOrSubtype> {
 
 
 
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -4207,8 +3261,6 @@ pub struct EnumExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub concepts: Vec<uriorcurie>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl EnumExpression {
@@ -4240,12 +3292,6 @@ impl<'py> FromPyObject<'py> for Box<EnumExpression> {
         ))
     }
 }
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -4304,7 +3350,6 @@ impl<'py> FromPyObject<'py> for Box<EnumExpressionOrSubtype> {
         ))
     }
 }
-
 
 
 
@@ -4386,8 +3431,6 @@ pub struct AnonymousExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl AnonymousExpression {
@@ -4419,12 +3462,6 @@ impl<'py> FromPyObject<'py> for Box<AnonymousExpression> {
         ))
     }
 }
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -4483,7 +3520,6 @@ impl<'py> FromPyObject<'py> for Box<AnonymousExpressionOrSubtype> {
         ))
     }
 }
-
 
 
 
@@ -4581,8 +3617,6 @@ pub struct PathExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl PathExpression {
@@ -4614,13 +3648,6 @@ impl<'py> FromPyObject<'py> for Box<PathExpression> {
         ))
     }
 }
-
-
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -4685,8 +3712,6 @@ pub struct SlotExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Vec<AnonymousSlotExpression>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl SlotExpression {
@@ -4718,12 +3743,6 @@ impl<'py> FromPyObject<'py> for Box<SlotExpression> {
         ))
     }
 }
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -4782,7 +3801,6 @@ impl<'py> FromPyObject<'py> for Box<SlotExpressionOrSubtype> {
         ))
     }
 }
-
 
 
 
@@ -4922,8 +3940,6 @@ pub struct AnonymousSlotExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl AnonymousSlotExpression {
@@ -4955,13 +3971,6 @@ impl<'py> FromPyObject<'py> for Box<AnonymousSlotExpression> {
         ))
     }
 }
-
-
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -5205,8 +4214,6 @@ pub struct SlotDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl SlotDefinition {
@@ -5238,11 +4245,6 @@ impl<'py> FromPyObject<'py> for Box<SlotDefinition> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for SlotDefinition {
     type Key   = String;
@@ -5282,8 +4284,6 @@ impl serde_utils::InlinedPair for SlotDefinition {
     }
 }
 
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -5300,8 +4300,6 @@ pub struct ClassExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub slot_conditions: HashMap<String, SlotDefinition>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl ClassExpression {
@@ -5333,12 +4331,6 @@ impl<'py> FromPyObject<'py> for Box<ClassExpression> {
         ))
     }
 }
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -5397,7 +4389,6 @@ impl<'py> FromPyObject<'py> for Box<ClassExpressionOrSubtype> {
         ))
     }
 }
-
 
 
 
@@ -5492,8 +4483,6 @@ pub struct AnonymousClassExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl AnonymousClassExpression {
@@ -5525,13 +4514,6 @@ impl<'py> FromPyObject<'py> for Box<AnonymousClassExpression> {
         ))
     }
 }
-
-
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -5685,8 +4667,6 @@ pub struct ClassDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl ClassDefinition {
@@ -5718,11 +4698,6 @@ impl<'py> FromPyObject<'py> for Box<ClassDefinition> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for ClassDefinition {
     type Key   = String;
@@ -5762,17 +4737,11 @@ impl serde_utils::InlinedPair for ClassDefinition {
     }
 }
 
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassLevelRule {
 }
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
@@ -5828,7 +4797,6 @@ impl<'py> FromPyObject<'py> for Box<ClassLevelRuleOrSubtype> {
         ))
     }
 }
-
 
 
 
@@ -5922,8 +4890,6 @@ pub struct ClassRule {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl ClassRule {
@@ -5955,12 +4921,6 @@ impl<'py> FromPyObject<'py> for Box<ClassRule> {
         ))
     }
 }
-
-
-
-
-
-
 
 pub mod array_expression_utl {
     use super::*;
@@ -6027,7 +4987,6 @@ pub mod array_expression_utl {
         }
     }
 }
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6115,8 +5074,6 @@ pub struct ArrayExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl ArrayExpression {
@@ -6148,13 +5105,6 @@ impl<'py> FromPyObject<'py> for Box<ArrayExpression> {
         ))
     }
 }
-
-
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6242,8 +5192,6 @@ pub struct DimensionExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl DimensionExpression {
@@ -6275,13 +5223,6 @@ impl<'py> FromPyObject<'py> for Box<DimensionExpression> {
         ))
     }
 }
-
-
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6367,8 +5308,6 @@ pub struct PatternExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl PatternExpression {
@@ -6400,13 +5339,6 @@ impl<'py> FromPyObject<'py> for Box<PatternExpression> {
         ))
     }
 }
-
-
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6492,8 +5424,6 @@ pub struct ImportExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl ImportExpression {
@@ -6526,13 +5456,6 @@ impl<'py> FromPyObject<'py> for Box<ImportExpression> {
     }
 }
 
-
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -6540,8 +5463,6 @@ pub struct Setting {
     pub setting_key: ncname,
     pub setting_value: String
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl Setting {
@@ -6573,11 +5494,6 @@ impl<'py> FromPyObject<'py> for Box<Setting> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Setting {
     type Key   = ncname;
@@ -6617,8 +5533,6 @@ impl serde_utils::InlinedPair for Setting {
     }
 }
 
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -6626,8 +5540,6 @@ pub struct Prefix {
     pub prefix_prefix: ncname,
     pub prefix_reference: uri
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl Prefix {
@@ -6659,11 +5571,6 @@ impl<'py> FromPyObject<'py> for Box<Prefix> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Prefix {
     type Key   = ncname;
@@ -6703,8 +5610,6 @@ impl serde_utils::InlinedPair for Prefix {
     }
 }
 
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -6712,8 +5617,6 @@ pub struct LocalName {
     pub local_name_source: ncname,
     pub local_name_value: String
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl LocalName {
@@ -6745,11 +5648,6 @@ impl<'py> FromPyObject<'py> for Box<LocalName> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for LocalName {
     type Key   = ncname;
@@ -6789,8 +5687,6 @@ impl serde_utils::InlinedPair for LocalName {
     }
 }
 
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -6802,8 +5698,6 @@ pub struct Example {
     #[cfg_attr(feature = "serde", serde(default))]
     pub value_object: Option<Anything>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl Example {
@@ -6836,13 +5730,6 @@ impl<'py> FromPyObject<'py> for Box<Example> {
     }
 }
 
-
-
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -6850,8 +5737,6 @@ pub struct AltDescription {
     pub alt_description_source: String,
     pub alt_description_text: String
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl AltDescription {
@@ -6883,11 +5768,6 @@ impl<'py> FromPyObject<'py> for Box<AltDescription> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for AltDescription {
     type Key   = String;
@@ -6926,8 +5806,6 @@ impl serde_utils::InlinedPair for AltDescription {
 
     }
 }
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -7020,8 +5898,6 @@ pub struct PermissibleValue {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl PermissibleValue {
@@ -7053,11 +5929,6 @@ impl<'py> FromPyObject<'py> for Box<PermissibleValue> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for PermissibleValue {
     type Key   = String;
@@ -7096,8 +5967,6 @@ impl serde_utils::InlinedPair for PermissibleValue {
 
     }
 }
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -7182,8 +6051,6 @@ pub struct UniqueKey {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl UniqueKey {
@@ -7215,11 +6082,6 @@ impl<'py> FromPyObject<'py> for Box<UniqueKey> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for UniqueKey {
     type Key   = String;
@@ -7258,8 +6120,6 @@ impl serde_utils::InlinedPair for UniqueKey {
 
     }
 }
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -7344,8 +6204,6 @@ pub struct TypeMapping {
     #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
-
-
 #[cfg(feature = "pyo3")]
 #[pymethods]
 impl TypeMapping {
@@ -7377,11 +6235,6 @@ impl<'py> FromPyObject<'py> for Box<TypeMapping> {
         ))
     }
 }
-
-
-
-
-
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for TypeMapping {
     type Key   = String;
@@ -7420,7 +6273,6 @@ impl serde_utils::InlinedPair for TypeMapping {
 
     }
 }
-
 
 
 
