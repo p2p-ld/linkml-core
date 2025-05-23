@@ -8,9 +8,15 @@ name = "linkml_meta"
 crate-type = ["lib"]
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_yml = "0.0.12"
+pyo3 = { version = "0.25.0", features = ["chrono"]  , optional = true  }
+serde = { version = "1.0", features = ["derive"]  , optional = true  }
+serde-value = "0.7.0"
+serde_yml = { version = "0.0.12", optional = true }
+serde_path_to_error = { version = "0.1.17", optional = true }
+chrono = { version = "0.4.41", features = ["serde"]  }
 
-[dependencies.pyo3]
-version = "0.22.0"
-# features = ["abi3-py39"]
+
+[features]
+default = ["serde"]
+pyo3 = ["dep:pyo3"]
+serde = ["dep:serde", "dep:serde_yml", "dep:serde_path_to_error"]

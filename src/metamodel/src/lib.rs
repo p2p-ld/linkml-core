@@ -1,272 +1,1662 @@
 #![allow(non_camel_case_types)]
-use pyo3::prelude::*;
+
+#[cfg(feature = "serde")]
+mod serde_utils;
+
+#[cfg(feature = "serde")]
 use serde_yml;
-use serde::{Deserialize,Serialize};
-use std::collections::{HashMap};
+use chrono::NaiveDateTime;
+#[cfg(feature = "pyo3")]
+use pyo3::{FromPyObject,prelude::*};
+#[cfg(feature = "serde")]
+use serde::{Deserialize,Serialize,de::IntoDeserializer};
+use serde_value::Value;
+#[cfg(feature = "serde")]
+use serde_path_to_error;
+use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 
 // Types
 
-type string = String;
-type integer = String;
-type boolean = String;
-type float = f64;
-type double = f64;
-type decimal = String;
-type time = String;
-type date = String;
-type datetime = String;
-type date_or_datetime = String;
-type uriorcurie = String;
-type curie = String;
-type uri = String;
-type ncname = String;
-type objectidentifier = String;
-type nodeidentifier = String;
-type jsonpointer = String;
-type jsonpath = String;
-type sparqlpath = String;
+pub type string = String;
+
+pub type integer = String;
+
+pub type boolean = String;
+
+pub type float = f64;
+
+pub type double = f64;
+
+pub type decimal = String;
+
+pub type time = String;
+
+pub type date = String;
+
+pub type datetime = String;
+
+pub type date_or_datetime = String;
+
+pub type uriorcurie = String;
+
+pub type curie = String;
+
+pub type uri = String;
+
+pub type ncname = String;
+
+pub type objectidentifier = String;
+
+pub type nodeidentifier = String;
+
+pub type jsonpointer = String;
+
+pub type jsonpath = String;
+
+pub type sparqlpath = String;
+
 
 // Slots
 
-type mappings = Vec<uriorcurie>;
-type exact_mappings = Vec<uriorcurie>;
-type close_mappings = Vec<uriorcurie>;
-type related_mappings = Vec<uriorcurie>;
-type narrow_mappings = Vec<uriorcurie>;
-type broad_mappings = Vec<uriorcurie>;
-type deprecated_element_has_exact_replacement = uriorcurie;
-type deprecated_element_has_possible_replacement = uriorcurie;
-type extensions = Vec<Extension>;
-type extension_tag = uriorcurie;
-type extension_value = AnyValue;
-type annotations = Vec<Annotation>;
-type unit = UnitOfMeasure;
-type ucum_code = String;
-type derivation = String;
-type has_quantity_kind = uriorcurie;
-type iec61360code = String;
-type symbol = String;
-type abbreviation = String;
-type descriptive_name = String;
-type name = String;
-type title = String;
-type conforms_to = String;
-type implements = Vec<uriorcurie>;
-type instantiates = Vec<uriorcurie>;
-type categories = Vec<uriorcurie>;
-type keywords = Vec<String>;
-type definition_uri = uriorcurie;
-type id_prefixes = Vec<ncname>;
-type id_prefixes_are_closed = bool;
-type description = String;
-type structured_aliases = Vec<StructuredAlias>;
-type aliases = Vec<String>;
-type deprecated = String;
-type todos = Vec<String>;
-type notes = Vec<String>;
-type comments = Vec<String>;
-type in_subset = Vec<SubsetDefinition>;
-type from_schema = uri;
-type imported_from = String;
-type see_also = Vec<uriorcurie>;
-type owned_by = uriorcurie;
-type created_by = uriorcurie;
-type contributors = Vec<uriorcurie>;
-type created_on = String;
-type last_updated_on = String;
-type modified_by = uriorcurie;
-type status = uriorcurie;
-type literal_form = String;
-type alias_predicate = String;
-type alias_contexts = Vec<uri>;
-type in_language = String;
-type source = uriorcurie;
-type publisher = uriorcurie;
-type is_a = Definition;
-type abstract_ = bool;
-type mixin = bool;
-type mixins = Vec<Definition>;
-type apply_to = Vec<Definition>;
-type values_from = Vec<uriorcurie>;
-type code_set = uriorcurie;
-type code_set_version = String;
-type code_set_tag = String;
-type pv_formula = String;
-type permissible_values = Vec<PermissibleValue>;
-type enum_uri = uriorcurie;
-type include = Vec<AnonymousEnumExpression>;
-type minus = Vec<AnonymousEnumExpression>;
-type inherits = Vec<EnumDefinition>;
-type matches = MatchQuery;
-type identifier_pattern = String;
-type concepts = Vec<uriorcurie>;
-type reachable_from = ReachabilityQuery;
-type source_ontology = uriorcurie;
-type is_direct = bool;
-type traverse_up = bool;
-type include_self = bool;
-type relationship_types = Vec<uriorcurie>;
-type source_nodes = Vec<uriorcurie>;
-type text = String;
-type meaning = uriorcurie;
-type id = uri;
-type emit_prefixes = Vec<ncname>;
-type version = String;
-type imports = Vec<uriorcurie>;
-type structured_imports = Vec<ImportExpression>;
-type license = String;
-type default_curi_maps = Vec<String>;
-type default_prefix = String;
-type default_range = TypeDefinition;
-type subsets = Vec<SubsetDefinition>;
-type types = Vec<TypeDefinition>;
-type enums = Vec<EnumDefinition>;
-type slot_definitions = Vec<SlotDefinition>;
-type classes = Vec<ClassDefinition>;
-type metamodel_version = String;
-type source_file = String;
-type source_file_date = String;
-type source_file_size = isize;
-type generation_date = String;
-type slots = Vec<SlotDefinition>;
-type slot_usage = Vec<SlotDefinition>;
-type enum_range = EnumExpression;
-type range_expression = AnonymousClassExpression;
-type boolean_slot = Vec<Expression>;
-type any_of = Vec<Expression>;
-type exactly_one_of = Vec<Expression>;
-type none_of = Vec<Expression>;
-type all_of = Vec<Expression>;
-type preconditions = AnonymousClassExpression;
-type postconditions = AnonymousClassExpression;
-type elseconditions = AnonymousClassExpression;
-type bidirectional = bool;
-type open_world = bool;
-type rank = isize;
-type deactivated = bool;
-type rules = Vec<ClassRule>;
-type classification_rules = Vec<AnonymousClassExpression>;
-type slot_conditions = Vec<SlotDefinition>;
-type attributes = Vec<SlotDefinition>;
-type class_uri = uriorcurie;
-type subclass_of = uriorcurie;
-type defining_slots = Vec<SlotDefinition>;
-type union_of = Vec<Element>;
-type tree_root = bool;
-type unique_keys = Vec<UniqueKey>;
-type unique_key_name = String;
-type consider_nulls_inequal = bool;
-type unique_key_slots = Vec<SlotDefinition>;
-type slot_names_unique = bool;
-type domain = ClassDefinition;
-type range = Element;
-type slot_uri = uriorcurie;
-type multivalued = bool;
-type array = ArrayExpression;
-type dimensions = Vec<DimensionExpression>;
-type minimum_number_dimensions = isize;
-type maximum_number_dimensions = Anything;
-type exact_number_dimensions = isize;
-type inherited = bool;
-type readonly = String;
-type ifabsent = String;
-type implicit_prefix = String;
-type value_specification_constant = String;
-type list_value_specification_constant = String;
-type value_presence = String;
-type equals_string = String;
-type equals_number = isize;
-type equals_expression = String;
-type exact_cardinality = isize;
-type minimum_cardinality = isize;
-type maximum_cardinality = isize;
-type equals_string_in = Vec<String>;
-type equals_number_in = Vec<isize>;
-type has_member = AnonymousSlotExpression;
-type all_members = AnonymousSlotExpression;
-type singular_name = String;
-type required = bool;
-type recommended = bool;
-type inapplicable = bool;
-type inlined = bool;
-type inlined_as_list = bool;
-type inlined_as_simple_dict = bool;
-type list_elements_ordered = bool;
-type list_elements_unique = bool;
-type shared = bool;
-type key = bool;
-type identifier = bool;
-type designates_type = bool;
-type alias = String;
-type owner = Definition;
-type domain_of = Vec<ClassDefinition>;
-type is_usage_slot = bool;
-type usage_slot_name = String;
-type subproperty_of = SlotDefinition;
-type disjoint_with = Vec<Definition>;
-type children_are_mutually_disjoint = bool;
-type relational_logical_characteristic = bool;
-type symmetric = bool;
-type asymmetric = bool;
-type reflexive = bool;
-type irreflexive = bool;
-type locally_reflexive = bool;
-type transitive = bool;
-type transitive_form_of = SlotDefinition;
-type reflexive_transitive_form_of = SlotDefinition;
-type inverse = SlotDefinition;
-type is_class_field = bool;
-type role = String;
-type minimum_value = Anything;
-type maximum_value = Anything;
-type interpolated = bool;
-type partial_match = bool;
-type pattern = String;
-type syntax = String;
-type structured_pattern = PatternExpression;
-type string_serialization = String;
-type bindings = Vec<EnumBinding>;
-type binds_value_of = String;
-type obligation_level = String;
-type type_mappings = Vec<TypeMapping>;
-type framework_key = String;
-type mapped_type = TypeDefinition;
-type typeof_ = TypeDefinition;
-type base = String;
-type type_uri = uriorcurie;
-type repr = String;
-type alt_description_text = String;
-type alt_description_source = String;
-type alt_descriptions = Vec<AltDescription>;
-type value = String;
-type value_description = String;
-type value_object = Anything;
-type examples = Vec<Example>;
-type prefix_prefix = ncname;
-type prefix_reference = uri;
-type prefixes = Vec<Prefix>;
-type setting_key = ncname;
-type setting_value = String;
-type settings = Vec<Setting>;
-type import_from = uriorcurie;
-type import_as = ncname;
-type import_map = Vec<Setting>;
-type local_name_source = ncname;
-type local_name_value = String;
-type local_names = Vec<LocalName>;
-type slot_group = SlotDefinition;
-type is_grouping_slot = bool;
-type followed_by = Expression;
-type reversed = bool;
-type traverse = SlotDefinition;
-type path_rule = PathExpression;
-type represents_relationship = bool;
-type relational_role = String;
+pub type mappings = Vec<uriorcurie>;
+
+pub type exact_mappings = Vec<uriorcurie>;
+
+pub type close_mappings = Vec<uriorcurie>;
+
+pub type related_mappings = Vec<uriorcurie>;
+
+pub type narrow_mappings = Vec<uriorcurie>;
+
+pub type broad_mappings = Vec<uriorcurie>;
+
+pub type deprecated_element_has_exact_replacement = uriorcurie;
+
+pub type deprecated_element_has_possible_replacement = uriorcurie;
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum extensions_range {Extension(Extension), Annotation(Annotation)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for extensions_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Extension>() {
+            return Ok(extensions_range::Extension(val));
+        }        if let Ok(val) = ob.extract::<Annotation>() {
+            return Ok(extensions_range::Annotation(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid extensions_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for extensions_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            extensions_range::Extension(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            extensions_range::Annotation(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<extensions_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<extensions_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<extensions_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid extensions_range",
+        ))
+    }
+}
+
+
+
+
+pub type extensions = Vec<extensions_range>;
+pub type extension_tag = uriorcurie;
+
+pub type extension_value = AnyValue;
+
+pub type annotations = Vec<Annotation>;
+
+pub type unit = UnitOfMeasure;
+
+pub type ucum_code = String;
+
+pub type derivation = String;
+
+pub type has_quantity_kind = uriorcurie;
+
+pub type iec61360code = String;
+
+pub type symbol = String;
+
+pub type abbreviation = String;
+
+pub type descriptive_name = String;
+
+pub type name = String;
+
+pub type title = String;
+
+pub type conforms_to = String;
+
+pub type implements = Vec<uriorcurie>;
+
+pub type instantiates = Vec<uriorcurie>;
+
+pub type categories = Vec<uriorcurie>;
+
+pub type keywords = Vec<String>;
+
+pub type definition_uri = uriorcurie;
+
+pub type id_prefixes = Vec<ncname>;
+
+pub type id_prefixes_are_closed = bool;
+
+pub type description = String;
+
+pub type structured_aliases = Vec<StructuredAlias>;
+
+pub type aliases = Vec<String>;
+
+pub type deprecated = String;
+
+pub type todos = Vec<String>;
+
+pub type notes = Vec<String>;
+
+pub type comments = Vec<String>;
+
+pub type in_subset = Vec<SubsetDefinition>;
+
+pub type from_schema = uri;
+
+pub type imported_from = String;
+
+pub type see_also = Vec<uriorcurie>;
+
+pub type owned_by = uriorcurie;
+
+pub type created_by = uriorcurie;
+
+pub type contributors = Vec<uriorcurie>;
+
+pub type created_on = NaiveDateTime;
+
+pub type last_updated_on = NaiveDateTime;
+
+pub type modified_by = uriorcurie;
+
+pub type status = uriorcurie;
+
+pub type literal_form = String;
+
+pub type alias_predicate = String;
+
+pub type alias_contexts = Vec<uri>;
+
+pub type in_language = String;
+
+pub type source = uriorcurie;
+
+pub type publisher = uriorcurie;
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum is_a_range {Definition(Definition), EnumDefinition(EnumDefinition), SlotDefinition(SlotDefinition), ClassDefinition(ClassDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for is_a_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Definition>() {
+            return Ok(is_a_range::Definition(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(is_a_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(is_a_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<ClassDefinition>() {
+            return Ok(is_a_range::ClassDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid is_a_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for is_a_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            is_a_range::Definition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            is_a_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            is_a_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            is_a_range::ClassDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<is_a_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<is_a_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<is_a_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid is_a_range",
+        ))
+    }
+}
+
+
+
+
+pub type is_a = is_a_range;
+pub type abstract_ = bool;
+
+pub type mixin = bool;
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum mixins_range {Definition(Definition), EnumDefinition(EnumDefinition), SlotDefinition(SlotDefinition), ClassDefinition(ClassDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for mixins_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Definition>() {
+            return Ok(mixins_range::Definition(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(mixins_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(mixins_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<ClassDefinition>() {
+            return Ok(mixins_range::ClassDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid mixins_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for mixins_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            mixins_range::Definition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            mixins_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            mixins_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            mixins_range::ClassDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<mixins_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<mixins_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<mixins_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid mixins_range",
+        ))
+    }
+}
+
+
+
+
+pub type mixins = Vec<mixins_range>;
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum apply_to_range {Definition(Definition), EnumDefinition(EnumDefinition), SlotDefinition(SlotDefinition), ClassDefinition(ClassDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for apply_to_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Definition>() {
+            return Ok(apply_to_range::Definition(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(apply_to_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(apply_to_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<ClassDefinition>() {
+            return Ok(apply_to_range::ClassDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid apply_to_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for apply_to_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            apply_to_range::Definition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            apply_to_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            apply_to_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            apply_to_range::ClassDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<apply_to_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<apply_to_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<apply_to_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid apply_to_range",
+        ))
+    }
+}
+
+
+
+
+pub type apply_to = Vec<apply_to_range>;
+pub type values_from = Vec<uriorcurie>;
+
+pub type code_set = uriorcurie;
+
+pub type code_set_version = String;
+
+pub type code_set_tag = String;
+
+pub type pv_formula = String;
+
+pub type permissible_values = Vec<PermissibleValue>;
+
+pub type enum_uri = uriorcurie;
+
+pub type include = Vec<AnonymousEnumExpression>;
+
+pub type minus = Vec<AnonymousEnumExpression>;
+
+pub type inherits = Vec<EnumDefinition>;
+
+pub type matches = MatchQuery;
+
+pub type identifier_pattern = String;
+
+pub type concepts = Vec<uriorcurie>;
+
+pub type reachable_from = ReachabilityQuery;
+
+pub type source_ontology = uriorcurie;
+
+pub type is_direct = bool;
+
+pub type traverse_up = bool;
+
+pub type include_self = bool;
+
+pub type relationship_types = Vec<uriorcurie>;
+
+pub type source_nodes = Vec<uriorcurie>;
+
+pub type text = String;
+
+pub type meaning = uriorcurie;
+
+pub type id = uri;
+
+pub type emit_prefixes = Vec<ncname>;
+
+pub type version = String;
+
+pub type imports = Vec<uriorcurie>;
+
+pub type structured_imports = Vec<ImportExpression>;
+
+pub type license = String;
+
+pub type default_curi_maps = Vec<String>;
+
+pub type default_prefix = String;
+
+pub type default_range = TypeDefinition;
+
+pub type subsets = Vec<SubsetDefinition>;
+
+pub type types = Vec<TypeDefinition>;
+
+pub type enums = Vec<EnumDefinition>;
+
+pub type slot_definitions = Vec<SlotDefinition>;
+
+pub type classes = Vec<ClassDefinition>;
+
+pub type metamodel_version = String;
+
+pub type source_file = String;
+
+pub type source_file_date = NaiveDateTime;
+
+pub type source_file_size = isize;
+
+pub type generation_date = NaiveDateTime;
+
+pub type slots = Vec<SlotDefinition>;
+
+pub type slot_usage = Vec<SlotDefinition>;
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum enum_range_range {EnumExpression(EnumExpression), AnonymousEnumExpression(AnonymousEnumExpression), EnumDefinition(EnumDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for enum_range_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<EnumExpression>() {
+            return Ok(enum_range_range::EnumExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousEnumExpression>() {
+            return Ok(enum_range_range::AnonymousEnumExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(enum_range_range::EnumDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid enum_range_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for enum_range_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            enum_range_range::EnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            enum_range_range::AnonymousEnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            enum_range_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<enum_range_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<enum_range_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<enum_range_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid enum_range_range",
+        ))
+    }
+}
+
+
+
+
+pub type enum_range = enum_range_range;
+pub type range_expression = AnonymousClassExpression;
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum boolean_slot_range {Expression(Expression), TypeExpression(TypeExpression), EnumExpression(EnumExpression), StructuredAlias(StructuredAlias), AnonymousExpression(AnonymousExpression), PathExpression(PathExpression), SlotExpression(SlotExpression), AnonymousSlotExpression(AnonymousSlotExpression), SlotDefinition(SlotDefinition), AnonymousClassExpression(AnonymousClassExpression), AnonymousEnumExpression(AnonymousEnumExpression), EnumDefinition(EnumDefinition), AnonymousTypeExpression(AnonymousTypeExpression), TypeDefinition(TypeDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for boolean_slot_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Expression>() {
+            return Ok(boolean_slot_range::Expression(val));
+        }        if let Ok(val) = ob.extract::<TypeExpression>() {
+            return Ok(boolean_slot_range::TypeExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumExpression>() {
+            return Ok(boolean_slot_range::EnumExpression(val));
+        }        if let Ok(val) = ob.extract::<StructuredAlias>() {
+            return Ok(boolean_slot_range::StructuredAlias(val));
+        }        if let Ok(val) = ob.extract::<AnonymousExpression>() {
+            return Ok(boolean_slot_range::AnonymousExpression(val));
+        }        if let Ok(val) = ob.extract::<PathExpression>() {
+            return Ok(boolean_slot_range::PathExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotExpression>() {
+            return Ok(boolean_slot_range::SlotExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
+            return Ok(boolean_slot_range::AnonymousSlotExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(boolean_slot_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousClassExpression>() {
+            return Ok(boolean_slot_range::AnonymousClassExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousEnumExpression>() {
+            return Ok(boolean_slot_range::AnonymousEnumExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(boolean_slot_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousTypeExpression>() {
+            return Ok(boolean_slot_range::AnonymousTypeExpression(val));
+        }        if let Ok(val) = ob.extract::<TypeDefinition>() {
+            return Ok(boolean_slot_range::TypeDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid boolean_slot_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for boolean_slot_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            boolean_slot_range::Expression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::TypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::EnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::StructuredAlias(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::AnonymousExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::PathExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::SlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::AnonymousSlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::AnonymousClassExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::AnonymousEnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::AnonymousTypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            boolean_slot_range::TypeDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<boolean_slot_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<boolean_slot_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<boolean_slot_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid boolean_slot_range",
+        ))
+    }
+}
+
+
+
+
+pub type boolean_slot = Vec<boolean_slot_range>;
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum any_of_range {Expression(Expression), TypeExpression(TypeExpression), EnumExpression(EnumExpression), StructuredAlias(StructuredAlias), AnonymousExpression(AnonymousExpression), PathExpression(PathExpression), SlotExpression(SlotExpression), AnonymousSlotExpression(AnonymousSlotExpression), SlotDefinition(SlotDefinition), AnonymousClassExpression(AnonymousClassExpression), AnonymousEnumExpression(AnonymousEnumExpression), EnumDefinition(EnumDefinition), AnonymousTypeExpression(AnonymousTypeExpression), TypeDefinition(TypeDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for any_of_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Expression>() {
+            return Ok(any_of_range::Expression(val));
+        }        if let Ok(val) = ob.extract::<TypeExpression>() {
+            return Ok(any_of_range::TypeExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumExpression>() {
+            return Ok(any_of_range::EnumExpression(val));
+        }        if let Ok(val) = ob.extract::<StructuredAlias>() {
+            return Ok(any_of_range::StructuredAlias(val));
+        }        if let Ok(val) = ob.extract::<AnonymousExpression>() {
+            return Ok(any_of_range::AnonymousExpression(val));
+        }        if let Ok(val) = ob.extract::<PathExpression>() {
+            return Ok(any_of_range::PathExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotExpression>() {
+            return Ok(any_of_range::SlotExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
+            return Ok(any_of_range::AnonymousSlotExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(any_of_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousClassExpression>() {
+            return Ok(any_of_range::AnonymousClassExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousEnumExpression>() {
+            return Ok(any_of_range::AnonymousEnumExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(any_of_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousTypeExpression>() {
+            return Ok(any_of_range::AnonymousTypeExpression(val));
+        }        if let Ok(val) = ob.extract::<TypeDefinition>() {
+            return Ok(any_of_range::TypeDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid any_of_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for any_of_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            any_of_range::Expression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::TypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::EnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::StructuredAlias(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::AnonymousExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::PathExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::SlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::AnonymousSlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::AnonymousClassExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::AnonymousEnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::AnonymousTypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            any_of_range::TypeDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<any_of_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<any_of_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<any_of_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid any_of_range",
+        ))
+    }
+}
+
+
+
+
+pub type any_of = Vec<any_of_range>;
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum exactly_one_of_range {Expression(Expression), TypeExpression(TypeExpression), EnumExpression(EnumExpression), StructuredAlias(StructuredAlias), AnonymousExpression(AnonymousExpression), PathExpression(PathExpression), SlotExpression(SlotExpression), AnonymousSlotExpression(AnonymousSlotExpression), SlotDefinition(SlotDefinition), AnonymousClassExpression(AnonymousClassExpression), AnonymousEnumExpression(AnonymousEnumExpression), EnumDefinition(EnumDefinition), AnonymousTypeExpression(AnonymousTypeExpression), TypeDefinition(TypeDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for exactly_one_of_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Expression>() {
+            return Ok(exactly_one_of_range::Expression(val));
+        }        if let Ok(val) = ob.extract::<TypeExpression>() {
+            return Ok(exactly_one_of_range::TypeExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumExpression>() {
+            return Ok(exactly_one_of_range::EnumExpression(val));
+        }        if let Ok(val) = ob.extract::<StructuredAlias>() {
+            return Ok(exactly_one_of_range::StructuredAlias(val));
+        }        if let Ok(val) = ob.extract::<AnonymousExpression>() {
+            return Ok(exactly_one_of_range::AnonymousExpression(val));
+        }        if let Ok(val) = ob.extract::<PathExpression>() {
+            return Ok(exactly_one_of_range::PathExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotExpression>() {
+            return Ok(exactly_one_of_range::SlotExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
+            return Ok(exactly_one_of_range::AnonymousSlotExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(exactly_one_of_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousClassExpression>() {
+            return Ok(exactly_one_of_range::AnonymousClassExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousEnumExpression>() {
+            return Ok(exactly_one_of_range::AnonymousEnumExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(exactly_one_of_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousTypeExpression>() {
+            return Ok(exactly_one_of_range::AnonymousTypeExpression(val));
+        }        if let Ok(val) = ob.extract::<TypeDefinition>() {
+            return Ok(exactly_one_of_range::TypeDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid exactly_one_of_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for exactly_one_of_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            exactly_one_of_range::Expression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::TypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::EnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::StructuredAlias(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::AnonymousExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::PathExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::SlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::AnonymousSlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::AnonymousClassExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::AnonymousEnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::AnonymousTypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            exactly_one_of_range::TypeDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<exactly_one_of_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<exactly_one_of_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<exactly_one_of_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid exactly_one_of_range",
+        ))
+    }
+}
+
+
+
+
+pub type exactly_one_of = Vec<exactly_one_of_range>;
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum none_of_range {Expression(Expression), TypeExpression(TypeExpression), EnumExpression(EnumExpression), StructuredAlias(StructuredAlias), AnonymousExpression(AnonymousExpression), PathExpression(PathExpression), SlotExpression(SlotExpression), AnonymousSlotExpression(AnonymousSlotExpression), SlotDefinition(SlotDefinition), AnonymousClassExpression(AnonymousClassExpression), AnonymousEnumExpression(AnonymousEnumExpression), EnumDefinition(EnumDefinition), AnonymousTypeExpression(AnonymousTypeExpression), TypeDefinition(TypeDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for none_of_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Expression>() {
+            return Ok(none_of_range::Expression(val));
+        }        if let Ok(val) = ob.extract::<TypeExpression>() {
+            return Ok(none_of_range::TypeExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumExpression>() {
+            return Ok(none_of_range::EnumExpression(val));
+        }        if let Ok(val) = ob.extract::<StructuredAlias>() {
+            return Ok(none_of_range::StructuredAlias(val));
+        }        if let Ok(val) = ob.extract::<AnonymousExpression>() {
+            return Ok(none_of_range::AnonymousExpression(val));
+        }        if let Ok(val) = ob.extract::<PathExpression>() {
+            return Ok(none_of_range::PathExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotExpression>() {
+            return Ok(none_of_range::SlotExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
+            return Ok(none_of_range::AnonymousSlotExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(none_of_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousClassExpression>() {
+            return Ok(none_of_range::AnonymousClassExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousEnumExpression>() {
+            return Ok(none_of_range::AnonymousEnumExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(none_of_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousTypeExpression>() {
+            return Ok(none_of_range::AnonymousTypeExpression(val));
+        }        if let Ok(val) = ob.extract::<TypeDefinition>() {
+            return Ok(none_of_range::TypeDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid none_of_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for none_of_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            none_of_range::Expression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::TypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::EnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::StructuredAlias(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::AnonymousExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::PathExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::SlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::AnonymousSlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::AnonymousClassExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::AnonymousEnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::AnonymousTypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            none_of_range::TypeDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<none_of_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<none_of_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<none_of_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid none_of_range",
+        ))
+    }
+}
+
+
+
+
+pub type none_of = Vec<none_of_range>;
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum all_of_range {Expression(Expression), TypeExpression(TypeExpression), EnumExpression(EnumExpression), StructuredAlias(StructuredAlias), AnonymousExpression(AnonymousExpression), PathExpression(PathExpression), SlotExpression(SlotExpression), AnonymousSlotExpression(AnonymousSlotExpression), SlotDefinition(SlotDefinition), AnonymousClassExpression(AnonymousClassExpression), AnonymousEnumExpression(AnonymousEnumExpression), EnumDefinition(EnumDefinition), AnonymousTypeExpression(AnonymousTypeExpression), TypeDefinition(TypeDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for all_of_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Expression>() {
+            return Ok(all_of_range::Expression(val));
+        }        if let Ok(val) = ob.extract::<TypeExpression>() {
+            return Ok(all_of_range::TypeExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumExpression>() {
+            return Ok(all_of_range::EnumExpression(val));
+        }        if let Ok(val) = ob.extract::<StructuredAlias>() {
+            return Ok(all_of_range::StructuredAlias(val));
+        }        if let Ok(val) = ob.extract::<AnonymousExpression>() {
+            return Ok(all_of_range::AnonymousExpression(val));
+        }        if let Ok(val) = ob.extract::<PathExpression>() {
+            return Ok(all_of_range::PathExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotExpression>() {
+            return Ok(all_of_range::SlotExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
+            return Ok(all_of_range::AnonymousSlotExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(all_of_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousClassExpression>() {
+            return Ok(all_of_range::AnonymousClassExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousEnumExpression>() {
+            return Ok(all_of_range::AnonymousEnumExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(all_of_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousTypeExpression>() {
+            return Ok(all_of_range::AnonymousTypeExpression(val));
+        }        if let Ok(val) = ob.extract::<TypeDefinition>() {
+            return Ok(all_of_range::TypeDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid all_of_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for all_of_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            all_of_range::Expression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::TypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::EnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::StructuredAlias(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::AnonymousExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::PathExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::SlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::AnonymousSlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::AnonymousClassExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::AnonymousEnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::AnonymousTypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            all_of_range::TypeDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<all_of_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<all_of_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<all_of_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid all_of_range",
+        ))
+    }
+}
+
+
+
+
+pub type all_of = Vec<all_of_range>;
+pub type preconditions = AnonymousClassExpression;
+
+pub type postconditions = AnonymousClassExpression;
+
+pub type elseconditions = AnonymousClassExpression;
+
+pub type bidirectional = bool;
+
+pub type open_world = bool;
+
+pub type rank = isize;
+
+pub type deactivated = bool;
+
+pub type rules = Vec<ClassRule>;
+
+pub type classification_rules = Vec<AnonymousClassExpression>;
+
+pub type slot_conditions = Vec<SlotDefinition>;
+
+pub type attributes = Vec<SlotDefinition>;
+
+pub type class_uri = uriorcurie;
+
+pub type subclass_of = uriorcurie;
+
+pub type defining_slots = Vec<SlotDefinition>;
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum union_of_range {Element(Element), SchemaDefinition(SchemaDefinition), TypeDefinition(TypeDefinition), SubsetDefinition(SubsetDefinition), Definition(Definition), EnumDefinition(EnumDefinition), SlotDefinition(SlotDefinition), ClassDefinition(ClassDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for union_of_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Element>() {
+            return Ok(union_of_range::Element(val));
+        }        if let Ok(val) = ob.extract::<SchemaDefinition>() {
+            return Ok(union_of_range::SchemaDefinition(val));
+        }        if let Ok(val) = ob.extract::<TypeDefinition>() {
+            return Ok(union_of_range::TypeDefinition(val));
+        }        if let Ok(val) = ob.extract::<SubsetDefinition>() {
+            return Ok(union_of_range::SubsetDefinition(val));
+        }        if let Ok(val) = ob.extract::<Definition>() {
+            return Ok(union_of_range::Definition(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(union_of_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(union_of_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<ClassDefinition>() {
+            return Ok(union_of_range::ClassDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid union_of_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for union_of_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            union_of_range::Element(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            union_of_range::SchemaDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            union_of_range::TypeDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            union_of_range::SubsetDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            union_of_range::Definition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            union_of_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            union_of_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            union_of_range::ClassDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<union_of_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<union_of_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<union_of_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid union_of_range",
+        ))
+    }
+}
+
+
+
+
+pub type union_of = Vec<union_of_range>;
+pub type tree_root = bool;
+
+pub type unique_keys = Vec<UniqueKey>;
+
+pub type unique_key_name = String;
+
+pub type consider_nulls_inequal = bool;
+
+pub type unique_key_slots = Vec<SlotDefinition>;
+
+pub type slot_names_unique = bool;
+
+pub type domain = ClassDefinition;
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum range_range {Element(Element), SchemaDefinition(SchemaDefinition), TypeDefinition(TypeDefinition), SubsetDefinition(SubsetDefinition), Definition(Definition), EnumDefinition(EnumDefinition), SlotDefinition(SlotDefinition), ClassDefinition(ClassDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for range_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Element>() {
+            return Ok(range_range::Element(val));
+        }        if let Ok(val) = ob.extract::<SchemaDefinition>() {
+            return Ok(range_range::SchemaDefinition(val));
+        }        if let Ok(val) = ob.extract::<TypeDefinition>() {
+            return Ok(range_range::TypeDefinition(val));
+        }        if let Ok(val) = ob.extract::<SubsetDefinition>() {
+            return Ok(range_range::SubsetDefinition(val));
+        }        if let Ok(val) = ob.extract::<Definition>() {
+            return Ok(range_range::Definition(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(range_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(range_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<ClassDefinition>() {
+            return Ok(range_range::ClassDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid range_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for range_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            range_range::Element(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            range_range::SchemaDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            range_range::TypeDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            range_range::SubsetDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            range_range::Definition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            range_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            range_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            range_range::ClassDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<range_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<range_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<range_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid range_range",
+        ))
+    }
+}
+
+
+
+
+pub type range = range_range;
+pub type slot_uri = uriorcurie;
+
+pub type multivalued = bool;
+
+pub type array = ArrayExpression;
+
+pub type dimensions = Vec<DimensionExpression>;
+
+pub type minimum_number_dimensions = isize;
+
+pub type maximum_number_dimensions = Anything;
+
+pub type exact_number_dimensions = isize;
+
+pub type inherited = bool;
+
+pub type readonly = String;
+
+pub type ifabsent = String;
+
+pub type implicit_prefix = String;
+
+pub type value_specification_constant = String;
+
+pub type list_value_specification_constant = String;
+
+pub type value_presence = String;
+
+pub type equals_string = String;
+
+pub type equals_number = isize;
+
+pub type equals_expression = String;
+
+pub type exact_cardinality = isize;
+
+pub type minimum_cardinality = isize;
+
+pub type maximum_cardinality = isize;
+
+pub type equals_string_in = Vec<String>;
+
+pub type equals_number_in = Vec<isize>;
+
+pub type has_member = AnonymousSlotExpression;
+
+pub type all_members = AnonymousSlotExpression;
+
+pub type singular_name = String;
+
+pub type required = bool;
+
+pub type recommended = bool;
+
+pub type inapplicable = bool;
+
+pub type inlined = bool;
+
+pub type inlined_as_list = bool;
+
+pub type inlined_as_simple_dict = bool;
+
+pub type list_elements_ordered = bool;
+
+pub type list_elements_unique = bool;
+
+pub type shared = bool;
+
+pub type key = bool;
+
+pub type identifier = bool;
+
+pub type designates_type = bool;
+
+pub type alias = String;
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum owner_range {Definition(Definition), EnumDefinition(EnumDefinition), SlotDefinition(SlotDefinition), ClassDefinition(ClassDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for owner_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Definition>() {
+            return Ok(owner_range::Definition(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(owner_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(owner_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<ClassDefinition>() {
+            return Ok(owner_range::ClassDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid owner_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for owner_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            owner_range::Definition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            owner_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            owner_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            owner_range::ClassDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<owner_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<owner_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<owner_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid owner_range",
+        ))
+    }
+}
+
+
+
+
+pub type owner = owner_range;
+pub type domain_of = Vec<ClassDefinition>;
+
+pub type is_usage_slot = bool;
+
+pub type usage_slot_name = String;
+
+pub type subproperty_of = SlotDefinition;
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum disjoint_with_range {Definition(Definition), EnumDefinition(EnumDefinition), SlotDefinition(SlotDefinition), ClassDefinition(ClassDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for disjoint_with_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Definition>() {
+            return Ok(disjoint_with_range::Definition(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(disjoint_with_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(disjoint_with_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<ClassDefinition>() {
+            return Ok(disjoint_with_range::ClassDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid disjoint_with_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for disjoint_with_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            disjoint_with_range::Definition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            disjoint_with_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            disjoint_with_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            disjoint_with_range::ClassDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<disjoint_with_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<disjoint_with_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<disjoint_with_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid disjoint_with_range",
+        ))
+    }
+}
+
+
+
+
+pub type disjoint_with = Vec<disjoint_with_range>;
+pub type children_are_mutually_disjoint = bool;
+
+pub type relational_logical_characteristic = bool;
+
+pub type symmetric = bool;
+
+pub type asymmetric = bool;
+
+pub type reflexive = bool;
+
+pub type irreflexive = bool;
+
+pub type locally_reflexive = bool;
+
+pub type transitive = bool;
+
+pub type transitive_form_of = SlotDefinition;
+
+pub type reflexive_transitive_form_of = SlotDefinition;
+
+pub type inverse = SlotDefinition;
+
+pub type is_class_field = bool;
+
+pub type role = String;
+
+pub type minimum_value = Anything;
+
+pub type maximum_value = Anything;
+
+pub type interpolated = bool;
+
+pub type partial_match = bool;
+
+pub type pattern = String;
+
+pub type syntax = String;
+
+pub type structured_pattern = PatternExpression;
+
+pub type string_serialization = String;
+
+pub type bindings = Vec<EnumBinding>;
+
+pub type binds_value_of = String;
+
+pub type obligation_level = String;
+
+pub type type_mappings = Vec<TypeMapping>;
+
+pub type framework_key = String;
+
+pub type mapped_type = TypeDefinition;
+
+pub type typeof_ = TypeDefinition;
+
+pub type base = String;
+
+pub type type_uri = uriorcurie;
+
+pub type repr = String;
+
+pub type alt_description_text = String;
+
+pub type alt_description_source = String;
+
+pub type alt_descriptions = Vec<AltDescription>;
+
+pub type value = String;
+
+pub type value_description = String;
+
+pub type value_object = Anything;
+
+pub type examples = Vec<Example>;
+
+pub type prefix_prefix = ncname;
+
+pub type prefix_reference = uri;
+
+pub type prefixes = Vec<Prefix>;
+
+pub type setting_key = ncname;
+
+pub type setting_value = String;
+
+pub type settings = Vec<Setting>;
+
+pub type import_from = uriorcurie;
+
+pub type import_as = ncname;
+
+pub type import_map = Vec<Setting>;
+
+pub type local_name_source = ncname;
+
+pub type local_name_value = String;
+
+pub type local_names = Vec<LocalName>;
+
+pub type slot_group = SlotDefinition;
+
+pub type is_grouping_slot = bool;
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum followed_by_range {Expression(Expression), TypeExpression(TypeExpression), EnumExpression(EnumExpression), StructuredAlias(StructuredAlias), AnonymousExpression(AnonymousExpression), PathExpression(PathExpression), SlotExpression(SlotExpression), AnonymousSlotExpression(AnonymousSlotExpression), SlotDefinition(SlotDefinition), AnonymousClassExpression(AnonymousClassExpression), AnonymousEnumExpression(AnonymousEnumExpression), EnumDefinition(EnumDefinition), AnonymousTypeExpression(AnonymousTypeExpression), TypeDefinition(TypeDefinition)}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for followed_by_range {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Expression>() {
+            return Ok(followed_by_range::Expression(val));
+        }        if let Ok(val) = ob.extract::<TypeExpression>() {
+            return Ok(followed_by_range::TypeExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumExpression>() {
+            return Ok(followed_by_range::EnumExpression(val));
+        }        if let Ok(val) = ob.extract::<StructuredAlias>() {
+            return Ok(followed_by_range::StructuredAlias(val));
+        }        if let Ok(val) = ob.extract::<AnonymousExpression>() {
+            return Ok(followed_by_range::AnonymousExpression(val));
+        }        if let Ok(val) = ob.extract::<PathExpression>() {
+            return Ok(followed_by_range::PathExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotExpression>() {
+            return Ok(followed_by_range::SlotExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
+            return Ok(followed_by_range::AnonymousSlotExpression(val));
+        }        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(followed_by_range::SlotDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousClassExpression>() {
+            return Ok(followed_by_range::AnonymousClassExpression(val));
+        }        if let Ok(val) = ob.extract::<AnonymousEnumExpression>() {
+            return Ok(followed_by_range::AnonymousEnumExpression(val));
+        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(followed_by_range::EnumDefinition(val));
+        }        if let Ok(val) = ob.extract::<AnonymousTypeExpression>() {
+            return Ok(followed_by_range::AnonymousTypeExpression(val));
+        }        if let Ok(val) = ob.extract::<TypeDefinition>() {
+            return Ok(followed_by_range::TypeDefinition(val));
+        }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid followed_by_range",
+        ))
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for followed_by_range {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            followed_by_range::Expression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::TypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::EnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::StructuredAlias(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::AnonymousExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::PathExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::SlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::AnonymousSlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::AnonymousClassExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::AnonymousEnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::AnonymousTypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+            followed_by_range::TypeDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<followed_by_range>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<followed_by_range> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<followed_by_range>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid followed_by_range",
+        ))
+    }
+}
+
+
+
+
+pub type followed_by = followed_by_range;
+pub type reversed = bool;
+
+pub type traverse = SlotDefinition;
+
+pub type path_rule = PathExpression;
+
+pub type represents_relationship = bool;
+
+pub type relational_role = String;
+
 
 // Enums
 
-#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum PvFormulaOptions {
     CODE,
     CURIE,
@@ -274,13 +1664,13 @@ pub enum PvFormulaOptions {
     FHIRCODING,
     LABEL,
 }
-#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum PresenceEnum {
     UNCOMMITTED,
     PRESENT,
     ABSENT,
 }
-#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum RelationalRoleEnum {
     SUBJECT,
     OBJECT,
@@ -288,14 +1678,14 @@ pub enum RelationalRoleEnum {
     NODE,
     OTHERROLE,
 }
-#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum AliasPredicateEnum {
     EXACTSYNONYM,
     RELATEDSYNONYM,
     BROADSYNONYM,
     NARROWSYNONYM,
 }
-#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum ObligationLevelEnum {
     REQUIRED,
     RECOMMENDED,
@@ -306,1510 +1696,5214 @@ pub enum ObligationLevelEnum {
 
 // Classes
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+mod AnyValueSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnyValue {
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+
+
+mod ExtensionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Extension {
     pub extension_tag: uriorcurie,
     pub extension_value: AnyValue,
-    pub extensions: HashMap<String, Extension>
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, Box<extensions_range>>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl Extension {
+    #[new]
+    pub fn new(extension_tag: uriorcurie,extension_value: AnyValue,extensions: HashMap<String, Box<extensions_range>>) -> Self {
+        Extension{ extension_tag,extension_value,extensions }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<Extension>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<Extension> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Extension>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid Extension",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for Extension {
+    type Key   = uriorcurie;
+        
+    type Value = AnyValue;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.extension_tag;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("extension_tag".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("extension_tag".into()), Value::String(k));
+        map.insert(Value::String("extension_value".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod ExtensibleSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Extensible {
-    pub extensions: HashMap<String, Extension>
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl Extensible {
+    #[new]
+    pub fn new(extensions: HashMap<String, extensions_range>) -> Self {
+        Extensible{ extensions }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<Extensible>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<Extensible> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Extensible>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid Extensible",
+        ))
+    }
+}
+
+
+
+
+
+
+mod AnnotatableSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Annotatable {
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl Annotatable {
+    #[new]
+    pub fn new(annotations: HashMap<String, Annotation>) -> Self {
+        Annotatable{ annotations }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<Annotatable>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<Annotatable> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Annotatable>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid Annotatable",
+        ))
+    }
+}
+
+
+
+
+
+
+mod AnnotationSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Annotation {
-    pub annotations: HashMap<String, Annotation>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_box"))]
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub annotations: HashMap<String, Box<Annotation>>,
     pub extension_tag: uriorcurie,
     pub extension_value: AnyValue,
-    pub extensions: HashMap<String, Extension>
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl Annotation {
+    #[new]
+    pub fn new(annotations: HashMap<String, Box<Annotation>>,extension_tag: uriorcurie,extension_value: AnyValue,extensions: HashMap<String, extensions_range>) -> Self {
+        Annotation{ annotations,extension_tag,extension_value,extensions }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<Annotation>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<Annotation> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Annotation>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid Annotation",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for Annotation {
+    type Key   = uriorcurie;
+        
+    type Value = Annotation;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.extension_tag;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("extension_tag".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("extension_tag".into()), Value::String(k));
+        map.insert(Value::String("annotations".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod UnitOfMeasureSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct UnitOfMeasure {
-    pub symbol: String,
-    pub abbreviation: String,
-    pub descriptive_name: String,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub ucum_code: String,
-    pub derivation: String,
-    pub has_quantity_kind: uriorcurie,
-    pub iec61360code: String
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub symbol: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub abbreviation: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub descriptive_name: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub ucum_code: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub derivation: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub has_quantity_kind: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub iec61360code: Option<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl UnitOfMeasure {
+    #[new]
+    pub fn new(symbol: Option<String>,abbreviation: Option<String>,descriptive_name: Option<String>,exact_mappings: Vec<String>,ucum_code: Option<String>,derivation: Option<String>,has_quantity_kind: Option<uriorcurie>,iec61360code: Option<String>) -> Self {
+        UnitOfMeasure{ symbol,abbreviation,descriptive_name,exact_mappings,ucum_code,derivation,has_quantity_kind,iec61360code }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<UnitOfMeasure>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<UnitOfMeasure> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<UnitOfMeasure>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid UnitOfMeasure",
+        ))
+    }
+}
+
+
+
+
+
+
+mod AnythingSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Anything {
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+
+
+mod CommonMetadataSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct CommonMetadata {
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl CommonMetadata {
+    #[new]
+    pub fn new(description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        CommonMetadata{ description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<CommonMetadata>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<CommonMetadata> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<CommonMetadata>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid CommonMetadata",
+        ))
+    }
+}
+
+
+
+
+
+
+mod ElementSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Element {
     pub name: String,
-    pub id_prefixes: Vec<ncname>,
-    pub id_prefixes_are_closed: bool,
-    pub definition_uri: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes_are_closed: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub definition_uri: Option<uriorcurie>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: HashMap<String, LocalName>,
-    pub conforms_to: String,
-    pub implements: Vec<uriorcurie>,
-    pub instantiates: Vec<uriorcurie>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub conforms_to: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implements: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub instantiates: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl Element {
+    #[new]
+    pub fn new(name: String,id_prefixes: Vec<String>,id_prefixes_are_closed: Option<bool>,definition_uri: Option<uriorcurie>,local_names: HashMap<String, LocalName>,conforms_to: Option<String>,implements: Vec<String>,instantiates: Vec<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        Element{ name,id_prefixes,id_prefixes_are_closed,definition_uri,local_names,conforms_to,implements,instantiates,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<Element>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<Element> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Element>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid Element",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for Element {
+    type Key   = String;
+        
+    type Value = ncname;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.name;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("name".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("name".into()), Value::String(k));
+        map.insert(Value::String("id_prefixes".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod SchemaDefinitionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SchemaDefinition {
     pub id: uri,
-    pub version: String,
-    pub imports: Vec<uriorcurie>,
-    pub license: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub version: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imports: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub license: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub prefixes: HashMap<String, Prefix>,
-    pub emit_prefixes: Vec<ncname>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub emit_prefixes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub default_curi_maps: Vec<String>,
-    pub default_prefix: String,
-    pub default_range: TypeDefinition,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub default_prefix: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub default_range: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub subsets: HashMap<String, SubsetDefinition>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub types: HashMap<String, TypeDefinition>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub enums: HashMap<String, EnumDefinition>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub slot_definitions: HashMap<String, SlotDefinition>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub classes: HashMap<String, ClassDefinition>,
-    pub metamodel_version: String,
-    pub source_file: String,
-    pub source_file_date: String,
-    pub source_file_size: isize,
-    pub generation_date: String,
-    pub slot_names_unique: bool,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub metamodel_version: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source_file: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source_file_date: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source_file_size: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub generation_date: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub slot_names_unique: Option<bool>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub settings: HashMap<String, Setting>,
-    pub bindings: HashMap<String, EnumBinding>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub bindings: Vec<EnumBinding>,
     pub name: ncname,
-    pub id_prefixes: Vec<ncname>,
-    pub id_prefixes_are_closed: bool,
-    pub definition_uri: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes_are_closed: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub definition_uri: Option<uriorcurie>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: HashMap<String, LocalName>,
-    pub conforms_to: String,
-    pub implements: Vec<uriorcurie>,
-    pub instantiates: Vec<uriorcurie>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub conforms_to: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implements: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub instantiates: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
-pub struct AnonymousTypeExpression {
-    pub pattern: String,
-    pub structured_pattern: PatternExpression,
-    pub unit: UnitOfMeasure,
-    pub implicit_prefix: String,
-    pub equals_string: String,
-    pub equals_string_in: Vec<String>,
-    pub equals_number: isize,
-    pub minimum_value: Anything,
-    pub maximum_value: Anything,
-    pub none_of: Vec<AnonymousTypeExpression>,
-    pub exactly_one_of: Vec<AnonymousTypeExpression>,
-    pub any_of: Vec<AnonymousTypeExpression>,
-    pub all_of: Vec<AnonymousTypeExpression>
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl SchemaDefinition {
+    #[new]
+    pub fn new(id: uri,version: Option<String>,imports: Vec<String>,license: Option<String>,prefixes: HashMap<String, Prefix>,emit_prefixes: Vec<String>,default_curi_maps: Vec<String>,default_prefix: Option<String>,default_range: Option<String>,subsets: HashMap<String, SubsetDefinition>,types: HashMap<String, TypeDefinition>,enums: HashMap<String, EnumDefinition>,slot_definitions: HashMap<String, SlotDefinition>,classes: HashMap<String, ClassDefinition>,metamodel_version: Option<String>,source_file: Option<String>,source_file_date: Option<NaiveDateTime>,source_file_size: Option<isize>,generation_date: Option<NaiveDateTime>,slot_names_unique: Option<bool>,settings: HashMap<String, Setting>,bindings: Vec<EnumBinding>,name: ncname,id_prefixes: Vec<String>,id_prefixes_are_closed: Option<bool>,definition_uri: Option<uriorcurie>,local_names: HashMap<String, LocalName>,conforms_to: Option<String>,implements: Vec<String>,instantiates: Vec<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        SchemaDefinition{ id,version,imports,license,prefixes,emit_prefixes,default_curi_maps,default_prefix,default_range,subsets,types,enums,slot_definitions,classes,metamodel_version,source_file,source_file_date,source_file_size,generation_date,slot_names_unique,settings,bindings,name,id_prefixes,id_prefixes_are_closed,definition_uri,local_names,conforms_to,implements,instantiates,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<SchemaDefinition>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<SchemaDefinition> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<SchemaDefinition>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid SchemaDefinition",
+        ))
+    }
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
-pub struct TypeDefinition {
-    pub typeof_: Box<TypeDefinition>,
-    pub base: String,
-    pub type_uri: uriorcurie,
-    pub repr: String,
-    pub union_of: Vec<TypeDefinition>,
-    pub pattern: String,
-    pub structured_pattern: PatternExpression,
-    pub unit: UnitOfMeasure,
-    pub implicit_prefix: String,
-    pub equals_string: String,
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for SchemaDefinition {
+    type Key   = ncname;
+        
+    type Value = uri;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.name;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("name".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("name".into()), Value::String(k));
+        map.insert(Value::String("id".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod AnonymousTypeExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
+pub struct AnonymousTypeExpression {
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub pattern: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_pattern: Option<PatternExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub unit: Option<UnitOfMeasure>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implicit_prefix: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_string: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
-    pub equals_number: isize,
-    pub minimum_value: Anything,
-    pub maximum_value: Anything,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_number: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub none_of: Vec<Box<AnonymousTypeExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exactly_one_of: Vec<Box<AnonymousTypeExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub any_of: Vec<Box<AnonymousTypeExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub all_of: Vec<Box<AnonymousTypeExpression>>
+}
+
+
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl AnonymousTypeExpression {
+    #[new]
+    pub fn new(pattern: Option<String>,structured_pattern: Option<PatternExpression>,unit: Option<UnitOfMeasure>,implicit_prefix: Option<String>,equals_string: Option<String>,equals_string_in: Vec<String>,equals_number: Option<isize>,minimum_value: Option<Anything>,maximum_value: Option<Anything>,none_of: Vec<Box<AnonymousTypeExpression>>,exactly_one_of: Vec<Box<AnonymousTypeExpression>>,any_of: Vec<Box<AnonymousTypeExpression>>,all_of: Vec<Box<AnonymousTypeExpression>>) -> Self {
+        AnonymousTypeExpression{ pattern,structured_pattern,unit,implicit_prefix,equals_string,equals_string_in,equals_number,minimum_value,maximum_value,none_of,exactly_one_of,any_of,all_of }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<AnonymousTypeExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<AnonymousTypeExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<AnonymousTypeExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid AnonymousTypeExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod TypeDefinitionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
+pub struct TypeDefinition {
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub typeof_: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub base: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub type_uri: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub repr: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub union_of: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub pattern: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_pattern: Option<PatternExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub unit: Option<UnitOfMeasure>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implicit_prefix: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_string: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_string_in: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_number: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Vec<AnonymousTypeExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub exactly_one_of: Vec<AnonymousTypeExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub any_of: Vec<AnonymousTypeExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Vec<AnonymousTypeExpression>,
     pub name: String,
-    pub id_prefixes: Vec<ncname>,
-    pub id_prefixes_are_closed: bool,
-    pub definition_uri: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes_are_closed: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub definition_uri: Option<uriorcurie>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: HashMap<String, LocalName>,
-    pub conforms_to: String,
-    pub implements: Vec<uriorcurie>,
-    pub instantiates: Vec<uriorcurie>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub conforms_to: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implements: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub instantiates: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl TypeDefinition {
+    #[new]
+    pub fn new(typeof_: Option<String>,base: Option<String>,type_uri: Option<uriorcurie>,repr: Option<String>,union_of: Vec<String>,pattern: Option<String>,structured_pattern: Option<PatternExpression>,unit: Option<UnitOfMeasure>,implicit_prefix: Option<String>,equals_string: Option<String>,equals_string_in: Vec<String>,equals_number: Option<isize>,minimum_value: Option<Anything>,maximum_value: Option<Anything>,none_of: Vec<AnonymousTypeExpression>,exactly_one_of: Vec<AnonymousTypeExpression>,any_of: Vec<AnonymousTypeExpression>,all_of: Vec<AnonymousTypeExpression>,name: String,id_prefixes: Vec<String>,id_prefixes_are_closed: Option<bool>,definition_uri: Option<uriorcurie>,local_names: HashMap<String, LocalName>,conforms_to: Option<String>,implements: Vec<String>,instantiates: Vec<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        TypeDefinition{ typeof_,base,type_uri,repr,union_of,pattern,structured_pattern,unit,implicit_prefix,equals_string,equals_string_in,equals_number,minimum_value,maximum_value,none_of,exactly_one_of,any_of,all_of,name,id_prefixes,id_prefixes_are_closed,definition_uri,local_names,conforms_to,implements,instantiates,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<TypeDefinition>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<TypeDefinition> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<TypeDefinition>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid TypeDefinition",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for TypeDefinition {
+    type Key   = String;
+        
+    type Value = TypeDefinition;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.name;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("name".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("name".into()), Value::String(k));
+        map.insert(Value::String("typeof_".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod SubsetDefinitionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SubsetDefinition {
     pub name: String,
-    pub id_prefixes: Vec<ncname>,
-    pub id_prefixes_are_closed: bool,
-    pub definition_uri: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes_are_closed: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub definition_uri: Option<uriorcurie>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: HashMap<String, LocalName>,
-    pub conforms_to: String,
-    pub implements: Vec<uriorcurie>,
-    pub instantiates: Vec<uriorcurie>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub conforms_to: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implements: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub instantiates: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<Box<StructuredAlias>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl SubsetDefinition {
+    #[new]
+    pub fn new(name: String,id_prefixes: Vec<String>,id_prefixes_are_closed: Option<bool>,definition_uri: Option<uriorcurie>,local_names: HashMap<String, LocalName>,conforms_to: Option<String>,implements: Vec<String>,instantiates: Vec<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<Box<StructuredAlias>>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        SubsetDefinition{ name,id_prefixes,id_prefixes_are_closed,definition_uri,local_names,conforms_to,implements,instantiates,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<SubsetDefinition>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<SubsetDefinition> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<SubsetDefinition>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid SubsetDefinition",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for SubsetDefinition {
+    type Key   = String;
+        
+    type Value = ncname;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.name;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("name".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("name".into()), Value::String(k));
+        map.insert(Value::String("id_prefixes".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod DefinitionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Definition {
-    pub is_a: Box<Definition>,
-    pub abstract_: bool,
-    pub mixin: bool,
-    pub mixins: Vec<Definition>,
-    pub apply_to: Vec<Definition>,
-    pub values_from: Vec<uriorcurie>,
-    pub string_serialization: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub is_a: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub abstract_: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mixin: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mixins: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub apply_to: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub values_from: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub string_serialization: Option<String>,
     pub name: String,
-    pub id_prefixes: Vec<ncname>,
-    pub id_prefixes_are_closed: bool,
-    pub definition_uri: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes_are_closed: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub definition_uri: Option<uriorcurie>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: HashMap<String, LocalName>,
-    pub conforms_to: String,
-    pub implements: Vec<uriorcurie>,
-    pub instantiates: Vec<uriorcurie>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub conforms_to: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implements: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub instantiates: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl Definition {
+    #[new]
+    pub fn new(is_a: Option<String>,abstract_: Option<bool>,mixin: Option<bool>,mixins: Vec<String>,apply_to: Vec<String>,values_from: Vec<String>,string_serialization: Option<String>,name: String,id_prefixes: Vec<String>,id_prefixes_are_closed: Option<bool>,definition_uri: Option<uriorcurie>,local_names: HashMap<String, LocalName>,conforms_to: Option<String>,implements: Vec<String>,instantiates: Vec<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        Definition{ is_a,abstract_,mixin,mixins,apply_to,values_from,string_serialization,name,id_prefixes,id_prefixes_are_closed,definition_uri,local_names,conforms_to,implements,instantiates,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<Definition>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<Definition> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Definition>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid Definition",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for Definition {
+    type Key   = String;
+        
+    type Value = Definition;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.name;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("name".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("name".into()), Value::String(k));
+        map.insert(Value::String("is_a".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod AnonymousEnumExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousEnumExpression {
-    pub code_set: uriorcurie,
-    pub code_set_tag: String,
-    pub code_set_version: String,
-    pub pv_formula: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub code_set: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub code_set_tag: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub code_set_version: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub pv_formula: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub permissible_values: HashMap<String, PermissibleValue>,
-    pub include: Vec<AnonymousEnumExpression>,
-    pub minus: Vec<AnonymousEnumExpression>,
-    pub inherits: Vec<EnumDefinition>,
-    pub reachable_from: ReachabilityQuery,
-    pub matches: MatchQuery,
-    pub concepts: Vec<uriorcurie>
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub include: Vec<Box<AnonymousEnumExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minus: Vec<Box<AnonymousEnumExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inherits: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub reachable_from: Option<ReachabilityQuery>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub matches: Option<MatchQuery>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub concepts: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl AnonymousEnumExpression {
+    #[new]
+    pub fn new(code_set: Option<uriorcurie>,code_set_tag: Option<String>,code_set_version: Option<String>,pv_formula: Option<String>,permissible_values: HashMap<String, PermissibleValue>,include: Vec<Box<AnonymousEnumExpression>>,minus: Vec<Box<AnonymousEnumExpression>>,inherits: Vec<String>,reachable_from: Option<ReachabilityQuery>,matches: Option<MatchQuery>,concepts: Vec<String>) -> Self {
+        AnonymousEnumExpression{ code_set,code_set_tag,code_set_version,pv_formula,permissible_values,include,minus,inherits,reachable_from,matches,concepts }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<AnonymousEnumExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<AnonymousEnumExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<AnonymousEnumExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid AnonymousEnumExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod EnumDefinitionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct EnumDefinition {
-    pub enum_uri: uriorcurie,
-    pub code_set: uriorcurie,
-    pub code_set_tag: String,
-    pub code_set_version: String,
-    pub pv_formula: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub enum_uri: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub code_set: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub code_set_tag: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub code_set_version: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub pv_formula: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub permissible_values: HashMap<String, PermissibleValue>,
-    pub include: Vec<AnonymousEnumExpression>,
-    pub minus: Vec<AnonymousEnumExpression>,
-    pub inherits: Vec<EnumDefinition>,
-    pub reachable_from: ReachabilityQuery,
-    pub matches: MatchQuery,
-    pub concepts: Vec<uriorcurie>,
-    pub is_a: Definition,
-    pub abstract_: bool,
-    pub mixin: bool,
-    pub mixins: Vec<Definition>,
-    pub apply_to: Vec<Definition>,
-    pub values_from: Vec<uriorcurie>,
-    pub string_serialization: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub include: Vec<Box<AnonymousEnumExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minus: Vec<Box<AnonymousEnumExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inherits: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub reachable_from: Option<ReachabilityQuery>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub matches: Option<MatchQuery>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub concepts: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub is_a: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub abstract_: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mixin: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mixins: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub apply_to: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub values_from: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub string_serialization: Option<String>,
     pub name: String,
-    pub id_prefixes: Vec<ncname>,
-    pub id_prefixes_are_closed: bool,
-    pub definition_uri: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes_are_closed: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub definition_uri: Option<uriorcurie>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: HashMap<String, LocalName>,
-    pub conforms_to: String,
-    pub implements: Vec<uriorcurie>,
-    pub instantiates: Vec<uriorcurie>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub conforms_to: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implements: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub instantiates: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl EnumDefinition {
+    #[new]
+    pub fn new(enum_uri: Option<uriorcurie>,code_set: Option<uriorcurie>,code_set_tag: Option<String>,code_set_version: Option<String>,pv_formula: Option<String>,permissible_values: HashMap<String, PermissibleValue>,include: Vec<Box<AnonymousEnumExpression>>,minus: Vec<Box<AnonymousEnumExpression>>,inherits: Vec<String>,reachable_from: Option<ReachabilityQuery>,matches: Option<MatchQuery>,concepts: Vec<String>,is_a: Option<String>,abstract_: Option<bool>,mixin: Option<bool>,mixins: Vec<String>,apply_to: Vec<String>,values_from: Vec<String>,string_serialization: Option<String>,name: String,id_prefixes: Vec<String>,id_prefixes_are_closed: Option<bool>,definition_uri: Option<uriorcurie>,local_names: HashMap<String, LocalName>,conforms_to: Option<String>,implements: Vec<String>,instantiates: Vec<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        EnumDefinition{ enum_uri,code_set,code_set_tag,code_set_version,pv_formula,permissible_values,include,minus,inherits,reachable_from,matches,concepts,is_a,abstract_,mixin,mixins,apply_to,values_from,string_serialization,name,id_prefixes,id_prefixes_are_closed,definition_uri,local_names,conforms_to,implements,instantiates,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<EnumDefinition>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<EnumDefinition> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<EnumDefinition>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid EnumDefinition",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for EnumDefinition {
+    type Key   = String;
+        
+    type Value = uriorcurie;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.name;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("name".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("name".into()), Value::String(k));
+        map.insert(Value::String("enum_uri".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod EnumBindingSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct EnumBinding {
-    pub range: EnumDefinition,
-    pub obligation_level: String,
-    pub binds_value_of: String,
-    pub pv_formula: String,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub range: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub obligation_level: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub binds_value_of: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub pv_formula: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl EnumBinding {
+    #[new]
+    pub fn new(range: Option<String>,obligation_level: Option<String>,binds_value_of: Option<String>,pv_formula: Option<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        EnumBinding{ range,obligation_level,binds_value_of,pv_formula,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<EnumBinding>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<EnumBinding> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<EnumBinding>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid EnumBinding",
+        ))
+    }
+}
+
+
+
+
+
+
+mod MatchQuerySlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct MatchQuery {
-    pub identifier_pattern: String,
-    pub source_ontology: uriorcurie
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub identifier_pattern: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source_ontology: Option<uriorcurie>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl MatchQuery {
+    #[new]
+    pub fn new(identifier_pattern: Option<String>,source_ontology: Option<uriorcurie>) -> Self {
+        MatchQuery{ identifier_pattern,source_ontology }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<MatchQuery>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<MatchQuery> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<MatchQuery>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid MatchQuery",
+        ))
+    }
+}
+
+
+
+
+
+
+mod ReachabilityQuerySlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ReachabilityQuery {
-    pub source_ontology: uriorcurie,
-    pub source_nodes: Vec<uriorcurie>,
-    pub relationship_types: Vec<uriorcurie>,
-    pub is_direct: bool,
-    pub include_self: bool,
-    pub traverse_up: bool
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source_ontology: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source_nodes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub relationship_types: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub is_direct: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub include_self: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub traverse_up: Option<bool>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl ReachabilityQuery {
+    #[new]
+    pub fn new(source_ontology: Option<uriorcurie>,source_nodes: Vec<String>,relationship_types: Vec<String>,is_direct: Option<bool>,include_self: Option<bool>,traverse_up: Option<bool>) -> Self {
+        ReachabilityQuery{ source_ontology,source_nodes,relationship_types,is_direct,include_self,traverse_up }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<ReachabilityQuery>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<ReachabilityQuery> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<ReachabilityQuery>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid ReachabilityQuery",
+        ))
+    }
+}
+
+
+
+
+
+
+mod StructuredAliasSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct StructuredAlias {
     pub literal_form: String,
-    pub alias_predicate: String,
-    pub categories: Vec<uriorcurie>,
-    pub alias_contexts: Vec<uri>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub alias_predicate: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub alias_contexts: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<Box<StructuredAlias>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl StructuredAlias {
+    #[new]
+    pub fn new(literal_form: String,alias_predicate: Option<String>,categories: Vec<String>,alias_contexts: Vec<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<Box<StructuredAlias>>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,keywords: Vec<String>) -> Self {
+        StructuredAlias{ literal_form,alias_predicate,categories,alias_contexts,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<StructuredAlias>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<StructuredAlias> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<StructuredAlias>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid StructuredAlias",
+        ))
+    }
+}
+
+
+
+
+
+
+mod ExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Expression {
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+
+
+mod TypeExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct TypeExpression {
-    pub pattern: String,
-    pub structured_pattern: PatternExpression,
-    pub unit: UnitOfMeasure,
-    pub implicit_prefix: String,
-    pub equals_string: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub pattern: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_pattern: Option<PatternExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub unit: Option<UnitOfMeasure>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implicit_prefix: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_string: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
-    pub equals_number: isize,
-    pub minimum_value: Anything,
-    pub maximum_value: Anything,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_number: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Vec<AnonymousTypeExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub exactly_one_of: Vec<AnonymousTypeExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub any_of: Vec<AnonymousTypeExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Vec<AnonymousTypeExpression>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl TypeExpression {
+    #[new]
+    pub fn new(pattern: Option<String>,structured_pattern: Option<PatternExpression>,unit: Option<UnitOfMeasure>,implicit_prefix: Option<String>,equals_string: Option<String>,equals_string_in: Vec<String>,equals_number: Option<isize>,minimum_value: Option<Anything>,maximum_value: Option<Anything>,none_of: Vec<AnonymousTypeExpression>,exactly_one_of: Vec<AnonymousTypeExpression>,any_of: Vec<AnonymousTypeExpression>,all_of: Vec<AnonymousTypeExpression>) -> Self {
+        TypeExpression{ pattern,structured_pattern,unit,implicit_prefix,equals_string,equals_string_in,equals_number,minimum_value,maximum_value,none_of,exactly_one_of,any_of,all_of }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<TypeExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<TypeExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<TypeExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid TypeExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod EnumExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct EnumExpression {
-    pub code_set: uriorcurie,
-    pub code_set_tag: String,
-    pub code_set_version: String,
-    pub pv_formula: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub code_set: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub code_set_tag: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub code_set_version: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub pv_formula: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub permissible_values: HashMap<String, PermissibleValue>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub include: Vec<AnonymousEnumExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub minus: Vec<AnonymousEnumExpression>,
-    pub inherits: Vec<EnumDefinition>,
-    pub reachable_from: ReachabilityQuery,
-    pub matches: MatchQuery,
-    pub concepts: Vec<uriorcurie>
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inherits: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub reachable_from: Option<ReachabilityQuery>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub matches: Option<MatchQuery>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub concepts: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl EnumExpression {
+    #[new]
+    pub fn new(code_set: Option<uriorcurie>,code_set_tag: Option<String>,code_set_version: Option<String>,pv_formula: Option<String>,permissible_values: HashMap<String, PermissibleValue>,include: Vec<AnonymousEnumExpression>,minus: Vec<AnonymousEnumExpression>,inherits: Vec<String>,reachable_from: Option<ReachabilityQuery>,matches: Option<MatchQuery>,concepts: Vec<String>) -> Self {
+        EnumExpression{ code_set,code_set_tag,code_set_version,pv_formula,permissible_values,include,minus,inherits,reachable_from,matches,concepts }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<EnumExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<EnumExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<EnumExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid EnumExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod AnonymousExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousExpression {
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl AnonymousExpression {
+    #[new]
+    pub fn new(extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        AnonymousExpression{ extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<AnonymousExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<AnonymousExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<AnonymousExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid AnonymousExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod PathExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct PathExpression {
-    pub followed_by: Box<PathExpression>,
-    pub none_of: Vec<PathExpression>,
-    pub any_of: Vec<PathExpression>,
-    pub all_of: Vec<PathExpression>,
-    pub exactly_one_of: Vec<PathExpression>,
-    pub reversed: bool,
-    pub traverse: Box<SlotDefinition>,
-    pub range_expression: AnonymousClassExpression,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub followed_by: Option<Box<PathExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub none_of: Vec<Box<PathExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub any_of: Vec<Box<PathExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub all_of: Vec<Box<PathExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exactly_one_of: Vec<Box<PathExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub reversed: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub traverse: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub range_expression: Option<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl PathExpression {
+    #[new]
+    pub fn new(followed_by: Option<Box<PathExpression>>,none_of: Vec<Box<PathExpression>>,any_of: Vec<Box<PathExpression>>,all_of: Vec<Box<PathExpression>>,exactly_one_of: Vec<Box<PathExpression>>,reversed: Option<bool>,traverse: Option<String>,range_expression: Option<AnonymousClassExpression>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        PathExpression{ followed_by,none_of,any_of,all_of,exactly_one_of,reversed,traverse,range_expression,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<PathExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<PathExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<PathExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid PathExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod SlotExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SlotExpression {
-    pub range: Element,
-    pub range_expression: AnonymousClassExpression,
-    pub enum_range: EnumExpression,
-    pub bindings: HashMap<String, EnumBinding>,
-    pub required: bool,
-    pub recommended: bool,
-    pub multivalued: bool,
-    pub inlined: bool,
-    pub inlined_as_list: bool,
-    pub minimum_value: Anything,
-    pub maximum_value: Anything,
-    pub pattern: String,
-    pub structured_pattern: PatternExpression,
-    pub unit: UnitOfMeasure,
-    pub implicit_prefix: String,
-    pub value_presence: String,
-    pub equals_string: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub range: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub range_expression: Option<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub enum_range: Option<enum_range_range>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub bindings: Vec<EnumBinding>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub required: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub recommended: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub multivalued: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inlined: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inlined_as_list: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub pattern: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_pattern: Option<PatternExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub unit: Option<UnitOfMeasure>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implicit_prefix: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub value_presence: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_string: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
-    pub equals_number: isize,
-    pub equals_expression: String,
-    pub exact_cardinality: isize,
-    pub minimum_cardinality: isize,
-    pub maximum_cardinality: isize,
-    pub has_member: AnonymousSlotExpression,
-    pub all_members: AnonymousSlotExpression,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_number: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_expression: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub has_member: Option<AnonymousSlotExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub all_members: Option<AnonymousSlotExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Vec<AnonymousSlotExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub exactly_one_of: Vec<AnonymousSlotExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub any_of: Vec<AnonymousSlotExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Vec<AnonymousSlotExpression>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl SlotExpression {
+    #[new]
+    pub fn new(range: Option<String>,range_expression: Option<AnonymousClassExpression>,enum_range: Option<enum_range_range>,bindings: Vec<EnumBinding>,required: Option<bool>,recommended: Option<bool>,multivalued: Option<bool>,inlined: Option<bool>,inlined_as_list: Option<bool>,minimum_value: Option<Anything>,maximum_value: Option<Anything>,pattern: Option<String>,structured_pattern: Option<PatternExpression>,unit: Option<UnitOfMeasure>,implicit_prefix: Option<String>,value_presence: Option<String>,equals_string: Option<String>,equals_string_in: Vec<String>,equals_number: Option<isize>,equals_expression: Option<String>,exact_cardinality: Option<isize>,minimum_cardinality: Option<isize>,maximum_cardinality: Option<isize>,has_member: Option<AnonymousSlotExpression>,all_members: Option<AnonymousSlotExpression>,none_of: Vec<AnonymousSlotExpression>,exactly_one_of: Vec<AnonymousSlotExpression>,any_of: Vec<AnonymousSlotExpression>,all_of: Vec<AnonymousSlotExpression>) -> Self {
+        SlotExpression{ range,range_expression,enum_range,bindings,required,recommended,multivalued,inlined,inlined_as_list,minimum_value,maximum_value,pattern,structured_pattern,unit,implicit_prefix,value_presence,equals_string,equals_string_in,equals_number,equals_expression,exact_cardinality,minimum_cardinality,maximum_cardinality,has_member,all_members,none_of,exactly_one_of,any_of,all_of }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<SlotExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<SlotExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<SlotExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid SlotExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod AnonymousSlotExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousSlotExpression {
-    pub range: Element,
-    pub range_expression: AnonymousClassExpression,
-    pub enum_range: EnumExpression,
-    pub bindings: HashMap<String, EnumBinding>,
-    pub required: bool,
-    pub recommended: bool,
-    pub multivalued: bool,
-    pub inlined: bool,
-    pub inlined_as_list: bool,
-    pub minimum_value: Anything,
-    pub maximum_value: Anything,
-    pub pattern: String,
-    pub structured_pattern: PatternExpression,
-    pub unit: UnitOfMeasure,
-    pub implicit_prefix: String,
-    pub value_presence: String,
-    pub equals_string: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub range: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub range_expression: Option<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub enum_range: Option<enum_range_range>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub bindings: Vec<EnumBinding>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub required: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub recommended: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub multivalued: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inlined: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inlined_as_list: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub pattern: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_pattern: Option<PatternExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub unit: Option<UnitOfMeasure>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implicit_prefix: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub value_presence: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_string: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
-    pub equals_number: isize,
-    pub equals_expression: String,
-    pub exact_cardinality: isize,
-    pub minimum_cardinality: isize,
-    pub maximum_cardinality: isize,
-    pub has_member: Box<AnonymousSlotExpression>,
-    pub all_members: Box<AnonymousSlotExpression>,
-    pub none_of: Vec<AnonymousSlotExpression>,
-    pub exactly_one_of: Vec<AnonymousSlotExpression>,
-    pub any_of: Vec<AnonymousSlotExpression>,
-    pub all_of: Vec<AnonymousSlotExpression>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_number: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_expression: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub has_member: Option<Box<AnonymousSlotExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub all_members: Option<Box<AnonymousSlotExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub none_of: Vec<Box<AnonymousSlotExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exactly_one_of: Vec<Box<AnonymousSlotExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub any_of: Vec<Box<AnonymousSlotExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub all_of: Vec<Box<AnonymousSlotExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl AnonymousSlotExpression {
+    #[new]
+    pub fn new(range: Option<String>,range_expression: Option<AnonymousClassExpression>,enum_range: Option<enum_range_range>,bindings: Vec<EnumBinding>,required: Option<bool>,recommended: Option<bool>,multivalued: Option<bool>,inlined: Option<bool>,inlined_as_list: Option<bool>,minimum_value: Option<Anything>,maximum_value: Option<Anything>,pattern: Option<String>,structured_pattern: Option<PatternExpression>,unit: Option<UnitOfMeasure>,implicit_prefix: Option<String>,value_presence: Option<String>,equals_string: Option<String>,equals_string_in: Vec<String>,equals_number: Option<isize>,equals_expression: Option<String>,exact_cardinality: Option<isize>,minimum_cardinality: Option<isize>,maximum_cardinality: Option<isize>,has_member: Option<Box<AnonymousSlotExpression>>,all_members: Option<Box<AnonymousSlotExpression>>,none_of: Vec<Box<AnonymousSlotExpression>>,exactly_one_of: Vec<Box<AnonymousSlotExpression>>,any_of: Vec<Box<AnonymousSlotExpression>>,all_of: Vec<Box<AnonymousSlotExpression>>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        AnonymousSlotExpression{ range,range_expression,enum_range,bindings,required,recommended,multivalued,inlined,inlined_as_list,minimum_value,maximum_value,pattern,structured_pattern,unit,implicit_prefix,value_presence,equals_string,equals_string_in,equals_number,equals_expression,exact_cardinality,minimum_cardinality,maximum_cardinality,has_member,all_members,none_of,exactly_one_of,any_of,all_of,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<AnonymousSlotExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<AnonymousSlotExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid AnonymousSlotExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod SlotDefinitionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SlotDefinition {
-    pub singular_name: String,
-    pub domain: Box<ClassDefinition>,
-    pub slot_uri: uriorcurie,
-    pub array: ArrayExpression,
-    pub inherited: bool,
-    pub readonly: String,
-    pub ifabsent: String,
-    pub list_elements_unique: bool,
-    pub list_elements_ordered: bool,
-    pub shared: bool,
-    pub key: bool,
-    pub identifier: bool,
-    pub designates_type: bool,
-    pub alias: String,
-    pub owner: Definition,
-    pub domain_of: Vec<ClassDefinition>,
-    pub subproperty_of: Box<SlotDefinition>,
-    pub symmetric: bool,
-    pub reflexive: bool,
-    pub locally_reflexive: bool,
-    pub irreflexive: bool,
-    pub asymmetric: bool,
-    pub transitive: bool,
-    pub inverse: Box<SlotDefinition>,
-    pub is_class_field: bool,
-    pub transitive_form_of: Box<SlotDefinition>,
-    pub reflexive_transitive_form_of: Box<SlotDefinition>,
-    pub role: String,
-    pub is_usage_slot: bool,
-    pub usage_slot_name: String,
-    pub relational_role: String,
-    pub slot_group: Box<SlotDefinition>,
-    pub is_grouping_slot: bool,
-    pub path_rule: Box<PathExpression>,
-    pub disjoint_with: Vec<SlotDefinition>,
-    pub children_are_mutually_disjoint: bool,
-    pub union_of: Vec<SlotDefinition>,
-    pub type_mappings: Vec<TypeMapping>,
-    pub range: Element,
-    pub range_expression: Box<AnonymousClassExpression>,
-    pub enum_range: EnumExpression,
-    pub bindings: HashMap<String, EnumBinding>,
-    pub required: bool,
-    pub recommended: bool,
-    pub multivalued: bool,
-    pub inlined: bool,
-    pub inlined_as_list: bool,
-    pub minimum_value: Anything,
-    pub maximum_value: Anything,
-    pub pattern: String,
-    pub structured_pattern: PatternExpression,
-    pub unit: UnitOfMeasure,
-    pub implicit_prefix: String,
-    pub value_presence: String,
-    pub equals_string: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub singular_name: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub domain: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub slot_uri: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub array: Option<ArrayExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inherited: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub readonly: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub ifabsent: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub list_elements_unique: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub list_elements_ordered: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub shared: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub key: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub identifier: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub designates_type: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub alias: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub owner: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub domain_of: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub subproperty_of: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub symmetric: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub reflexive: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub locally_reflexive: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub irreflexive: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub asymmetric: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub transitive: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inverse: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub is_class_field: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub transitive_form_of: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub reflexive_transitive_form_of: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub role: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub is_usage_slot: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub usage_slot_name: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub relational_role: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub slot_group: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub is_grouping_slot: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub path_rule: Option<Box<PathExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub disjoint_with: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub children_are_mutually_disjoint: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub union_of: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub type_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub range: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub range_expression: Option<Box<AnonymousClassExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub enum_range: Option<enum_range_range>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub bindings: Vec<EnumBinding>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub required: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub recommended: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub multivalued: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inlined: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub inlined_as_list: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_value: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub pattern: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_pattern: Option<PatternExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub unit: Option<UnitOfMeasure>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implicit_prefix: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub value_presence: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_string: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
-    pub equals_number: isize,
-    pub equals_expression: String,
-    pub exact_cardinality: isize,
-    pub minimum_cardinality: isize,
-    pub maximum_cardinality: isize,
-    pub has_member: AnonymousSlotExpression,
-    pub all_members: AnonymousSlotExpression,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_number: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub equals_expression: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub has_member: Option<AnonymousSlotExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub all_members: Option<AnonymousSlotExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Vec<AnonymousSlotExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub exactly_one_of: Vec<AnonymousSlotExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub any_of: Vec<AnonymousSlotExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Vec<AnonymousSlotExpression>,
-    pub is_a: Box<SlotDefinition>,
-    pub abstract_: bool,
-    pub mixin: bool,
-    pub mixins: Vec<SlotDefinition>,
-    pub apply_to: Vec<SlotDefinition>,
-    pub values_from: Vec<uriorcurie>,
-    pub string_serialization: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub is_a: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub abstract_: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mixin: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mixins: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub apply_to: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub values_from: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub string_serialization: Option<String>,
     pub name: String,
-    pub id_prefixes: Vec<ncname>,
-    pub id_prefixes_are_closed: bool,
-    pub definition_uri: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes_are_closed: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub definition_uri: Option<uriorcurie>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: HashMap<String, LocalName>,
-    pub conforms_to: String,
-    pub implements: Vec<uriorcurie>,
-    pub instantiates: Vec<uriorcurie>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub conforms_to: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implements: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub instantiates: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl SlotDefinition {
+    #[new]
+    pub fn new(singular_name: Option<String>,domain: Option<String>,slot_uri: Option<uriorcurie>,array: Option<ArrayExpression>,inherited: Option<bool>,readonly: Option<String>,ifabsent: Option<String>,list_elements_unique: Option<bool>,list_elements_ordered: Option<bool>,shared: Option<bool>,key: Option<bool>,identifier: Option<bool>,designates_type: Option<bool>,alias: Option<String>,owner: Option<String>,domain_of: Vec<String>,subproperty_of: Option<String>,symmetric: Option<bool>,reflexive: Option<bool>,locally_reflexive: Option<bool>,irreflexive: Option<bool>,asymmetric: Option<bool>,transitive: Option<bool>,inverse: Option<String>,is_class_field: Option<bool>,transitive_form_of: Option<String>,reflexive_transitive_form_of: Option<String>,role: Option<String>,is_usage_slot: Option<bool>,usage_slot_name: Option<String>,relational_role: Option<String>,slot_group: Option<String>,is_grouping_slot: Option<bool>,path_rule: Option<Box<PathExpression>>,disjoint_with: Vec<String>,children_are_mutually_disjoint: Option<bool>,union_of: Vec<String>,type_mappings: Vec<String>,range: Option<String>,range_expression: Option<Box<AnonymousClassExpression>>,enum_range: Option<enum_range_range>,bindings: Vec<EnumBinding>,required: Option<bool>,recommended: Option<bool>,multivalued: Option<bool>,inlined: Option<bool>,inlined_as_list: Option<bool>,minimum_value: Option<Anything>,maximum_value: Option<Anything>,pattern: Option<String>,structured_pattern: Option<PatternExpression>,unit: Option<UnitOfMeasure>,implicit_prefix: Option<String>,value_presence: Option<String>,equals_string: Option<String>,equals_string_in: Vec<String>,equals_number: Option<isize>,equals_expression: Option<String>,exact_cardinality: Option<isize>,minimum_cardinality: Option<isize>,maximum_cardinality: Option<isize>,has_member: Option<AnonymousSlotExpression>,all_members: Option<AnonymousSlotExpression>,none_of: Vec<AnonymousSlotExpression>,exactly_one_of: Vec<AnonymousSlotExpression>,any_of: Vec<AnonymousSlotExpression>,all_of: Vec<AnonymousSlotExpression>,is_a: Option<String>,abstract_: Option<bool>,mixin: Option<bool>,mixins: Vec<String>,apply_to: Vec<String>,values_from: Vec<String>,string_serialization: Option<String>,name: String,id_prefixes: Vec<String>,id_prefixes_are_closed: Option<bool>,definition_uri: Option<uriorcurie>,local_names: HashMap<String, LocalName>,conforms_to: Option<String>,implements: Vec<String>,instantiates: Vec<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        SlotDefinition{ singular_name,domain,slot_uri,array,inherited,readonly,ifabsent,list_elements_unique,list_elements_ordered,shared,key,identifier,designates_type,alias,owner,domain_of,subproperty_of,symmetric,reflexive,locally_reflexive,irreflexive,asymmetric,transitive,inverse,is_class_field,transitive_form_of,reflexive_transitive_form_of,role,is_usage_slot,usage_slot_name,relational_role,slot_group,is_grouping_slot,path_rule,disjoint_with,children_are_mutually_disjoint,union_of,type_mappings,range,range_expression,enum_range,bindings,required,recommended,multivalued,inlined,inlined_as_list,minimum_value,maximum_value,pattern,structured_pattern,unit,implicit_prefix,value_presence,equals_string,equals_string_in,equals_number,equals_expression,exact_cardinality,minimum_cardinality,maximum_cardinality,has_member,all_members,none_of,exactly_one_of,any_of,all_of,is_a,abstract_,mixin,mixins,apply_to,values_from,string_serialization,name,id_prefixes,id_prefixes_are_closed,definition_uri,local_names,conforms_to,implements,instantiates,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<SlotDefinition>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<SlotDefinition> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<SlotDefinition>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid SlotDefinition",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for SlotDefinition {
+    type Key   = String;
+        
+    type Value = String;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.name;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("name".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("name".into()), Value::String(k));
+        map.insert(Value::String("singular_name".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod ClassExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassExpression {
+    #[cfg_attr(feature = "serde", serde(default))]
     pub any_of: Vec<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub exactly_one_of: Vec<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Vec<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Vec<AnonymousClassExpression>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub slot_conditions: HashMap<String, SlotDefinition>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl ClassExpression {
+    #[new]
+    pub fn new(any_of: Vec<AnonymousClassExpression>,exactly_one_of: Vec<AnonymousClassExpression>,none_of: Vec<AnonymousClassExpression>,all_of: Vec<AnonymousClassExpression>,slot_conditions: HashMap<String, SlotDefinition>) -> Self {
+        ClassExpression{ any_of,exactly_one_of,none_of,all_of,slot_conditions }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<ClassExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<ClassExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<ClassExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid ClassExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod AnonymousClassExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousClassExpression {
-    pub is_a: Definition,
-    pub any_of: Vec<AnonymousClassExpression>,
-    pub exactly_one_of: Vec<AnonymousClassExpression>,
-    pub none_of: Vec<AnonymousClassExpression>,
-    pub all_of: Vec<AnonymousClassExpression>,
-    pub slot_conditions: HashMap<String, SlotDefinition>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub is_a: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub any_of: Vec<Box<AnonymousClassExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exactly_one_of: Vec<Box<AnonymousClassExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub none_of: Vec<Box<AnonymousClassExpression>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub all_of: Vec<Box<AnonymousClassExpression>>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_box"))]
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub slot_conditions: HashMap<String, Box<SlotDefinition>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl AnonymousClassExpression {
+    #[new]
+    pub fn new(is_a: Option<String>,any_of: Vec<Box<AnonymousClassExpression>>,exactly_one_of: Vec<Box<AnonymousClassExpression>>,none_of: Vec<Box<AnonymousClassExpression>>,all_of: Vec<Box<AnonymousClassExpression>>,slot_conditions: HashMap<String, Box<SlotDefinition>>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        AnonymousClassExpression{ is_a,any_of,exactly_one_of,none_of,all_of,slot_conditions,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<AnonymousClassExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<AnonymousClassExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<AnonymousClassExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid AnonymousClassExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod ClassDefinitionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassDefinition {
-    pub slots: Vec<SlotDefinition>,
-    pub slot_usage: HashMap<String, SlotDefinition>,
-    pub attributes: HashMap<String, SlotDefinition>,
-    pub class_uri: uriorcurie,
-    pub subclass_of: uriorcurie,
-    pub union_of: Vec<ClassDefinition>,
-    pub defining_slots: Vec<SlotDefinition>,
-    pub tree_root: bool,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub slots: Vec<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_box"))]
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub slot_usage: HashMap<String, Box<SlotDefinition>>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_box"))]
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub attributes: HashMap<String, Box<SlotDefinition>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub class_uri: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub subclass_of: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub union_of: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub defining_slots: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub tree_root: Option<bool>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub unique_keys: HashMap<String, UniqueKey>,
-    pub rules: HashMap<String, ClassRule>,
-    pub classification_rules: HashMap<String, AnonymousClassExpression>,
-    pub slot_names_unique: bool,
-    pub represents_relationship: bool,
-    pub disjoint_with: Vec<ClassDefinition>,
-    pub children_are_mutually_disjoint: bool,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rules: Vec<ClassRule>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub classification_rules: Vec<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub slot_names_unique: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub represents_relationship: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub disjoint_with: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub children_are_mutually_disjoint: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub any_of: Vec<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub exactly_one_of: Vec<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Vec<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Vec<AnonymousClassExpression>,
-    pub slot_conditions: HashMap<String, SlotDefinition>,
-    pub is_a: Box<ClassDefinition>,
-    pub abstract_: bool,
-    pub mixin: bool,
-    pub mixins: Vec<ClassDefinition>,
-    pub apply_to: Vec<ClassDefinition>,
-    pub values_from: Vec<uriorcurie>,
-    pub string_serialization: String,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_box"))]
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub slot_conditions: HashMap<String, Box<SlotDefinition>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub is_a: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub abstract_: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mixin: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mixins: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub apply_to: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub values_from: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub string_serialization: Option<String>,
     pub name: String,
-    pub id_prefixes: Vec<ncname>,
-    pub id_prefixes_are_closed: bool,
-    pub definition_uri: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub id_prefixes_are_closed: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub definition_uri: Option<uriorcurie>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: HashMap<String, LocalName>,
-    pub conforms_to: String,
-    pub implements: Vec<uriorcurie>,
-    pub instantiates: Vec<uriorcurie>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub conforms_to: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implements: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub instantiates: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl ClassDefinition {
+    #[new]
+    pub fn new(slots: Vec<String>,slot_usage: HashMap<String, Box<SlotDefinition>>,attributes: HashMap<String, Box<SlotDefinition>>,class_uri: Option<uriorcurie>,subclass_of: Option<uriorcurie>,union_of: Vec<String>,defining_slots: Vec<String>,tree_root: Option<bool>,unique_keys: HashMap<String, UniqueKey>,rules: Vec<ClassRule>,classification_rules: Vec<AnonymousClassExpression>,slot_names_unique: Option<bool>,represents_relationship: Option<bool>,disjoint_with: Vec<String>,children_are_mutually_disjoint: Option<bool>,any_of: Vec<AnonymousClassExpression>,exactly_one_of: Vec<AnonymousClassExpression>,none_of: Vec<AnonymousClassExpression>,all_of: Vec<AnonymousClassExpression>,slot_conditions: HashMap<String, Box<SlotDefinition>>,is_a: Option<String>,abstract_: Option<bool>,mixin: Option<bool>,mixins: Vec<String>,apply_to: Vec<String>,values_from: Vec<String>,string_serialization: Option<String>,name: String,id_prefixes: Vec<String>,id_prefixes_are_closed: Option<bool>,definition_uri: Option<uriorcurie>,local_names: HashMap<String, LocalName>,conforms_to: Option<String>,implements: Vec<String>,instantiates: Vec<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        ClassDefinition{ slots,slot_usage,attributes,class_uri,subclass_of,union_of,defining_slots,tree_root,unique_keys,rules,classification_rules,slot_names_unique,represents_relationship,disjoint_with,children_are_mutually_disjoint,any_of,exactly_one_of,none_of,all_of,slot_conditions,is_a,abstract_,mixin,mixins,apply_to,values_from,string_serialization,name,id_prefixes,id_prefixes_are_closed,definition_uri,local_names,conforms_to,implements,instantiates,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<ClassDefinition>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<ClassDefinition> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<ClassDefinition>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid ClassDefinition",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for ClassDefinition {
+    type Key   = String;
+        
+    type Value = SlotDefinition;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.name;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("name".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("name".into()), Value::String(k));
+        map.insert(Value::String("slots".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod ClassLevelRuleSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassLevelRule {
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+
+
+mod ClassRuleSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassRule {
-    pub preconditions: AnonymousClassExpression,
-    pub postconditions: AnonymousClassExpression,
-    pub elseconditions: AnonymousClassExpression,
-    pub bidirectional: bool,
-    pub open_world: bool,
-    pub rank: isize,
-    pub deactivated: bool,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub preconditions: Option<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub postconditions: Option<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub elseconditions: Option<AnonymousClassExpression>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub bidirectional: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub open_world: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deactivated: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl ClassRule {
+    #[new]
+    pub fn new(preconditions: Option<AnonymousClassExpression>,postconditions: Option<AnonymousClassExpression>,elseconditions: Option<AnonymousClassExpression>,bidirectional: Option<bool>,open_world: Option<bool>,rank: Option<isize>,deactivated: Option<bool>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        ClassRule{ preconditions,postconditions,elseconditions,bidirectional,open_world,rank,deactivated,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<ClassRule>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<ClassRule> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<ClassRule>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid ClassRule",
+        ))
+    }
+}
+
+
+
+
+
+
+mod ArrayExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ArrayExpression {
-    pub exact_number_dimensions: isize,
-    pub minimum_number_dimensions: isize,
-    pub maximum_number_dimensions: Anything,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_number_dimensions: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_number_dimensions: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_number_dimensions: Option<Anything>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub dimensions: Vec<DimensionExpression>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl ArrayExpression {
+    #[new]
+    pub fn new(exact_number_dimensions: Option<isize>,minimum_number_dimensions: Option<isize>,maximum_number_dimensions: Option<Anything>,dimensions: Vec<DimensionExpression>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        ArrayExpression{ exact_number_dimensions,minimum_number_dimensions,maximum_number_dimensions,dimensions,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<ArrayExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<ArrayExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<ArrayExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid ArrayExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod DimensionExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct DimensionExpression {
-    pub alias: String,
-    pub maximum_cardinality: isize,
-    pub minimum_cardinality: isize,
-    pub exact_cardinality: isize,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub alias: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub maximum_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub minimum_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_cardinality: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl DimensionExpression {
+    #[new]
+    pub fn new(alias: Option<String>,maximum_cardinality: Option<isize>,minimum_cardinality: Option<isize>,exact_cardinality: Option<isize>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        DimensionExpression{ alias,maximum_cardinality,minimum_cardinality,exact_cardinality,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<DimensionExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<DimensionExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<DimensionExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid DimensionExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod PatternExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct PatternExpression {
-    pub syntax: String,
-    pub interpolated: bool,
-    pub partial_match: bool,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub syntax: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub interpolated: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub partial_match: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl PatternExpression {
+    #[new]
+    pub fn new(syntax: Option<String>,interpolated: Option<bool>,partial_match: Option<bool>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        PatternExpression{ syntax,interpolated,partial_match,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<PatternExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<PatternExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<PatternExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid PatternExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod ImportExpressionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ImportExpression {
     pub import_from: uriorcurie,
-    pub import_as: ncname,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub import_as: Option<ncname>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub import_map: HashMap<String, Setting>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl ImportExpression {
+    #[new]
+    pub fn new(import_from: uriorcurie,import_as: Option<ncname>,import_map: HashMap<String, Setting>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        ImportExpression{ import_from,import_as,import_map,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<ImportExpression>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<ImportExpression> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<ImportExpression>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid ImportExpression",
+        ))
+    }
+}
+
+
+
+
+
+
+mod SettingSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Setting {
     pub setting_key: ncname,
     pub setting_value: String
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl Setting {
+    #[new]
+    pub fn new(setting_key: ncname,setting_value: String) -> Self {
+        Setting{ setting_key,setting_value }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<Setting>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<Setting> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Setting>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid Setting",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for Setting {
+    type Key   = ncname;
+        
+    type Value = String;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.setting_key;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("setting_key".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("setting_key".into()), Value::String(k));
+        map.insert(Value::String("setting_value".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod PrefixSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Prefix {
     pub prefix_prefix: ncname,
     pub prefix_reference: uri
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl Prefix {
+    #[new]
+    pub fn new(prefix_prefix: ncname,prefix_reference: uri) -> Self {
+        Prefix{ prefix_prefix,prefix_reference }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<Prefix>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<Prefix> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Prefix>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid Prefix",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for Prefix {
+    type Key   = ncname;
+        
+    type Value = uri;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.prefix_prefix;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("prefix_prefix".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("prefix_prefix".into()), Value::String(k));
+        map.insert(Value::String("prefix_reference".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod LocalNameSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct LocalName {
     pub local_name_source: ncname,
     pub local_name_value: String
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
-pub struct Example {
-    pub value: String,
-    pub value_description: String,
-    pub value_object: Anything
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl LocalName {
+    #[new]
+    pub fn new(local_name_source: ncname,local_name_value: String) -> Self {
+        LocalName{ local_name_source,local_name_value }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<LocalName>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<LocalName> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<LocalName>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid LocalName",
+        ))
+    }
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for LocalName {
+    type Key   = ncname;
+        
+    type Value = String;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.local_name_source;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("local_name_source".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("local_name_source".into()), Value::String(k));
+        map.insert(Value::String("local_name_value".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod ExampleSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
+pub struct Example {
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub value: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub value_description: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub value_object: Option<Anything>
+}
+
+
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl Example {
+    #[new]
+    pub fn new(value: Option<String>,value_description: Option<String>,value_object: Option<Anything>) -> Self {
+        Example{ value,value_description,value_object }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<Example>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<Example> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<Example>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid Example",
+        ))
+    }
+}
+
+
+
+
+
+
+mod AltDescriptionSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AltDescription {
     pub alt_description_source: String,
     pub alt_description_text: String
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl AltDescription {
+    #[new]
+    pub fn new(alt_description_source: String,alt_description_text: String) -> Self {
+        AltDescription{ alt_description_source,alt_description_text }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<AltDescription>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<AltDescription> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<AltDescription>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid AltDescription",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for AltDescription {
+    type Key   = String;
+        
+    type Value = String;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.alt_description_source;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("alt_description_source".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("alt_description_source".into()), Value::String(k));
+        map.insert(Value::String("alt_description_text".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod PermissibleValueSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct PermissibleValue {
     pub text: String,
-    pub description: String,
-    pub meaning: uriorcurie,
-    pub unit: UnitOfMeasure,
-    pub instantiates: Vec<uriorcurie>,
-    pub implements: Vec<uriorcurie>,
-    pub is_a: Box<PermissibleValue>,
-    pub mixins: Vec<PermissibleValue>,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub meaning: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub unit: Option<UnitOfMeasure>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub instantiates: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub implements: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub is_a: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mixins: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl PermissibleValue {
+    #[new]
+    pub fn new(text: String,description: Option<String>,meaning: Option<uriorcurie>,unit: Option<UnitOfMeasure>,instantiates: Vec<String>,implements: Vec<String>,is_a: Option<String>,mixins: Vec<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        PermissibleValue{ text,description,meaning,unit,instantiates,implements,is_a,mixins,extensions,annotations,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<PermissibleValue>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<PermissibleValue> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<PermissibleValue>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid PermissibleValue",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for PermissibleValue {
+    type Key   = String;
+        
+    type Value = String;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.text;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("text".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("text".into()), Value::String(k));
+        map.insert(Value::String("description".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod UniqueKeySlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct UniqueKey {
     pub unique_key_name: String,
-    pub unique_key_slots: Vec<SlotDefinition>,
-    pub consider_nulls_inequal: bool,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub unique_key_slots: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub consider_nulls_inequal: Option<bool>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
 
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl UniqueKey {
+    #[new]
+    pub fn new(unique_key_name: String,unique_key_slots: Vec<String>,consider_nulls_inequal: Option<bool>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        UniqueKey{ unique_key_name,unique_key_slots,consider_nulls_inequal,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<UniqueKey>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<UniqueKey> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<UniqueKey>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid UniqueKey",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for UniqueKey {
+    type Key   = String;
+        
+    type Value = SlotDefinition;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.unique_key_name;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("unique_key_name".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("unique_key_name".into()), Value::String(k));
+        map.insert(Value::String("unique_key_slots".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
+
+mod TypeMappingSlots {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct TypeMapping {
     pub framework_key: String,
-    pub mapped_type: TypeDefinition,
-    pub string_serialization: String,
-    pub extensions: HashMap<String, Extension>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mapped_type: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub string_serialization: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub extensions: HashMap<String, extensions_range>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Annotation>,
-    pub description: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub description: Option<String>,
+    // False True
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: HashMap<String, AltDescription>,
-    pub title: String,
-    pub deprecated: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub title: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
-    pub examples: HashMap<String, Example>,
-    pub in_subset: Vec<SubsetDefinition>,
-    pub from_schema: uri,
-    pub imported_from: String,
-    pub source: uriorcurie,
-    pub in_language: String,
-    pub see_also: Vec<uriorcurie>,
-    pub deprecated_element_has_exact_replacement: uriorcurie,
-    pub deprecated_element_has_possible_replacement: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub examples: Vec<Example>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_subset: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub from_schema: Option<uri>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub imported_from: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub source: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub in_language: Option<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub see_also: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
-    pub structured_aliases: HashMap<String, StructuredAlias>,
-    pub mappings: Vec<uriorcurie>,
-    pub exact_mappings: Vec<uriorcurie>,
-    pub close_mappings: Vec<uriorcurie>,
-    pub related_mappings: Vec<uriorcurie>,
-    pub narrow_mappings: Vec<uriorcurie>,
-    pub broad_mappings: Vec<uriorcurie>,
-    pub created_by: uriorcurie,
-    pub contributors: Vec<uriorcurie>,
-    pub created_on: String,
-    pub last_updated_on: String,
-    pub modified_by: uriorcurie,
-    pub status: uriorcurie,
-    pub rank: isize,
-    pub categories: Vec<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub structured_aliases: Vec<StructuredAlias>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub exact_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub close_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub related_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub narrow_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub broad_mappings: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub contributors: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub created_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub last_updated_on: Option<NaiveDateTime>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub modified_by: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub status: Option<uriorcurie>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub rank: Option<isize>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub categories: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 
+
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl TypeMapping {
+    #[new]
+    pub fn new(framework_key: String,mapped_type: Option<String>,string_serialization: Option<String>,extensions: HashMap<String, extensions_range>,annotations: HashMap<String, Annotation>,description: Option<String>,alt_descriptions: HashMap<String, AltDescription>,title: Option<String>,deprecated: Option<String>,todos: Vec<String>,notes: Vec<String>,comments: Vec<String>,examples: Vec<Example>,in_subset: Vec<String>,from_schema: Option<uri>,imported_from: Option<String>,source: Option<uriorcurie>,in_language: Option<String>,see_also: Vec<String>,deprecated_element_has_exact_replacement: Option<uriorcurie>,deprecated_element_has_possible_replacement: Option<uriorcurie>,aliases: Vec<String>,structured_aliases: Vec<StructuredAlias>,mappings: Vec<String>,exact_mappings: Vec<String>,close_mappings: Vec<String>,related_mappings: Vec<String>,narrow_mappings: Vec<String>,broad_mappings: Vec<String>,created_by: Option<uriorcurie>,contributors: Vec<String>,created_on: Option<NaiveDateTime>,last_updated_on: Option<NaiveDateTime>,modified_by: Option<uriorcurie>,status: Option<uriorcurie>,rank: Option<isize>,categories: Vec<String>,keywords: Vec<String>) -> Self {
+        TypeMapping{ framework_key,mapped_type,string_serialization,extensions,annotations,description,alt_descriptions,title,deprecated,todos,notes,comments,examples,in_subset,from_schema,imported_from,source,in_language,see_also,deprecated_element_has_exact_replacement,deprecated_element_has_possible_replacement,aliases,structured_aliases,mappings,exact_mappings,close_mappings,related_mappings,narrow_mappings,broad_mappings,created_by,contributors,created_on,last_updated_on,modified_by,status,rank,categories,keywords }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for Box<TypeMapping>
+{
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        (*self).into_pyobject(py).map(move |x| x.into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for Box<TypeMapping> {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(val) = ob.extract::<TypeMapping>() {
+            return Ok(Box::new(val));
+        }
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "invalid TypeMapping",
+        ))
+    }
+}
+
+
+
+
+
+#[cfg(feature = "serde")]
+impl serde_utils::InlinedPair for TypeMapping {
+    type Key   = String;
+        
+    type Value = TypeDefinition;
+    type Error = String;
+
+    fn extract_key(&self) -> &Self::Key {
+        return &self.framework_key;
+    }
+
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map = match v {
+            Value::Map(m) => m,
+            _ => return Err("ClassDefinition must be a mapping".into()),
+        };
+        map.insert(Value::String("framework_key".into()), Value::String(k));
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }
+    }
+
+
+        
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
+        let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
+        map.insert(Value::String("framework_key".into()), Value::String(k));
+        map.insert(Value::String("mapped_type".into()), v);
+        let de          = Value::Map(map).into_deserializer();
+        match serde_path_to_error::deserialize(de) {
+            Ok(ok)  => Ok(ok),
+            Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
+        }        
+
+    }
+}
 
 
 

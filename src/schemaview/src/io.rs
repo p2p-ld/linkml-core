@@ -14,9 +14,10 @@ pub fn from_yaml(path: &Path) -> Result<SchemaDefinition, Box<dyn Error>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
 
-    let schema = serde_yml::from_reader(reader)?;
+    let schema = serde_yml::Deserializer::from_reader(reader);
+    let result: Result<SchemaDefinition, _> = serde_path_to_error::deserialize(schema);
 
-    Ok(schema)
+    Ok(result?)
 }
 
 #[cfg(test)]
