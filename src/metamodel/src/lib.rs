@@ -483,20 +483,20 @@ impl serde_utils::InlinedPair for ExtensionOrSubtype {
     type Error     = String;
 
     fn from_pair_mapping(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = <Extension as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = Extension::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ExtensionOrSubtype::Extension(x));
         }
-        if let Ok(x) = <Annotation as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = Annotation::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ExtensionOrSubtype::Annotation(x));
         }
         Err("none of the variants matched the mapping form".into())
     }
 
     fn from_pair_simple(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = <Extension as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = Extension::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ExtensionOrSubtype::Extension(x));
         }
-        if let Ok(x) = <Annotation as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = Annotation::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ExtensionOrSubtype::Annotation(x));
         }
         Err("none of the variants support the primitive form".into())
@@ -1517,56 +1517,56 @@ impl serde_utils::InlinedPair for ElementOrSubtype {
     type Error     = String;
 
     fn from_pair_mapping(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = <Element as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = Element::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::Element(x));
         }
-        if let Ok(x) = <SchemaDefinition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = SchemaDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::SchemaDefinition(x));
         }
-        if let Ok(x) = <TypeDefinition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = TypeDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::TypeDefinition(x));
         }
-        if let Ok(x) = <SubsetDefinition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = SubsetDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::SubsetDefinition(x));
         }
-        if let Ok(x) = <Definition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = Definition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::Definition(x));
         }
-        if let Ok(x) = <EnumDefinition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = EnumDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::EnumDefinition(x));
         }
-        if let Ok(x) = <SlotDefinition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = SlotDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::SlotDefinition(x));
         }
-        if let Ok(x) = <ClassDefinition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = ClassDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::ClassDefinition(x));
         }
         Err("none of the variants matched the mapping form".into())
     }
 
     fn from_pair_simple(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = <Element as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = Element::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::Element(x));
         }
-        if let Ok(x) = <SchemaDefinition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = SchemaDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::SchemaDefinition(x));
         }
-        if let Ok(x) = <TypeDefinition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = TypeDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::TypeDefinition(x));
         }
-        if let Ok(x) = <SubsetDefinition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = SubsetDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::SubsetDefinition(x));
         }
-        if let Ok(x) = <Definition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = Definition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::Definition(x));
         }
-        if let Ok(x) = <EnumDefinition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = EnumDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::EnumDefinition(x));
         }
-        if let Ok(x) = <SlotDefinition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = SlotDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::SlotDefinition(x));
         }
-        if let Ok(x) = <ClassDefinition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = ClassDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::ClassDefinition(x));
         }
         Err("none of the variants support the primitive form".into())
@@ -2529,32 +2529,32 @@ impl serde_utils::InlinedPair for DefinitionOrSubtype {
     type Error     = String;
 
     fn from_pair_mapping(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = <Definition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = Definition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(DefinitionOrSubtype::Definition(x));
         }
-        if let Ok(x) = <EnumDefinition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = EnumDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(DefinitionOrSubtype::EnumDefinition(x));
         }
-        if let Ok(x) = <SlotDefinition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = SlotDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(DefinitionOrSubtype::SlotDefinition(x));
         }
-        if let Ok(x) = <ClassDefinition as serde_utils::InlinedPair>::from_pair_mapping(k.clone(), v.clone()) {
+        if let Ok(x) = ClassDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(DefinitionOrSubtype::ClassDefinition(x));
         }
         Err("none of the variants matched the mapping form".into())
     }
 
     fn from_pair_simple(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = <Definition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = Definition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(DefinitionOrSubtype::Definition(x));
         }
-        if let Ok(x) = <EnumDefinition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = EnumDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(DefinitionOrSubtype::EnumDefinition(x));
         }
-        if let Ok(x) = <SlotDefinition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = SlotDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(DefinitionOrSubtype::SlotDefinition(x));
         }
-        if let Ok(x) = <ClassDefinition as serde_utils::InlinedPair>::from_pair_simple(k.clone(), v.clone()) {
+        if let Ok(x) = ClassDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(DefinitionOrSubtype::ClassDefinition(x));
         }
         Err("none of the variants support the primitive form".into())
