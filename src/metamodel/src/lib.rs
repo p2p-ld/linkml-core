@@ -4,7 +4,7 @@
 mod serde_utils;
 
 #[cfg(feature = "serde")]
-use serde_yml;
+use serde_yml as _ ;
 use chrono::NaiveDateTime;
 #[cfg(feature = "pyo3")]
 use pyo3::{FromPyObject,prelude::*};
@@ -1076,9 +1076,6 @@ pub enum ObligationLevelEnum {
 
 // Classes
 
-pub mod any_value_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -1090,9 +1087,6 @@ pub struct AnyValue {
 
 
 
-pub mod extension_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -1272,9 +1266,6 @@ impl serde_utils::InlinedPair for ExtensionOrSubtype {
 }
 
 
-pub mod extensible_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -1444,9 +1435,6 @@ impl<'py> FromPyObject<'py> for Box<ExtensibleOrSubtype> {
 
 
 
-pub mod annotatable_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -1619,9 +1607,6 @@ impl<'py> FromPyObject<'py> for Box<AnnotatableOrSubtype> {
 
 
 
-pub mod annotation_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -1714,9 +1699,6 @@ impl serde_utils::InlinedPair for Annotation {
 }
 
 
-pub mod unit_of_measure_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -1779,9 +1761,6 @@ impl<'py> FromPyObject<'py> for Box<UnitOfMeasure> {
 
 
 
-pub mod anything_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -1793,9 +1772,6 @@ pub struct Anything {
 
 
 
-pub mod common_metadata_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -2029,9 +2005,6 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadataOrSubtype> {
 
 
 
-pub mod element_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -2355,9 +2328,6 @@ impl serde_utils::InlinedPair for ElementOrSubtype {
 }
 
 
-pub mod schema_definition_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -2581,9 +2551,6 @@ impl serde_utils::InlinedPair for SchemaDefinition {
 }
 
 
-pub mod anonymous_type_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -2656,9 +2623,6 @@ impl<'py> FromPyObject<'py> for Box<AnonymousTypeExpression> {
 
 
 
-pub mod type_definition_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -2868,9 +2832,6 @@ impl serde_utils::InlinedPair for TypeDefinition {
 }
 
 
-pub mod subset_definition_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3044,9 +3005,6 @@ impl serde_utils::InlinedPair for SubsetDefinition {
 }
 
 
-pub mod definition_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3344,9 +3302,6 @@ impl serde_utils::InlinedPair for DefinitionOrSubtype {
 }
 
 
-pub mod anonymous_enum_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3416,9 +3371,6 @@ impl<'py> FromPyObject<'py> for Box<AnonymousEnumExpression> {
 
 
 
-pub mod enum_definition_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3631,9 +3583,6 @@ impl serde_utils::InlinedPair for EnumDefinition {
 }
 
 
-pub mod enum_binding_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3761,9 +3710,6 @@ impl<'py> FromPyObject<'py> for Box<EnumBinding> {
 
 
 
-pub mod match_query_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3814,9 +3760,6 @@ impl<'py> FromPyObject<'py> for Box<MatchQuery> {
 
 
 
-pub mod reachability_query_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -3875,9 +3818,6 @@ impl<'py> FromPyObject<'py> for Box<ReachabilityQuery> {
 
 
 
-pub mod structured_alias_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -4002,9 +3942,6 @@ impl<'py> FromPyObject<'py> for Box<StructuredAlias> {
 
 
 
-pub mod expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -4109,9 +4046,6 @@ impl<'py> FromPyObject<'py> for Box<ExpressionOrSubtype> {
 
 
 
-pub mod type_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -4244,9 +4178,6 @@ impl<'py> FromPyObject<'py> for Box<TypeExpressionOrSubtype> {
 
 
 
-pub mod enum_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -4376,9 +4307,6 @@ impl<'py> FromPyObject<'py> for Box<EnumExpressionOrSubtype> {
 
 
 
-pub mod anonymous_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -4558,16 +4486,13 @@ impl<'py> FromPyObject<'py> for Box<AnonymousExpressionOrSubtype> {
 
 
 
-pub mod path_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct PathExpression {
     #[cfg_attr(feature = "serde", serde(default))]
-    pub followed_by: Box<Option<PathExpression>>,
+    pub followed_by: Option<Box<PathExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Vec<Box<PathExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
@@ -4581,7 +4506,7 @@ pub struct PathExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub traverse: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub range_expression: Box<Option<AnonymousClassExpression>>,
+    pub range_expression: Option<Box<AnonymousClassExpression>>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
     pub extensions: HashMap<String, ExtensionOrSubtype>,
@@ -4662,7 +4587,7 @@ pub struct PathExpression {
 #[pymethods]
 impl PathExpression {
     #[new]
-    pub fn new(followed_by: Box<Option<PathExpression>>, none_of: Vec<Box<PathExpression>>, any_of: Vec<Box<PathExpression>>, all_of: Vec<Box<PathExpression>>, exactly_one_of: Vec<Box<PathExpression>>, reversed: Option<bool>, traverse: Option<String>, range_expression: Box<Option<AnonymousClassExpression>>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
+    pub fn new(followed_by: Option<Box<PathExpression>>, none_of: Vec<Box<PathExpression>>, any_of: Vec<Box<PathExpression>>, all_of: Vec<Box<PathExpression>>, exactly_one_of: Vec<Box<PathExpression>>, reversed: Option<bool>, traverse: Option<String>, range_expression: Option<Box<AnonymousClassExpression>>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
         PathExpression{followed_by, none_of, any_of, all_of, exactly_one_of, reversed, traverse, range_expression, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, rank, categories, keywords}
     }
 }
@@ -4696,9 +4621,6 @@ impl<'py> FromPyObject<'py> for Box<PathExpression> {
 
 
 
-pub mod slot_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -4863,9 +4785,6 @@ impl<'py> FromPyObject<'py> for Box<SlotExpressionOrSubtype> {
 
 
 
-pub mod anonymous_slot_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -4874,7 +4793,7 @@ pub struct AnonymousSlotExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub range: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub range_expression: Box<Option<AnonymousClassExpression>>,
+    pub range_expression: Option<Box<AnonymousClassExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub enum_range: Option<EnumExpressionOrSubtype>,
     #[cfg_attr(feature = "serde", serde(default))]
@@ -4918,9 +4837,9 @@ pub struct AnonymousSlotExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub maximum_cardinality: Option<isize>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub has_member: Box<Option<AnonymousSlotExpression>>,
+    pub has_member: Option<Box<AnonymousSlotExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub all_members: Box<Option<AnonymousSlotExpression>>,
+    pub all_members: Option<Box<AnonymousSlotExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Vec<Box<AnonymousSlotExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5009,7 +4928,7 @@ pub struct AnonymousSlotExpression {
 #[pymethods]
 impl AnonymousSlotExpression {
     #[new]
-    pub fn new(range: Option<String>, range_expression: Box<Option<AnonymousClassExpression>>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Vec<EnumBinding>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<String>, equals_string: Option<String>, equals_string_in: Vec<String>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Box<Option<AnonymousSlotExpression>>, all_members: Box<Option<AnonymousSlotExpression>>, none_of: Vec<Box<AnonymousSlotExpression>>, exactly_one_of: Vec<Box<AnonymousSlotExpression>>, any_of: Vec<Box<AnonymousSlotExpression>>, all_of: Vec<Box<AnonymousSlotExpression>>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
+    pub fn new(range: Option<String>, range_expression: Option<Box<AnonymousClassExpression>>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Vec<EnumBinding>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<String>, equals_string: Option<String>, equals_string_in: Vec<String>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Option<Box<AnonymousSlotExpression>>, all_members: Option<Box<AnonymousSlotExpression>>, none_of: Vec<Box<AnonymousSlotExpression>>, exactly_one_of: Vec<Box<AnonymousSlotExpression>>, any_of: Vec<Box<AnonymousSlotExpression>>, all_of: Vec<Box<AnonymousSlotExpression>>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
         AnonymousSlotExpression{range, range_expression, enum_range, bindings, required, recommended, multivalued, inlined, inlined_as_list, minimum_value, maximum_value, pattern, structured_pattern, unit, implicit_prefix, value_presence, equals_string, equals_string_in, equals_number, equals_expression, exact_cardinality, minimum_cardinality, maximum_cardinality, has_member, all_members, none_of, exactly_one_of, any_of, all_of, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, rank, categories, keywords}
     }
 }
@@ -5043,9 +4962,6 @@ impl<'py> FromPyObject<'py> for Box<AnonymousSlotExpression> {
 
 
 
-pub mod slot_definition_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -5118,7 +5034,7 @@ pub struct SlotDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_grouping_slot: Option<bool>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub path_rule: Box<Option<PathExpression>>,
+    pub path_rule: Option<Box<PathExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub disjoint_with: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5130,7 +5046,7 @@ pub struct SlotDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub range: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub range_expression: Box<Option<AnonymousClassExpression>>,
+    pub range_expression: Option<Box<AnonymousClassExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub enum_range: Option<EnumExpressionOrSubtype>,
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5174,9 +5090,9 @@ pub struct SlotDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub maximum_cardinality: Option<isize>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub has_member: Box<Option<AnonymousSlotExpression>>,
+    pub has_member: Option<Box<AnonymousSlotExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub all_members: Box<Option<AnonymousSlotExpression>>,
+    pub all_members: Option<Box<AnonymousSlotExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Vec<Box<AnonymousSlotExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5295,7 +5211,7 @@ pub struct SlotDefinition {
 #[pymethods]
 impl SlotDefinition {
     #[new]
-    pub fn new(singular_name: Option<String>, domain: Option<String>, slot_uri: Option<uriorcurie>, array: Option<ArrayExpression>, inherited: Option<bool>, readonly: Option<String>, ifabsent: Option<String>, list_elements_unique: Option<bool>, list_elements_ordered: Option<bool>, shared: Option<bool>, key: Option<bool>, identifier: Option<bool>, designates_type: Option<bool>, alias: Option<String>, owner: Option<String>, domain_of: Vec<String>, subproperty_of: Option<String>, symmetric: Option<bool>, reflexive: Option<bool>, locally_reflexive: Option<bool>, irreflexive: Option<bool>, asymmetric: Option<bool>, transitive: Option<bool>, inverse: Option<String>, is_class_field: Option<bool>, transitive_form_of: Option<String>, reflexive_transitive_form_of: Option<String>, role: Option<String>, is_usage_slot: Option<bool>, usage_slot_name: Option<String>, relational_role: Option<String>, slot_group: Option<String>, is_grouping_slot: Option<bool>, path_rule: Box<Option<PathExpression>>, disjoint_with: Vec<String>, children_are_mutually_disjoint: Option<bool>, union_of: Vec<String>, type_mappings: Vec<String>, range: Option<String>, range_expression: Box<Option<AnonymousClassExpression>>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Vec<EnumBinding>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<String>, equals_string: Option<String>, equals_string_in: Vec<String>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Box<Option<AnonymousSlotExpression>>, all_members: Box<Option<AnonymousSlotExpression>>, none_of: Vec<Box<AnonymousSlotExpression>>, exactly_one_of: Vec<Box<AnonymousSlotExpression>>, any_of: Vec<Box<AnonymousSlotExpression>>, all_of: Vec<Box<AnonymousSlotExpression>>, is_a: Option<String>, abstract_: Option<bool>, mixin: Option<bool>, mixins: Vec<String>, apply_to: Vec<String>, values_from: Vec<uriorcurie>, string_serialization: Option<String>, name: String, id_prefixes: Vec<ncname>, id_prefixes_are_closed: Option<bool>, definition_uri: Option<uriorcurie>, local_names: HashMap<String, LocalName>, conforms_to: Option<String>, implements: Vec<uriorcurie>, instantiates: Vec<uriorcurie>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
+    pub fn new(singular_name: Option<String>, domain: Option<String>, slot_uri: Option<uriorcurie>, array: Option<ArrayExpression>, inherited: Option<bool>, readonly: Option<String>, ifabsent: Option<String>, list_elements_unique: Option<bool>, list_elements_ordered: Option<bool>, shared: Option<bool>, key: Option<bool>, identifier: Option<bool>, designates_type: Option<bool>, alias: Option<String>, owner: Option<String>, domain_of: Vec<String>, subproperty_of: Option<String>, symmetric: Option<bool>, reflexive: Option<bool>, locally_reflexive: Option<bool>, irreflexive: Option<bool>, asymmetric: Option<bool>, transitive: Option<bool>, inverse: Option<String>, is_class_field: Option<bool>, transitive_form_of: Option<String>, reflexive_transitive_form_of: Option<String>, role: Option<String>, is_usage_slot: Option<bool>, usage_slot_name: Option<String>, relational_role: Option<String>, slot_group: Option<String>, is_grouping_slot: Option<bool>, path_rule: Option<Box<PathExpression>>, disjoint_with: Vec<String>, children_are_mutually_disjoint: Option<bool>, union_of: Vec<String>, type_mappings: Vec<String>, range: Option<String>, range_expression: Option<Box<AnonymousClassExpression>>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Vec<EnumBinding>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<String>, equals_string: Option<String>, equals_string_in: Vec<String>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Option<Box<AnonymousSlotExpression>>, all_members: Option<Box<AnonymousSlotExpression>>, none_of: Vec<Box<AnonymousSlotExpression>>, exactly_one_of: Vec<Box<AnonymousSlotExpression>>, any_of: Vec<Box<AnonymousSlotExpression>>, all_of: Vec<Box<AnonymousSlotExpression>>, is_a: Option<String>, abstract_: Option<bool>, mixin: Option<bool>, mixins: Vec<String>, apply_to: Vec<String>, values_from: Vec<uriorcurie>, string_serialization: Option<String>, name: String, id_prefixes: Vec<ncname>, id_prefixes_are_closed: Option<bool>, definition_uri: Option<uriorcurie>, local_names: HashMap<String, LocalName>, conforms_to: Option<String>, implements: Vec<uriorcurie>, instantiates: Vec<uriorcurie>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
         SlotDefinition{singular_name, domain, slot_uri, array, inherited, readonly, ifabsent, list_elements_unique, list_elements_ordered, shared, key, identifier, designates_type, alias, owner, domain_of, subproperty_of, symmetric, reflexive, locally_reflexive, irreflexive, asymmetric, transitive, inverse, is_class_field, transitive_form_of, reflexive_transitive_form_of, role, is_usage_slot, usage_slot_name, relational_role, slot_group, is_grouping_slot, path_rule, disjoint_with, children_are_mutually_disjoint, union_of, type_mappings, range, range_expression, enum_range, bindings, required, recommended, multivalued, inlined, inlined_as_list, minimum_value, maximum_value, pattern, structured_pattern, unit, implicit_prefix, value_presence, equals_string, equals_string_in, equals_number, equals_expression, exact_cardinality, minimum_cardinality, maximum_cardinality, has_member, all_members, none_of, exactly_one_of, any_of, all_of, is_a, abstract_, mixin, mixins, apply_to, values_from, string_serialization, name, id_prefixes, id_prefixes_are_closed, definition_uri, local_names, conforms_to, implements, instantiates, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, rank, categories, keywords}
     }
 }
@@ -5367,9 +5283,6 @@ impl serde_utils::InlinedPair for SlotDefinition {
 }
 
 
-pub mod class_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -5487,9 +5400,6 @@ impl<'py> FromPyObject<'py> for Box<ClassExpressionOrSubtype> {
 
 
 
-pub mod anonymous_class_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -5622,9 +5532,6 @@ impl<'py> FromPyObject<'py> for Box<AnonymousClassExpression> {
 
 
 
-pub mod class_definition_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -5856,9 +5763,6 @@ impl serde_utils::InlinedPair for ClassDefinition {
 }
 
 
-pub mod class_level_rule_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -5927,20 +5831,17 @@ impl<'py> FromPyObject<'py> for Box<ClassLevelRuleOrSubtype> {
 
 
 
-pub mod class_rule_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassRule {
     #[cfg_attr(feature = "serde", serde(default))]
-    pub preconditions: Box<Option<AnonymousClassExpression>>,
+    pub preconditions: Option<Box<AnonymousClassExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub postconditions: Box<Option<AnonymousClassExpression>>,
+    pub postconditions: Option<Box<AnonymousClassExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub elseconditions: Box<Option<AnonymousClassExpression>>,
+    pub elseconditions: Option<Box<AnonymousClassExpression>>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub bidirectional: Option<bool>,
     #[cfg_attr(feature = "serde", serde(default))]
@@ -6027,7 +5928,7 @@ pub struct ClassRule {
 #[pymethods]
 impl ClassRule {
     #[new]
-    pub fn new(preconditions: Box<Option<AnonymousClassExpression>>, postconditions: Box<Option<AnonymousClassExpression>>, elseconditions: Box<Option<AnonymousClassExpression>>, bidirectional: Option<bool>, open_world: Option<bool>, rank: Option<isize>, deactivated: Option<bool>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
+    pub fn new(preconditions: Option<Box<AnonymousClassExpression>>, postconditions: Option<Box<AnonymousClassExpression>>, elseconditions: Option<Box<AnonymousClassExpression>>, bidirectional: Option<bool>, open_world: Option<bool>, rank: Option<isize>, deactivated: Option<bool>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
         ClassRule{preconditions, postconditions, elseconditions, bidirectional, open_world, rank, deactivated, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, categories, keywords}
     }
 }
@@ -6070,7 +5971,63 @@ pub mod array_expression_utl {
         isize(isize),
         bool(bool)    
     }
+
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> FromPyObject<'py> for maximum_number_dimensions_range {
+        fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+            if let Ok(val) = ob.extract::<Anything>() {
+                return Ok(maximum_number_dimensions_range::Anything(val));
+            }            if let Ok(val) = ob.extract::<isize>() {
+                return Ok(maximum_number_dimensions_range::isize(val));
+            }            if let Ok(val) = ob.extract::<bool>() {
+                return Ok(maximum_number_dimensions_range::bool(val));
+            }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                "invalid maximum_number_dimensions",
+            ))
+        }
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> IntoPyObject<'py> for maximum_number_dimensions_range {
+        type Target = PyAny;
+        type Output = Bound<'py, Self::Target>;
+        type Error = PyErr;
+
+        fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+            match self {
+                maximum_number_dimensions_range::Anything(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+                maximum_number_dimensions_range::isize(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+                maximum_number_dimensions_range::bool(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+            }
+        }
+    }
+
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> IntoPyObject<'py> for Box<maximum_number_dimensions_range>
+    {
+        type Target = PyAny;
+        type Output = Bound<'py, Self::Target>;
+        type Error = PyErr;
+        fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+            (*self).into_pyobject(py).map(move |x| x.into_any())
+        }
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> FromPyObject<'py> for Box<maximum_number_dimensions_range> {
+        fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+            if let Ok(val) = ob.extract::<maximum_number_dimensions_range>() {
+                return Ok(Box::new(val));
+            }
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                "invalid maximum_number_dimensions",
+            ))
+        }
+    }
 }
+
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6198,9 +6155,6 @@ impl<'py> FromPyObject<'py> for Box<ArrayExpression> {
 
 
 
-pub mod dimension_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6328,9 +6282,6 @@ impl<'py> FromPyObject<'py> for Box<DimensionExpression> {
 
 
 
-pub mod pattern_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6456,9 +6407,6 @@ impl<'py> FromPyObject<'py> for Box<PatternExpression> {
 
 
 
-pub mod import_expression_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6584,9 +6532,6 @@ impl<'py> FromPyObject<'py> for Box<ImportExpression> {
 
 
 
-pub mod setting_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6673,9 +6618,6 @@ impl serde_utils::InlinedPair for Setting {
 }
 
 
-pub mod prefix_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6762,9 +6704,6 @@ impl serde_utils::InlinedPair for Prefix {
 }
 
 
-pub mod local_name_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6851,9 +6790,6 @@ impl serde_utils::InlinedPair for LocalName {
 }
 
 
-pub mod example_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6906,9 +6842,6 @@ impl<'py> FromPyObject<'py> for Box<Example> {
 
 
 
-pub mod alt_description_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -6995,9 +6928,6 @@ impl serde_utils::InlinedPair for AltDescription {
 }
 
 
-pub mod permissible_value_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -7168,9 +7098,6 @@ impl serde_utils::InlinedPair for PermissibleValue {
 }
 
 
-pub mod unique_key_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -7333,9 +7260,6 @@ impl serde_utils::InlinedPair for UniqueKey {
 }
 
 
-pub mod type_mapping_utl {
-    use super::*;
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

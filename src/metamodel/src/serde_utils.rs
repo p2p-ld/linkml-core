@@ -45,6 +45,7 @@ where
 }
 
 
+#[cfg(any())]
 #[cfg(feature = "serde")]
 pub fn deserialize_inlined_dict_list<'de, D, T>(de: D) -> Result<Vec<T>, D::Error>
 where
@@ -120,22 +121,4 @@ where
 
         _ => Err(D::Error::custom("expected mapping or sequence")),
     }
-}
-
-#[cfg(feature = "serde")]
-pub fn deserialize_inlined_dict_map_box<'de, D, T>(
-    de: D,
-) -> Result<HashMap<T::Key, Box<T>>, D::Error>
-where
-    D: Deserializer<'de>,
-    T: InlinedPair + Deserialize<'de>,
-{
-    // call the existing helper …
-    deserialize_inlined_dict_map::<D, T>(de)
-        // …and wrap every value in a Box
-        .map(|map| map
-            .into_iter()
-            .map(|(k, v)| (k, Box::new(v)))
-            .collect()
-        )
 }
