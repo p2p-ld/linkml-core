@@ -1,5 +1,6 @@
 
 use linkml_meta::SchemaDefinition;
+use linkml_meta::poly::SchemaDefinition as _;
 
 use serde_yml;
 use std::fs;
@@ -22,6 +23,8 @@ pub fn from_yaml(path: &Path) -> Result<SchemaDefinition, Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
+    use linkml_meta::poly_containers::MapRef;
+
     use super::*;
     #[test]
     fn load_schema(){
@@ -43,6 +46,13 @@ mod tests {
             Ok(v) => v,
             Err(why) => panic!("{why:?}"),
         };
-        println!("{:?}", schema)
+        
+        let classes = schema.classes();
+        for (name, class) in classes.iter() {
+            let is_a = &class.is_a;
+            println!("class: {name} is a subclass of {is_a:?}")
+        }
+
+        //println!("{:?}", schema)
     }
 }

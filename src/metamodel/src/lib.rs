@@ -2,8 +2,8 @@
 
 #[cfg(feature = "serde")]
 mod serde_utils;
-mod poly;
-mod poly_containers;
+pub mod poly;
+pub mod poly_containers;
 
 #[cfg(feature = "serde")]
 use serde_yml as _ ;
