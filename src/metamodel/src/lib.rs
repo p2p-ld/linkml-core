@@ -2,6 +2,8 @@
 
 #[cfg(feature = "serde")]
 mod serde_utils;
+mod poly;
+mod poly_containers;
 
 #[cfg(feature = "serde")]
 use serde_yml as _ ;
@@ -48,7 +50,7 @@ pub type narrow_mappings = Vec<uriorcurie>;
 pub type broad_mappings = Vec<uriorcurie>;
 pub type deprecated_element_has_exact_replacement = uriorcurie;
 pub type deprecated_element_has_possible_replacement = uriorcurie;
-pub type extensions = Vec<ExtensionOrSubtype>;
+pub type extensions = Vec<Extension>;
 pub type extension_tag = uriorcurie;
 pub type extension_value = AnyValue;
 pub type annotations = Vec<Annotation>;
@@ -94,11 +96,11 @@ pub type alias_contexts = Vec<uri>;
 pub type in_language = String;
 pub type source = uriorcurie;
 pub type publisher = uriorcurie;
-pub type is_a = DefinitionOrSubtype;
+pub type is_a = Definition;
 pub type abstract_ = bool;
 pub type mixin = bool;
-pub type mixins = Vec<DefinitionOrSubtype>;
-pub type apply_to = Vec<DefinitionOrSubtype>;
+pub type mixins = Vec<Definition>;
+pub type apply_to = Vec<Definition>;
 pub type values_from = Vec<uriorcurie>;
 pub type code_set = uriorcurie;
 pub type code_set_version = String;
@@ -142,13 +144,13 @@ pub type source_file_size = isize;
 pub type generation_date = NaiveDateTime;
 pub type slots = Vec<SlotDefinition>;
 pub type slot_usage = Vec<SlotDefinition>;
-pub type enum_range = EnumExpressionOrSubtype;
+pub type enum_range = EnumExpression;
 pub type range_expression = AnonymousClassExpression;
-pub type boolean_slot = Vec<ExpressionOrSubtype>;
-pub type any_of = Vec<ExpressionOrSubtype>;
-pub type exactly_one_of = Vec<ExpressionOrSubtype>;
-pub type none_of = Vec<ExpressionOrSubtype>;
-pub type all_of = Vec<ExpressionOrSubtype>;
+pub type boolean_slot = Vec<Expression>;
+pub type any_of = Vec<Expression>;
+pub type exactly_one_of = Vec<Expression>;
+pub type none_of = Vec<Expression>;
+pub type all_of = Vec<Expression>;
 pub type preconditions = AnonymousClassExpression;
 pub type postconditions = AnonymousClassExpression;
 pub type elseconditions = AnonymousClassExpression;
@@ -163,7 +165,7 @@ pub type attributes = Vec<SlotDefinition>;
 pub type class_uri = uriorcurie;
 pub type subclass_of = uriorcurie;
 pub type defining_slots = Vec<SlotDefinition>;
-pub type union_of = Vec<ElementOrSubtype>;
+pub type union_of = Vec<Element>;
 pub type tree_root = bool;
 pub type unique_keys = Vec<UniqueKey>;
 pub type unique_key_name = String;
@@ -171,7 +173,7 @@ pub type consider_nulls_inequal = bool;
 pub type unique_key_slots = Vec<SlotDefinition>;
 pub type slot_names_unique = bool;
 pub type domain = ClassDefinition;
-pub type range = ElementOrSubtype;
+pub type range = Element;
 pub type slot_uri = uriorcurie;
 pub type multivalued = bool;
 pub type array = ArrayExpression;
@@ -210,12 +212,12 @@ pub type key = bool;
 pub type identifier = bool;
 pub type designates_type = bool;
 pub type alias = String;
-pub type owner = DefinitionOrSubtype;
+pub type owner = Definition;
 pub type domain_of = Vec<ClassDefinition>;
 pub type is_usage_slot = bool;
 pub type usage_slot_name = String;
 pub type subproperty_of = SlotDefinition;
-pub type disjoint_with = Vec<DefinitionOrSubtype>;
+pub type disjoint_with = Vec<Definition>;
 pub type children_are_mutually_disjoint = bool;
 pub type relational_logical_characteristic = bool;
 pub type symmetric = bool;
@@ -268,7 +270,7 @@ pub type local_name_value = String;
 pub type local_names = Vec<LocalName>;
 pub type slot_group = SlotDefinition;
 pub type is_grouping_slot = bool;
-pub type followed_by = ExpressionOrSubtype;
+pub type followed_by = Expression;
 pub type reversed = bool;
 pub type traverse = SlotDefinition;
 pub type path_rule = PathExpression;
@@ -407,6 +409,9 @@ impl serde_utils::InlinedPair for Extension {
 #[serde(untagged)]
 pub enum ExtensionOrSubtype {    Extension(Extension),     Annotation(Annotation)}
 
+impl From<Extension>   for ExtensionOrSubtype { fn from(x: Extension)   -> Self { Self::Extension(x) } }
+impl From<Annotation>   for ExtensionOrSubtype { fn from(x: Annotation)   -> Self { Self::Annotation(x) } }
+
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ExtensionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
@@ -536,6 +541,30 @@ impl<'py> FromPyObject<'py> for Box<Extensible> {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
 pub enum ExtensibleOrSubtype {    Extensible(Extensible),     Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
+
+impl From<Extensible>   for ExtensibleOrSubtype { fn from(x: Extensible)   -> Self { Self::Extensible(x) } }
+impl From<Element>   for ExtensibleOrSubtype { fn from(x: Element)   -> Self { Self::Element(x) } }
+impl From<EnumBinding>   for ExtensibleOrSubtype { fn from(x: EnumBinding)   -> Self { Self::EnumBinding(x) } }
+impl From<StructuredAlias>   for ExtensibleOrSubtype { fn from(x: StructuredAlias)   -> Self { Self::StructuredAlias(x) } }
+impl From<AnonymousExpression>   for ExtensibleOrSubtype { fn from(x: AnonymousExpression)   -> Self { Self::AnonymousExpression(x) } }
+impl From<PathExpression>   for ExtensibleOrSubtype { fn from(x: PathExpression)   -> Self { Self::PathExpression(x) } }
+impl From<ClassRule>   for ExtensibleOrSubtype { fn from(x: ClassRule)   -> Self { Self::ClassRule(x) } }
+impl From<ArrayExpression>   for ExtensibleOrSubtype { fn from(x: ArrayExpression)   -> Self { Self::ArrayExpression(x) } }
+impl From<DimensionExpression>   for ExtensibleOrSubtype { fn from(x: DimensionExpression)   -> Self { Self::DimensionExpression(x) } }
+impl From<PatternExpression>   for ExtensibleOrSubtype { fn from(x: PatternExpression)   -> Self { Self::PatternExpression(x) } }
+impl From<ImportExpression>   for ExtensibleOrSubtype { fn from(x: ImportExpression)   -> Self { Self::ImportExpression(x) } }
+impl From<PermissibleValue>   for ExtensibleOrSubtype { fn from(x: PermissibleValue)   -> Self { Self::PermissibleValue(x) } }
+impl From<UniqueKey>   for ExtensibleOrSubtype { fn from(x: UniqueKey)   -> Self { Self::UniqueKey(x) } }
+impl From<TypeMapping>   for ExtensibleOrSubtype { fn from(x: TypeMapping)   -> Self { Self::TypeMapping(x) } }
+impl From<AnonymousSlotExpression>   for ExtensibleOrSubtype { fn from(x: AnonymousSlotExpression)   -> Self { Self::AnonymousSlotExpression(x) } }
+impl From<AnonymousClassExpression>   for ExtensibleOrSubtype { fn from(x: AnonymousClassExpression)   -> Self { Self::AnonymousClassExpression(x) } }
+impl From<SchemaDefinition>   for ExtensibleOrSubtype { fn from(x: SchemaDefinition)   -> Self { Self::SchemaDefinition(x) } }
+impl From<TypeDefinition>   for ExtensibleOrSubtype { fn from(x: TypeDefinition)   -> Self { Self::TypeDefinition(x) } }
+impl From<SubsetDefinition>   for ExtensibleOrSubtype { fn from(x: SubsetDefinition)   -> Self { Self::SubsetDefinition(x) } }
+impl From<Definition>   for ExtensibleOrSubtype { fn from(x: Definition)   -> Self { Self::Definition(x) } }
+impl From<EnumDefinition>   for ExtensibleOrSubtype { fn from(x: EnumDefinition)   -> Self { Self::EnumDefinition(x) } }
+impl From<SlotDefinition>   for ExtensibleOrSubtype { fn from(x: SlotDefinition)   -> Self { Self::SlotDefinition(x) } }
+impl From<ClassDefinition>   for ExtensibleOrSubtype { fn from(x: ClassDefinition)   -> Self { Self::ClassDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ExtensibleOrSubtype {
@@ -696,6 +725,31 @@ impl<'py> FromPyObject<'py> for Box<Annotatable> {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
 pub enum AnnotatableOrSubtype {    Annotatable(Annotatable),     Annotation(Annotation),     Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
+
+impl From<Annotatable>   for AnnotatableOrSubtype { fn from(x: Annotatable)   -> Self { Self::Annotatable(x) } }
+impl From<Annotation>   for AnnotatableOrSubtype { fn from(x: Annotation)   -> Self { Self::Annotation(x) } }
+impl From<Element>   for AnnotatableOrSubtype { fn from(x: Element)   -> Self { Self::Element(x) } }
+impl From<EnumBinding>   for AnnotatableOrSubtype { fn from(x: EnumBinding)   -> Self { Self::EnumBinding(x) } }
+impl From<StructuredAlias>   for AnnotatableOrSubtype { fn from(x: StructuredAlias)   -> Self { Self::StructuredAlias(x) } }
+impl From<AnonymousExpression>   for AnnotatableOrSubtype { fn from(x: AnonymousExpression)   -> Self { Self::AnonymousExpression(x) } }
+impl From<PathExpression>   for AnnotatableOrSubtype { fn from(x: PathExpression)   -> Self { Self::PathExpression(x) } }
+impl From<ClassRule>   for AnnotatableOrSubtype { fn from(x: ClassRule)   -> Self { Self::ClassRule(x) } }
+impl From<ArrayExpression>   for AnnotatableOrSubtype { fn from(x: ArrayExpression)   -> Self { Self::ArrayExpression(x) } }
+impl From<DimensionExpression>   for AnnotatableOrSubtype { fn from(x: DimensionExpression)   -> Self { Self::DimensionExpression(x) } }
+impl From<PatternExpression>   for AnnotatableOrSubtype { fn from(x: PatternExpression)   -> Self { Self::PatternExpression(x) } }
+impl From<ImportExpression>   for AnnotatableOrSubtype { fn from(x: ImportExpression)   -> Self { Self::ImportExpression(x) } }
+impl From<PermissibleValue>   for AnnotatableOrSubtype { fn from(x: PermissibleValue)   -> Self { Self::PermissibleValue(x) } }
+impl From<UniqueKey>   for AnnotatableOrSubtype { fn from(x: UniqueKey)   -> Self { Self::UniqueKey(x) } }
+impl From<TypeMapping>   for AnnotatableOrSubtype { fn from(x: TypeMapping)   -> Self { Self::TypeMapping(x) } }
+impl From<AnonymousSlotExpression>   for AnnotatableOrSubtype { fn from(x: AnonymousSlotExpression)   -> Self { Self::AnonymousSlotExpression(x) } }
+impl From<AnonymousClassExpression>   for AnnotatableOrSubtype { fn from(x: AnonymousClassExpression)   -> Self { Self::AnonymousClassExpression(x) } }
+impl From<SchemaDefinition>   for AnnotatableOrSubtype { fn from(x: SchemaDefinition)   -> Self { Self::SchemaDefinition(x) } }
+impl From<TypeDefinition>   for AnnotatableOrSubtype { fn from(x: TypeDefinition)   -> Self { Self::TypeDefinition(x) } }
+impl From<SubsetDefinition>   for AnnotatableOrSubtype { fn from(x: SubsetDefinition)   -> Self { Self::SubsetDefinition(x) } }
+impl From<Definition>   for AnnotatableOrSubtype { fn from(x: Definition)   -> Self { Self::Definition(x) } }
+impl From<EnumDefinition>   for AnnotatableOrSubtype { fn from(x: EnumDefinition)   -> Self { Self::EnumDefinition(x) } }
+impl From<SlotDefinition>   for AnnotatableOrSubtype { fn from(x: SlotDefinition)   -> Self { Self::SlotDefinition(x) } }
+impl From<ClassDefinition>   for AnnotatableOrSubtype { fn from(x: ClassDefinition)   -> Self { Self::ClassDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for AnnotatableOrSubtype {
@@ -1066,6 +1120,30 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadata> {
 #[serde(untagged)]
 pub enum CommonMetadataOrSubtype {    CommonMetadata(CommonMetadata),     Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
+impl From<CommonMetadata>   for CommonMetadataOrSubtype { fn from(x: CommonMetadata)   -> Self { Self::CommonMetadata(x) } }
+impl From<Element>   for CommonMetadataOrSubtype { fn from(x: Element)   -> Self { Self::Element(x) } }
+impl From<EnumBinding>   for CommonMetadataOrSubtype { fn from(x: EnumBinding)   -> Self { Self::EnumBinding(x) } }
+impl From<StructuredAlias>   for CommonMetadataOrSubtype { fn from(x: StructuredAlias)   -> Self { Self::StructuredAlias(x) } }
+impl From<AnonymousExpression>   for CommonMetadataOrSubtype { fn from(x: AnonymousExpression)   -> Self { Self::AnonymousExpression(x) } }
+impl From<PathExpression>   for CommonMetadataOrSubtype { fn from(x: PathExpression)   -> Self { Self::PathExpression(x) } }
+impl From<ClassRule>   for CommonMetadataOrSubtype { fn from(x: ClassRule)   -> Self { Self::ClassRule(x) } }
+impl From<ArrayExpression>   for CommonMetadataOrSubtype { fn from(x: ArrayExpression)   -> Self { Self::ArrayExpression(x) } }
+impl From<DimensionExpression>   for CommonMetadataOrSubtype { fn from(x: DimensionExpression)   -> Self { Self::DimensionExpression(x) } }
+impl From<PatternExpression>   for CommonMetadataOrSubtype { fn from(x: PatternExpression)   -> Self { Self::PatternExpression(x) } }
+impl From<ImportExpression>   for CommonMetadataOrSubtype { fn from(x: ImportExpression)   -> Self { Self::ImportExpression(x) } }
+impl From<PermissibleValue>   for CommonMetadataOrSubtype { fn from(x: PermissibleValue)   -> Self { Self::PermissibleValue(x) } }
+impl From<UniqueKey>   for CommonMetadataOrSubtype { fn from(x: UniqueKey)   -> Self { Self::UniqueKey(x) } }
+impl From<TypeMapping>   for CommonMetadataOrSubtype { fn from(x: TypeMapping)   -> Self { Self::TypeMapping(x) } }
+impl From<AnonymousSlotExpression>   for CommonMetadataOrSubtype { fn from(x: AnonymousSlotExpression)   -> Self { Self::AnonymousSlotExpression(x) } }
+impl From<AnonymousClassExpression>   for CommonMetadataOrSubtype { fn from(x: AnonymousClassExpression)   -> Self { Self::AnonymousClassExpression(x) } }
+impl From<SchemaDefinition>   for CommonMetadataOrSubtype { fn from(x: SchemaDefinition)   -> Self { Self::SchemaDefinition(x) } }
+impl From<TypeDefinition>   for CommonMetadataOrSubtype { fn from(x: TypeDefinition)   -> Self { Self::TypeDefinition(x) } }
+impl From<SubsetDefinition>   for CommonMetadataOrSubtype { fn from(x: SubsetDefinition)   -> Self { Self::SubsetDefinition(x) } }
+impl From<Definition>   for CommonMetadataOrSubtype { fn from(x: Definition)   -> Self { Self::Definition(x) } }
+impl From<EnumDefinition>   for CommonMetadataOrSubtype { fn from(x: EnumDefinition)   -> Self { Self::EnumDefinition(x) } }
+impl From<SlotDefinition>   for CommonMetadataOrSubtype { fn from(x: SlotDefinition)   -> Self { Self::SlotDefinition(x) } }
+impl From<ClassDefinition>   for CommonMetadataOrSubtype { fn from(x: ClassDefinition)   -> Self { Self::ClassDefinition(x) } }
+
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for CommonMetadataOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
@@ -1349,6 +1427,15 @@ impl serde_utils::InlinedPair for Element {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
 pub enum ElementOrSubtype {    Element(Element),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
+
+impl From<Element>   for ElementOrSubtype { fn from(x: Element)   -> Self { Self::Element(x) } }
+impl From<SchemaDefinition>   for ElementOrSubtype { fn from(x: SchemaDefinition)   -> Self { Self::SchemaDefinition(x) } }
+impl From<TypeDefinition>   for ElementOrSubtype { fn from(x: TypeDefinition)   -> Self { Self::TypeDefinition(x) } }
+impl From<SubsetDefinition>   for ElementOrSubtype { fn from(x: SubsetDefinition)   -> Self { Self::SubsetDefinition(x) } }
+impl From<Definition>   for ElementOrSubtype { fn from(x: Definition)   -> Self { Self::Definition(x) } }
+impl From<EnumDefinition>   for ElementOrSubtype { fn from(x: EnumDefinition)   -> Self { Self::EnumDefinition(x) } }
+impl From<SlotDefinition>   for ElementOrSubtype { fn from(x: SlotDefinition)   -> Self { Self::SlotDefinition(x) } }
+impl From<ClassDefinition>   for ElementOrSubtype { fn from(x: ClassDefinition)   -> Self { Self::ClassDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ElementOrSubtype {
@@ -2280,7 +2367,7 @@ impl<'py> FromPyObject<'py> for Box<Definition> {
 impl serde_utils::InlinedPair for Definition {
     type Key   = String;
         
-    type Value = DefinitionOrSubtype;
+    type Value = Definition;
     type Error = String;
 
     fn extract_key(&self) -> &Self::Key {
@@ -2318,6 +2405,11 @@ impl serde_utils::InlinedPair for Definition {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
 pub enum DefinitionOrSubtype {    Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
+
+impl From<Definition>   for DefinitionOrSubtype { fn from(x: Definition)   -> Self { Self::Definition(x) } }
+impl From<EnumDefinition>   for DefinitionOrSubtype { fn from(x: EnumDefinition)   -> Self { Self::EnumDefinition(x) } }
+impl From<SlotDefinition>   for DefinitionOrSubtype { fn from(x: SlotDefinition)   -> Self { Self::SlotDefinition(x) } }
+impl From<ClassDefinition>   for DefinitionOrSubtype { fn from(x: ClassDefinition)   -> Self { Self::ClassDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for DefinitionOrSubtype {
@@ -3021,6 +3113,21 @@ pub struct Expression {
 #[serde(untagged)]
 pub enum ExpressionOrSubtype {    Expression(Expression),     TypeExpression(TypeExpression),     EnumExpression(EnumExpression),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     SlotExpression(SlotExpression),     AnonymousSlotExpression(AnonymousSlotExpression),     SlotDefinition(SlotDefinition),     AnonymousClassExpression(AnonymousClassExpression),     AnonymousEnumExpression(AnonymousEnumExpression),     EnumDefinition(EnumDefinition),     AnonymousTypeExpression(AnonymousTypeExpression),     TypeDefinition(TypeDefinition)}
 
+impl From<Expression>   for ExpressionOrSubtype { fn from(x: Expression)   -> Self { Self::Expression(x) } }
+impl From<TypeExpression>   for ExpressionOrSubtype { fn from(x: TypeExpression)   -> Self { Self::TypeExpression(x) } }
+impl From<EnumExpression>   for ExpressionOrSubtype { fn from(x: EnumExpression)   -> Self { Self::EnumExpression(x) } }
+impl From<StructuredAlias>   for ExpressionOrSubtype { fn from(x: StructuredAlias)   -> Self { Self::StructuredAlias(x) } }
+impl From<AnonymousExpression>   for ExpressionOrSubtype { fn from(x: AnonymousExpression)   -> Self { Self::AnonymousExpression(x) } }
+impl From<PathExpression>   for ExpressionOrSubtype { fn from(x: PathExpression)   -> Self { Self::PathExpression(x) } }
+impl From<SlotExpression>   for ExpressionOrSubtype { fn from(x: SlotExpression)   -> Self { Self::SlotExpression(x) } }
+impl From<AnonymousSlotExpression>   for ExpressionOrSubtype { fn from(x: AnonymousSlotExpression)   -> Self { Self::AnonymousSlotExpression(x) } }
+impl From<SlotDefinition>   for ExpressionOrSubtype { fn from(x: SlotDefinition)   -> Self { Self::SlotDefinition(x) } }
+impl From<AnonymousClassExpression>   for ExpressionOrSubtype { fn from(x: AnonymousClassExpression)   -> Self { Self::AnonymousClassExpression(x) } }
+impl From<AnonymousEnumExpression>   for ExpressionOrSubtype { fn from(x: AnonymousEnumExpression)   -> Self { Self::AnonymousEnumExpression(x) } }
+impl From<EnumDefinition>   for ExpressionOrSubtype { fn from(x: EnumDefinition)   -> Self { Self::EnumDefinition(x) } }
+impl From<AnonymousTypeExpression>   for ExpressionOrSubtype { fn from(x: AnonymousTypeExpression)   -> Self { Self::AnonymousTypeExpression(x) } }
+impl From<TypeDefinition>   for ExpressionOrSubtype { fn from(x: TypeDefinition)   -> Self { Self::TypeDefinition(x) } }
+
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ExpressionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
@@ -3177,6 +3284,10 @@ impl<'py> FromPyObject<'py> for Box<TypeExpression> {
 #[serde(untagged)]
 pub enum TypeExpressionOrSubtype {    TypeExpression(TypeExpression),     AnonymousTypeExpression(AnonymousTypeExpression),     TypeDefinition(TypeDefinition)}
 
+impl From<TypeExpression>   for TypeExpressionOrSubtype { fn from(x: TypeExpression)   -> Self { Self::TypeExpression(x) } }
+impl From<AnonymousTypeExpression>   for TypeExpressionOrSubtype { fn from(x: AnonymousTypeExpression)   -> Self { Self::AnonymousTypeExpression(x) } }
+impl From<TypeDefinition>   for TypeExpressionOrSubtype { fn from(x: TypeDefinition)   -> Self { Self::TypeDefinition(x) } }
+
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for TypeExpressionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
@@ -3296,6 +3407,10 @@ impl<'py> FromPyObject<'py> for Box<EnumExpression> {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
 pub enum EnumExpressionOrSubtype {    EnumExpression(EnumExpression),     AnonymousEnumExpression(AnonymousEnumExpression),     EnumDefinition(EnumDefinition)}
+
+impl From<EnumExpression>   for EnumExpressionOrSubtype { fn from(x: EnumExpression)   -> Self { Self::EnumExpression(x) } }
+impl From<AnonymousEnumExpression>   for EnumExpressionOrSubtype { fn from(x: AnonymousEnumExpression)   -> Self { Self::AnonymousEnumExpression(x) } }
+impl From<EnumDefinition>   for EnumExpressionOrSubtype { fn from(x: EnumDefinition)   -> Self { Self::EnumDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for EnumExpressionOrSubtype {
@@ -3466,6 +3581,10 @@ impl<'py> FromPyObject<'py> for Box<AnonymousExpression> {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
 pub enum AnonymousExpressionOrSubtype {    AnonymousExpression(AnonymousExpression),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression)}
+
+impl From<AnonymousExpression>   for AnonymousExpressionOrSubtype { fn from(x: AnonymousExpression)   -> Self { Self::AnonymousExpression(x) } }
+impl From<AnonymousSlotExpression>   for AnonymousExpressionOrSubtype { fn from(x: AnonymousSlotExpression)   -> Self { Self::AnonymousSlotExpression(x) } }
+impl From<AnonymousClassExpression>   for AnonymousExpressionOrSubtype { fn from(x: AnonymousClassExpression)   -> Self { Self::AnonymousClassExpression(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for AnonymousExpressionOrSubtype {
@@ -3747,6 +3866,10 @@ impl<'py> FromPyObject<'py> for Box<SlotExpression> {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
 pub enum SlotExpressionOrSubtype {    SlotExpression(SlotExpression),     AnonymousSlotExpression(AnonymousSlotExpression),     SlotDefinition(SlotDefinition)}
+
+impl From<SlotExpression>   for SlotExpressionOrSubtype { fn from(x: SlotExpression)   -> Self { Self::SlotExpression(x) } }
+impl From<AnonymousSlotExpression>   for SlotExpressionOrSubtype { fn from(x: AnonymousSlotExpression)   -> Self { Self::AnonymousSlotExpression(x) } }
+impl From<SlotDefinition>   for SlotExpressionOrSubtype { fn from(x: SlotDefinition)   -> Self { Self::SlotDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for SlotExpressionOrSubtype {
@@ -4050,8 +4173,9 @@ pub struct SlotDefinition {
     pub children_are_mutually_disjoint: Option<bool>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub union_of: Vec<String>,
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
-    pub type_mappings: Vec<String>,
+    pub type_mappings: HashMap<String, TypeMapping>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub range: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
@@ -4218,7 +4342,7 @@ pub struct SlotDefinition {
 #[pymethods]
 impl SlotDefinition {
     #[new]
-    pub fn new(singular_name: Option<String>, domain: Option<String>, slot_uri: Option<uriorcurie>, array: Option<ArrayExpression>, inherited: Option<bool>, readonly: Option<String>, ifabsent: Option<String>, list_elements_unique: Option<bool>, list_elements_ordered: Option<bool>, shared: Option<bool>, key: Option<bool>, identifier: Option<bool>, designates_type: Option<bool>, alias: Option<String>, owner: Option<String>, domain_of: Vec<String>, subproperty_of: Option<String>, symmetric: Option<bool>, reflexive: Option<bool>, locally_reflexive: Option<bool>, irreflexive: Option<bool>, asymmetric: Option<bool>, transitive: Option<bool>, inverse: Option<String>, is_class_field: Option<bool>, transitive_form_of: Option<String>, reflexive_transitive_form_of: Option<String>, role: Option<String>, is_usage_slot: Option<bool>, usage_slot_name: Option<String>, relational_role: Option<String>, slot_group: Option<String>, is_grouping_slot: Option<bool>, path_rule: Option<Box<PathExpression>>, disjoint_with: Vec<String>, children_are_mutually_disjoint: Option<bool>, union_of: Vec<String>, type_mappings: Vec<String>, range: Option<String>, range_expression: Option<Box<AnonymousClassExpression>>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Vec<EnumBinding>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<String>, equals_string: Option<String>, equals_string_in: Vec<String>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Option<Box<AnonymousSlotExpression>>, all_members: Option<Box<AnonymousSlotExpression>>, none_of: Vec<Box<AnonymousSlotExpression>>, exactly_one_of: Vec<Box<AnonymousSlotExpression>>, any_of: Vec<Box<AnonymousSlotExpression>>, all_of: Vec<Box<AnonymousSlotExpression>>, is_a: Option<String>, abstract_: Option<bool>, mixin: Option<bool>, mixins: Vec<String>, apply_to: Vec<String>, values_from: Vec<uriorcurie>, string_serialization: Option<String>, name: String, id_prefixes: Vec<ncname>, id_prefixes_are_closed: Option<bool>, definition_uri: Option<uriorcurie>, local_names: HashMap<String, LocalName>, conforms_to: Option<String>, implements: Vec<uriorcurie>, instantiates: Vec<uriorcurie>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
+    pub fn new(singular_name: Option<String>, domain: Option<String>, slot_uri: Option<uriorcurie>, array: Option<ArrayExpression>, inherited: Option<bool>, readonly: Option<String>, ifabsent: Option<String>, list_elements_unique: Option<bool>, list_elements_ordered: Option<bool>, shared: Option<bool>, key: Option<bool>, identifier: Option<bool>, designates_type: Option<bool>, alias: Option<String>, owner: Option<String>, domain_of: Vec<String>, subproperty_of: Option<String>, symmetric: Option<bool>, reflexive: Option<bool>, locally_reflexive: Option<bool>, irreflexive: Option<bool>, asymmetric: Option<bool>, transitive: Option<bool>, inverse: Option<String>, is_class_field: Option<bool>, transitive_form_of: Option<String>, reflexive_transitive_form_of: Option<String>, role: Option<String>, is_usage_slot: Option<bool>, usage_slot_name: Option<String>, relational_role: Option<String>, slot_group: Option<String>, is_grouping_slot: Option<bool>, path_rule: Option<Box<PathExpression>>, disjoint_with: Vec<String>, children_are_mutually_disjoint: Option<bool>, union_of: Vec<String>, type_mappings: HashMap<String, TypeMapping>, range: Option<String>, range_expression: Option<Box<AnonymousClassExpression>>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Vec<EnumBinding>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<String>, equals_string: Option<String>, equals_string_in: Vec<String>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Option<Box<AnonymousSlotExpression>>, all_members: Option<Box<AnonymousSlotExpression>>, none_of: Vec<Box<AnonymousSlotExpression>>, exactly_one_of: Vec<Box<AnonymousSlotExpression>>, any_of: Vec<Box<AnonymousSlotExpression>>, all_of: Vec<Box<AnonymousSlotExpression>>, is_a: Option<String>, abstract_: Option<bool>, mixin: Option<bool>, mixins: Vec<String>, apply_to: Vec<String>, values_from: Vec<uriorcurie>, string_serialization: Option<String>, name: String, id_prefixes: Vec<ncname>, id_prefixes_are_closed: Option<bool>, definition_uri: Option<uriorcurie>, local_names: HashMap<String, LocalName>, conforms_to: Option<String>, implements: Vec<uriorcurie>, instantiates: Vec<uriorcurie>, extensions: HashMap<String, ExtensionOrSubtype>, annotations: HashMap<String, Annotation>, description: Option<String>, alt_descriptions: HashMap<String, AltDescription>, title: Option<String>, deprecated: Option<String>, todos: Vec<String>, notes: Vec<String>, comments: Vec<String>, examples: Vec<Example>, in_subset: Vec<String>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Vec<uriorcurie>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Vec<String>, structured_aliases: Vec<StructuredAlias>, mappings: Vec<uriorcurie>, exact_mappings: Vec<uriorcurie>, close_mappings: Vec<uriorcurie>, related_mappings: Vec<uriorcurie>, narrow_mappings: Vec<uriorcurie>, broad_mappings: Vec<uriorcurie>, created_by: Option<uriorcurie>, contributors: Vec<uriorcurie>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Vec<uriorcurie>, keywords: Vec<String>) -> Self {
         SlotDefinition{singular_name, domain, slot_uri, array, inherited, readonly, ifabsent, list_elements_unique, list_elements_ordered, shared, key, identifier, designates_type, alias, owner, domain_of, subproperty_of, symmetric, reflexive, locally_reflexive, irreflexive, asymmetric, transitive, inverse, is_class_field, transitive_form_of, reflexive_transitive_form_of, role, is_usage_slot, usage_slot_name, relational_role, slot_group, is_grouping_slot, path_rule, disjoint_with, children_are_mutually_disjoint, union_of, type_mappings, range, range_expression, enum_range, bindings, required, recommended, multivalued, inlined, inlined_as_list, minimum_value, maximum_value, pattern, structured_pattern, unit, implicit_prefix, value_presence, equals_string, equals_string_in, equals_number, equals_expression, exact_cardinality, minimum_cardinality, maximum_cardinality, has_member, all_members, none_of, exactly_one_of, any_of, all_of, is_a, abstract_, mixin, mixins, apply_to, values_from, string_serialization, name, id_prefixes, id_prefixes_are_closed, definition_uri, local_names, conforms_to, implements, instantiates, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, rank, categories, keywords}
     }
 }
@@ -4335,6 +4459,10 @@ impl<'py> FromPyObject<'py> for Box<ClassExpression> {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
 pub enum ClassExpressionOrSubtype {    ClassExpression(ClassExpression),     AnonymousClassExpression(AnonymousClassExpression),     ClassDefinition(ClassDefinition)}
+
+impl From<ClassExpression>   for ClassExpressionOrSubtype { fn from(x: ClassExpression)   -> Self { Self::ClassExpression(x) } }
+impl From<AnonymousClassExpression>   for ClassExpressionOrSubtype { fn from(x: AnonymousClassExpression)   -> Self { Self::AnonymousClassExpression(x) } }
+impl From<ClassDefinition>   for ClassExpressionOrSubtype { fn from(x: ClassDefinition)   -> Self { Self::ClassDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ClassExpressionOrSubtype {
@@ -4746,6 +4874,9 @@ pub struct ClassLevelRule {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[serde(untagged)]
 pub enum ClassLevelRuleOrSubtype {    ClassLevelRule(ClassLevelRule),     ClassRule(ClassRule)}
+
+impl From<ClassLevelRule>   for ClassLevelRuleOrSubtype { fn from(x: ClassLevelRule)   -> Self { Self::ClassLevelRule(x) } }
+impl From<ClassRule>   for ClassLevelRuleOrSubtype { fn from(x: ClassRule)   -> Self { Self::ClassRule(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ClassLevelRuleOrSubtype {
