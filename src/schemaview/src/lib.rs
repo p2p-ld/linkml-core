@@ -1,4 +1,7 @@
 pub mod io;
+pub mod schemaview;
+pub mod curie;
+pub mod resolve;
 extern crate linkml_meta;
 use pyo3::prelude::*;
 
@@ -9,8 +12,8 @@ fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
 }
 
 /// A Python module implemented in Rust.
-#[pymodule]
-fn schemaview(m: &Bound<'_, PyModule>) -> PyResult<()> {
+#[pymodule(name="schemaview")]
+fn schemaview_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
     Ok(())
 }
