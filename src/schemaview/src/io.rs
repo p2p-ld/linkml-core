@@ -83,11 +83,11 @@ mod tests {
         schema_view.add_schema(schema).unwrap();
         let unresolved = schema_view.get_unresolved_schemas();
         assert!(unresolved.contains(&"https://w3id.org/linkml/mappings".to_string()));
+        println!("Unresolved schemas: {:?}", unresolved);
         resolve_schemas(&mut schema_view).unwrap();
         let unresolved = schema_view.get_unresolved_schemas();
         assert!(unresolved.is_empty());
 
-        println!("Unresolved schemas: {:?}", unresolved);
 
     }
 
