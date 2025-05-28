@@ -1711,7 +1711,6 @@ impl CommonMetadata for crate::PatternExpression {
         return &self.keywords;
     }
 }
-
 impl CommonMetadata for crate::ImportExpression {
         fn description(&self) -> &Option<String> {
         return &self.description;

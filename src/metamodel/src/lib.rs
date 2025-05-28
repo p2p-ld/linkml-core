@@ -963,7 +963,7 @@ pub struct UnitOfMeasure {
     pub abbreviation: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub descriptive_name: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub ucum_code: Option<String>,
@@ -1025,11 +1025,11 @@ pub struct CommonMetadata {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -1043,31 +1043,31 @@ pub struct CommonMetadata {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -1079,9 +1079,9 @@ pub struct CommonMetadata {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -1265,7 +1265,7 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadataOrSubtype> {
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Element {
     pub name: String,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Vec<ncname>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
@@ -1276,9 +1276,9 @@ pub struct Element {
     pub local_names: HashMap<String, LocalName>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub implements: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -1295,11 +1295,11 @@ pub struct Element {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -1313,31 +1313,31 @@ pub struct Element {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -1349,9 +1349,9 @@ pub struct Element {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -1590,16 +1590,16 @@ pub struct SchemaDefinition {
     pub id: uri,
     #[cfg_attr(feature = "serde", serde(default))]
     pub version: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub imports: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub license: Option<String>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
     pub prefixes: HashMap<String, Prefix>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub emit_prefixes: Vec<ncname>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub default_curi_maps: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub default_prefix: Option<String>,
@@ -1638,7 +1638,7 @@ pub struct SchemaDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub bindings: Vec<EnumBinding>,
     pub name: ncname,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Vec<ncname>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
@@ -1649,9 +1649,9 @@ pub struct SchemaDefinition {
     pub local_names: HashMap<String, LocalName>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub implements: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -1668,11 +1668,11 @@ pub struct SchemaDefinition {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -1686,31 +1686,31 @@ pub struct SchemaDefinition {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -1722,9 +1722,9 @@ pub struct SchemaDefinition {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -1811,7 +1811,7 @@ pub struct AnonymousTypeExpression {
     pub implicit_prefix: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_number: Option<isize>,
@@ -1884,7 +1884,7 @@ pub struct TypeDefinition {
     pub implicit_prefix: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_number: Option<isize>,
@@ -1901,7 +1901,7 @@ pub struct TypeDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Vec<AnonymousTypeExpression>,
     pub name: String,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Vec<ncname>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
@@ -1912,9 +1912,9 @@ pub struct TypeDefinition {
     pub local_names: HashMap<String, LocalName>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub implements: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -1931,11 +1931,11 @@ pub struct TypeDefinition {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -1949,31 +1949,31 @@ pub struct TypeDefinition {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -1985,9 +1985,9 @@ pub struct TypeDefinition {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -2065,7 +2065,7 @@ impl serde_utils::InlinedPair for TypeDefinition {
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SubsetDefinition {
     pub name: String,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Vec<ncname>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
@@ -2076,9 +2076,9 @@ pub struct SubsetDefinition {
     pub local_names: HashMap<String, LocalName>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub implements: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -2095,11 +2095,11 @@ pub struct SubsetDefinition {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -2113,31 +2113,31 @@ pub struct SubsetDefinition {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<Box<StructuredAlias>>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -2149,9 +2149,9 @@ pub struct SubsetDefinition {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -2238,12 +2238,12 @@ pub struct Definition {
     pub mixins: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub apply_to: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub values_from: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub string_serialization: Option<String>,
     pub name: String,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Vec<ncname>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
@@ -2254,9 +2254,9 @@ pub struct Definition {
     pub local_names: HashMap<String, LocalName>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub implements: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -2273,11 +2273,11 @@ pub struct Definition {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -2291,31 +2291,31 @@ pub struct Definition {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -2327,9 +2327,9 @@ pub struct Definition {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -2542,7 +2542,7 @@ pub struct AnonymousEnumExpression {
     pub reachable_from: Option<ReachabilityQuery>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub matches: Option<MatchQuery>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub concepts: Vec<uriorcurie>
 }
 #[cfg(feature = "pyo3")]
@@ -2604,7 +2604,7 @@ pub struct EnumDefinition {
     pub reachable_from: Option<ReachabilityQuery>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub matches: Option<MatchQuery>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub concepts: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_a: Option<String>,
@@ -2616,12 +2616,12 @@ pub struct EnumDefinition {
     pub mixins: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub apply_to: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub values_from: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub string_serialization: Option<String>,
     pub name: String,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Vec<ncname>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
@@ -2632,9 +2632,9 @@ pub struct EnumDefinition {
     pub local_names: HashMap<String, LocalName>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub implements: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -2651,11 +2651,11 @@ pub struct EnumDefinition {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -2669,31 +2669,31 @@ pub struct EnumDefinition {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -2705,9 +2705,9 @@ pub struct EnumDefinition {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -2807,11 +2807,11 @@ pub struct EnumBinding {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -2825,31 +2825,31 @@ pub struct EnumBinding {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -2861,9 +2861,9 @@ pub struct EnumBinding {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -2945,9 +2945,9 @@ impl<'py> FromPyObject<'py> for Box<MatchQuery> {
 pub struct ReachabilityQuery {
     #[cfg_attr(feature = "serde", serde(default))]
     pub source_ontology: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub source_nodes: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub relationship_types: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_direct: Option<bool>,
@@ -2995,9 +2995,9 @@ pub struct StructuredAlias {
     pub literal_form: String,
     #[cfg_attr(feature = "serde", serde(default))]
     pub alias_predicate: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub alias_contexts: Vec<uri>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -3014,11 +3014,11 @@ pub struct StructuredAlias {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -3032,31 +3032,31 @@ pub struct StructuredAlias {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<Box<StructuredAlias>>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -3068,7 +3068,7 @@ pub struct StructuredAlias {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -3231,7 +3231,7 @@ pub struct TypeExpression {
     pub implicit_prefix: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_number: Option<isize>,
@@ -3369,7 +3369,7 @@ pub struct EnumExpression {
     pub reachable_from: Option<ReachabilityQuery>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub matches: Option<MatchQuery>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub concepts: Vec<uriorcurie>
 }
 #[cfg(feature = "pyo3")]
@@ -3487,11 +3487,11 @@ pub struct AnonymousExpression {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -3505,31 +3505,31 @@ pub struct AnonymousExpression {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -3541,9 +3541,9 @@ pub struct AnonymousExpression {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -3677,11 +3677,11 @@ pub struct PathExpression {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -3695,31 +3695,31 @@ pub struct PathExpression {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -3731,9 +3731,9 @@ pub struct PathExpression {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -3806,7 +3806,7 @@ pub struct SlotExpression {
     pub value_presence: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_number: Option<isize>,
@@ -3965,7 +3965,7 @@ pub struct AnonymousSlotExpression {
     pub value_presence: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_number: Option<isize>,
@@ -4004,11 +4004,11 @@ pub struct AnonymousSlotExpression {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -4022,31 +4022,31 @@ pub struct AnonymousSlotExpression {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -4058,9 +4058,9 @@ pub struct AnonymousSlotExpression {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -4210,7 +4210,7 @@ pub struct SlotDefinition {
     pub value_presence: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_number: Option<isize>,
@@ -4244,12 +4244,12 @@ pub struct SlotDefinition {
     pub mixins: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub apply_to: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub values_from: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub string_serialization: Option<String>,
     pub name: String,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Vec<ncname>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
@@ -4260,9 +4260,9 @@ pub struct SlotDefinition {
     pub local_names: HashMap<String, LocalName>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub implements: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -4279,11 +4279,11 @@ pub struct SlotDefinition {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -4297,31 +4297,31 @@ pub struct SlotDefinition {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -4333,9 +4333,9 @@ pub struct SlotDefinition {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -4552,11 +4552,11 @@ pub struct AnonymousClassExpression {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -4570,31 +4570,31 @@ pub struct AnonymousClassExpression {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -4606,9 +4606,9 @@ pub struct AnonymousClassExpression {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -4701,12 +4701,12 @@ pub struct ClassDefinition {
     pub mixins: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub apply_to: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub values_from: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub string_serialization: Option<String>,
     pub name: String,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Vec<ncname>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
@@ -4717,9 +4717,9 @@ pub struct ClassDefinition {
     pub local_names: HashMap<String, LocalName>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub implements: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -4736,11 +4736,11 @@ pub struct ClassDefinition {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -4754,31 +4754,31 @@ pub struct ClassDefinition {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -4790,9 +4790,9 @@ pub struct ClassDefinition {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -4964,11 +4964,11 @@ pub struct ClassRule {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -4982,31 +4982,31 @@ pub struct ClassRule {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -5016,9 +5016,9 @@ pub struct ClassRule {
     pub modified_by: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub status: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -5146,11 +5146,11 @@ pub struct ArrayExpression {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -5164,31 +5164,31 @@ pub struct ArrayExpression {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -5200,9 +5200,9 @@ pub struct ArrayExpression {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -5264,11 +5264,11 @@ pub struct DimensionExpression {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -5282,31 +5282,31 @@ pub struct DimensionExpression {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -5318,9 +5318,9 @@ pub struct DimensionExpression {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -5380,11 +5380,11 @@ pub struct PatternExpression {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -5398,31 +5398,31 @@ pub struct PatternExpression {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -5434,9 +5434,9 @@ pub struct PatternExpression {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -5496,11 +5496,11 @@ pub struct ImportExpression {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -5514,31 +5514,31 @@ pub struct ImportExpression {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -5550,9 +5550,9 @@ pub struct ImportExpression {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -5949,9 +5949,9 @@ pub struct PermissibleValue {
     pub meaning: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub unit: Option<UnitOfMeasure>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub implements: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_a: Option<String>,
@@ -5970,11 +5970,11 @@ pub struct PermissibleValue {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -5988,31 +5988,31 @@ pub struct PermissibleValue {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -6024,9 +6024,9 @@ pub struct PermissibleValue {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -6123,11 +6123,11 @@ pub struct UniqueKey {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -6141,31 +6141,31 @@ pub struct UniqueKey {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -6177,9 +6177,9 @@ pub struct UniqueKey {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
@@ -6276,11 +6276,11 @@ pub struct TypeMapping {
     pub title: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub todos: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub notes: Vec<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub comments: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Vec<Example>,
@@ -6294,31 +6294,31 @@ pub struct TypeMapping {
     pub source: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Vec<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Vec<StructuredAlias>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
@@ -6330,9 +6330,9 @@ pub struct TypeMapping {
     pub status: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub keywords: Vec<String>
 }
 #[cfg(feature = "pyo3")]
