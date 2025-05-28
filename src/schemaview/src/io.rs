@@ -1,16 +1,10 @@
 
 use linkml_meta::SchemaDefinition;
-#[cfg(test)]
-use linkml_meta::poly::SchemaDefinition as _;
-#[cfg(test)]
-use crate::schemaview::SchemaView;
 use serde_yml;
 use std::path::Path;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
-#[cfg(test)]
-use std::path::{PathBuf, absolute};
 
 pub fn from_yaml(path: &Path) -> Result<SchemaDefinition, Box<dyn Error>> {
 
@@ -34,6 +28,12 @@ pub fn from_uri(uri: &str) -> Result<SchemaDefinition, Box<dyn Error>> {
 #[cfg(test)]
 mod tests {
     use linkml_meta::poly_containers::MapRef;
+    use std::path::{PathBuf, absolute};
+    use crate::schemaview::SchemaView;
+    use linkml_meta::poly::SchemaDefinition as _;
+
+
+
 
     pub fn meta_path() -> PathBuf {
         let mut this_file = PathBuf::from("src/io.rs");
