@@ -1,13 +1,15 @@
 
 use linkml_meta::SchemaDefinition;
+#[cfg(test)]
 use linkml_meta::poly::SchemaDefinition as _;
+#[cfg(test)]
 use crate::schemaview::SchemaView;
 use serde_yml;
-use std::fs;
 use std::path::Path;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
+#[cfg(test)]
 use std::path::{PathBuf, absolute};
 
 pub fn from_yaml(path: &Path) -> Result<SchemaDefinition, Box<dyn Error>> {
@@ -48,7 +50,7 @@ mod tests {
 
     use super::*;
     #[test]
-    fn load_schema(){
+    fn test_load_schema(){
         let path = &meta_path();
 
         let schema = match from_yaml(path) {
@@ -59,15 +61,18 @@ mod tests {
         let classes = schema.classes();
         for (name, class) in classes.iter() {
             let is_a = &class.is_a;
-            //println!("class: {name} is a subclass of {is_a:?}")
+            match is_a {
+                None => println!("class: {name} has no superclass"),
+                Some(is_a) => {
+                    println!("class: {name} is a subclass of {is_a:?}")
+                }
+            }
         }
-
-        //println!("{:?}", schema)
     }
 
 
     #[test]
-    fn get_unresolved() {
+    fn test_resolve_schemas() {
         let path = &meta_path();
 
         let schema = match from_yaml(path) {

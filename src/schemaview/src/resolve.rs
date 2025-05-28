@@ -1,4 +1,4 @@
-use crate::{io::{from_uri, from_yaml}, schemaview::SchemaView};
+use crate::{io::{from_uri}, schemaview::SchemaView};
 
 fn get_uri_for_id(id: &str) -> Option<&'static str> {
     match id {
