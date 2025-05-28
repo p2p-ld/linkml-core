@@ -11,7 +11,7 @@ fn get_uri_for_id(id: &str) -> Option<&'static str> {
     }    
 }
 
-pub fn resolve_schemas(mut sv: SchemaView) -> Result<(), String> {
+pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
     let unresolved = sv.get_unresolved_schemas();
     if unresolved.is_empty() {
         return Ok(());
