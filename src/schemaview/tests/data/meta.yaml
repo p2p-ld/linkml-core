@@ -85,6 +85,7 @@ subsets:
       inlined as attributes. There are no enums.
   BasicSubset:
     rank: 1
+    name: BasicSubset
     title: basic subset
     description: |-
       An extension of MinimalSubset that avoids advanced constructs and can be implemented by a broad variety of tools.
@@ -96,6 +97,7 @@ subsets:
       process
   SpecificationSubset:
     rank: 2
+    name: SpecificationSubset
     title: specification subset
     description: |-
       A subset that includes all the metamodel elements that form part of the normative LinkML specification.
@@ -103,6 +105,7 @@ subsets:
       The complete LinkML specification can be found at [linkml:specification](https://w3id.org/linkml/specification)
   RelationalModelProfile:
     rank: 3
+    name: RelationalModelProfile
     title: relational model profile
     description: |-
       A profile that includes all the metamodel elements whose semantics can be expressed using the classic Relational Model.
@@ -113,12 +116,14 @@ subsets:
       concrete classes or otherwise transformed.
   ObjectOrientedProfile:
     rank: 4
+    name: ObjectOrientedProfile
     title: object oriented profile
     description: |-
       A profile that includes all the metamodel elements whose semantics can be expressed using a minimal
       implementation of the object oriented metamodel as employed by languages such as Java and Python, or
       in modeling frameworks like UML
   OwlProfile:
+    name: OwlProfile
     title: owl profile
     description: |-
       A profile that includes all the metamodel elements whose semantics can be expressed in OWL
