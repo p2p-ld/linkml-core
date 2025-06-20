@@ -1,0 +1,21 @@
+id: https://example.com/poly
+name: poly
+prefixes:
+  poly: https://example.com/poly/
+default_prefix: poly
+classes:
+  Parent:
+    attributes:
+      type:
+        designates_type: true
+        range: string
+      id:
+  Child:
+    is_a: Parent
+    attributes:
+      extra:
+  Container:
+    tree_root: true
+    attributes:
+      obj:
+        range: Parent

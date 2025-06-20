@@ -13,6 +13,7 @@ pub struct SchemaView {
     slot_uri_index: HashMap<String, (String, String)>,
 }
 
+#[derive(Clone)]
 pub struct ClassView<'a> {
     pub class: &'a ClassDefinition,
     slots: Vec<SlotView<'a>>,
@@ -202,8 +203,38 @@ impl<'a> ClassView<'a> {
         }
         Ok(vals)
     }
+
+    pub fn get_descendants(
+        &self,
+        conv: &Converter,
+        recurse: bool,
+    ) -> Result<Vec<ClassView<'a>>, IdentifierError> {
+        let mut out = Vec::new();
+        for schema in self.sv.schema_definitions.values() {
+            for (cls_name, cls_def) in &schema.classes {
+                if let Some(parent) = &cls_def.is_a {
+                    if let Some(parent_cv) = self.sv.get_class(&Identifier::new(parent), conv)? {
+                        if parent_cv.class.name == self.class.name
+                            && parent_cv.schema_uri == self.schema_uri
+                        {
+                            if let Some(child_cv) =
+                                self.sv.get_class(&Identifier::new(cls_name), conv)?
+                            {
+                                out.push(child_cv.clone());
+                                if recurse {
+                                    out.extend(child_cv.get_descendants(conv, true)?);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Ok(out)
+    }
 }
 
+#[derive(Clone)]
 pub struct SlotView<'a> {
     pub name: String,
     pub definitions: Vec<&'a SlotDefinition>,

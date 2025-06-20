@@ -28,12 +28,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let data_path = &args.data;
     let value = if let Some(ext) = data_path.extension() {
         if ext == "json" {
-            load_json_file(data_path, &sv, Some(&class_view))?
+            load_json_file(data_path, &sv, Some(&class_view), &conv)?
         } else {
-            load_yaml_file(data_path, &sv, Some(&class_view))?
+            load_yaml_file(data_path, &sv, Some(&class_view), &conv)?
         }
     } else {
-        load_yaml_file(data_path, &sv, Some(&class_view))?
+        load_yaml_file(data_path, &sv, Some(&class_view), &conv)?
     };
     match validate(&value) {
         Ok(_) => {
