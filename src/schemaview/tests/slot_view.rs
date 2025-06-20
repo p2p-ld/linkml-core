@@ -1,6 +1,6 @@
-use schemaview::identifier::{converter_from_schemas, Identifier};
-use schemaview::io::from_yaml;
-use schemaview::schemaview::SchemaView;
+use linkml_schemaview::identifier::{converter_from_schemas, Identifier};
+use linkml_schemaview::io::from_yaml;
+use linkml_schemaview::schemaview::SchemaView;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 

@@ -89,7 +89,7 @@ impl PySchemaView {
 
 /// A Python module implemented in Rust.
 #[cfg(feature = "python")]
-#[pymodule(name = "schemaview")]
+#[pymodule(name = "linkml_schemaview")]
 pub fn schemaview_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
     m.add_class::<PySchemaView>()?;

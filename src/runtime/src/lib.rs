@@ -1,5 +1,5 @@
-use schemaview::schemaview::{ClassView, SchemaView, SlotView};
-use schemaview::identifier::Identifier;
+use linkml_schemaview::schemaview::{ClassView, SchemaView, SlotView};
+use linkml_schemaview::identifier::Identifier;
 use serde_json::Value as JsonValue;
 use curies::Converter;
 use std::collections::HashMap;

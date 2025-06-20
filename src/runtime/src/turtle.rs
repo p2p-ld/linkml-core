@@ -1,6 +1,7 @@
 use curies::Converter;
 use linkml_meta::SchemaDefinition;
-use schemaview::schemaview::{ClassView, SchemaView};
+
+use linkml_schemaview::schemaview::{ClassView, SchemaView};
 use serde_json::Value as JsonValue;
 use std::io::{Result as IoResult, Write};
 

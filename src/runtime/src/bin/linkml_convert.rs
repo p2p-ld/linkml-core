@@ -4,10 +4,10 @@ use linkml_runtime::{
     turtle::{write_turtle, TurtleOptions},
     validate,
 };
-use schemaview::identifier::converter_from_schema;
-use schemaview::identifier::Identifier;
-use schemaview::io::from_yaml;
-use schemaview::schemaview::SchemaView;
+use linkml_schemaview::identifier::converter_from_schema;
+use linkml_schemaview::identifier::Identifier;
+use linkml_schemaview::io::from_yaml;
+use linkml_schemaview::schemaview::SchemaView;
 use std::fs::File;
 use std::path::PathBuf;
 
