@@ -300,11 +300,11 @@ impl<'a> SlotView<'a> {
         base
     }
 
-    pub fn determine_slot_mode(
+    pub fn determine_slot_container_mode(
         &self,
         sv: &'a SchemaView,
         conv: &Converter,
-    ) -> (SlotContainerMode, SlotInlineMode) {
+    ) -> SlotContainerMode {
         let s = self.merged_definition();
         let multivalued = s.multivalued.unwrap_or(false);
         let class_range = match &s.range {
@@ -317,18 +317,15 @@ impl<'a> SlotView<'a> {
         };
 
         if !class_range {
-            return (
-                if multivalued {
-                    SlotContainerMode::List
-                } else {
-                    SlotContainerMode::SingleValue
-                },
-                SlotInlineMode::Primitive,
-            );
+            return if multivalued {
+                SlotContainerMode::List
+            } else {
+                SlotContainerMode::SingleValue
+            };
         }
 
         if multivalued && s.inlined_as_list.unwrap_or(false) {
-            return (SlotContainerMode::List, SlotInlineMode::Inline);
+            return SlotContainerMode::List;
         }
 
         let range_cv = s
@@ -344,25 +341,79 @@ impl<'a> SlotView<'a> {
         }
 
         if !multivalued {
-            return (
-                SlotContainerMode::SingleValue,
-                if inlined {
-                    SlotInlineMode::Inline
-                } else {
-                    SlotInlineMode::Reference
-                },
-            );
+            return SlotContainerMode::SingleValue;
         }
 
         if !inlined {
-            return (SlotContainerMode::List, SlotInlineMode::Reference);
+            return SlotContainerMode::List;
         }
 
         if key_slot.is_some() {
-            (SlotContainerMode::Mapping, SlotInlineMode::Inline)
+            SlotContainerMode::Mapping
         } else {
-            (SlotContainerMode::List, SlotInlineMode::Inline)
+            SlotContainerMode::List
         }
+    }
+
+    pub fn determine_slot_inline_mode(
+        &self,
+        sv: &'a SchemaView,
+        conv: &Converter,
+    ) -> SlotInlineMode {
+        let s = self.merged_definition();
+        let multivalued = s.multivalued.unwrap_or(false);
+        let class_range = match &s.range {
+            Some(r) => sv
+                .get_class(&Identifier::new(r), conv)
+                .ok()
+                .flatten()
+                .is_some(),
+            None => false,
+        };
+
+        if !class_range {
+            return SlotInlineMode::Primitive;
+        }
+
+        if multivalued && s.inlined_as_list.unwrap_or(false) {
+            return SlotInlineMode::Inline;
+        }
+
+        let range_cv = s
+            .range
+            .as_ref()
+            .and_then(|r| sv.get_class(&Identifier::new(r), conv).ok().flatten());
+        let identifier_slot = range_cv.as_ref().and_then(|cv| cv.identifier_slot());
+
+        let mut inlined = s.inlined.unwrap_or(false);
+        if identifier_slot.is_none() {
+            inlined = true;
+        }
+
+        if !multivalued {
+            return if inlined {
+                SlotInlineMode::Inline
+            } else {
+                SlotInlineMode::Reference
+            };
+        }
+
+        if !inlined {
+            SlotInlineMode::Reference
+        } else {
+            SlotInlineMode::Inline
+        }
+    }
+
+    pub fn determine_slot_mode(
+        &self,
+        sv: &'a SchemaView,
+        conv: &Converter,
+    ) -> (SlotContainerMode, SlotInlineMode) {
+        (
+            self.determine_slot_container_mode(sv, conv),
+            self.determine_slot_inline_mode(sv, conv),
+        )
     }
 
     pub fn can_contain_reference_to_class(

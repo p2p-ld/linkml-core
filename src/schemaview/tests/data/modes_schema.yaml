@@ -1,0 +1,31 @@
+id: http://example.com/test
+name: test
+prefixes:
+  test: http://example.com/test/
+default_prefix: test
+classes:
+  Person:
+    attributes:
+      id:
+        identifier: true
+      name:
+  Container:
+    attributes:
+      persons:
+        range: Person
+        multivalued: true
+        inlined_as_list: true
+      best_friend:
+        range: Person
+        inlined: false
+  Ext:
+    attributes:
+      tag:
+        key: true
+      val:
+  Holder:
+    attributes:
+      exts:
+        range: Ext
+        multivalued: true
+        inlined: true
