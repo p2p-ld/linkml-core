@@ -18,7 +18,7 @@ impl SchemaView {
     }
 
     pub fn add_schema(&mut self, schema: SchemaDefinition) -> Result<(), String> {
-        let schema_uri = &schema.id;
+        let schema_uri = schema.id.clone();
         self.schema_definitions.insert(schema_uri.to_string(), schema);
         if self.primary_schema.is_none() {
             self.primary_schema = Some(schema_uri.to_string());
