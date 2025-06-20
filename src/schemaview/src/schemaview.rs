@@ -477,4 +477,11 @@ impl SchemaView {
         }
         Ok(out)
     }
+
+    pub fn primary_schema(&self) -> Option<&SchemaDefinition> {
+        match &self.primary_schema {
+            Some(uri) => self.schema_definitions.get(uri),
+            None => None,
+        }
+    }
 }

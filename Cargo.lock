@@ -857,6 +857,9 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "curies",
+ "linkml_meta",
+ "rio_api",
+ "rio_turtle",
  "schemaview",
  "serde_json",
  "serde_yaml",
