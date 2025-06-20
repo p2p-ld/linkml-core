@@ -2,6 +2,7 @@ pub mod io;
 pub mod schemaview;
 pub mod curie;
 pub mod resolve;
+pub mod identifier;
 extern crate linkml_meta;
 use pyo3::prelude::*;
 

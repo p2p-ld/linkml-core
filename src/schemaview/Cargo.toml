@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 name = "schemaview"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 pyo3 = "0.25.0"
@@ -14,3 +14,4 @@ linkml_meta = { path = "../metamodel"}
 serde_yml = "0.0.12"
 serde_path_to_error = "0.1.17"
 reqwest = { version = "0.12.16" , features = ["blocking"] }
+curies = "0.1.3"
