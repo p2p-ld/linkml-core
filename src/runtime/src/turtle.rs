@@ -1,8 +1,9 @@
 use curies::Converter;
 use linkml_meta::SchemaDefinition;
-use linkml_schemaview::schemaview::SchemaView;
-use std::io::{Result as IoResult, Write};
+
+use linkml_schemaview::schemaview::{ClassView, SchemaView};
 use serde_json::Value as JsonValue;
+use std::io::{Result as IoResult, Write};
 
 use rio_api::formatter::TriplesFormatter;
 use rio_api::model::{BlankNode, Literal, NamedNode, Subject, Term, Triple};
@@ -65,9 +66,25 @@ fn literal_value(v: &JsonValue) -> String {
 fn serialize_map<W: Write>(
     subject: &Node,
     map: &std::collections::HashMap<String, LinkMLValue>,
+    class: Option<&ClassView>,
     formatter: &mut TurtleFormatter<W>,
+    sv: &SchemaView,
+    conv: &Converter,
     state: &mut State,
 ) -> IoResult<()> {
+    if let Some(cv) = class {
+        if let Ok(id) = cv.get_uri(conv, false, true) {
+            let id_string = id.to_string();
+            let triple = Triple {
+                subject: subject.as_subject(),
+                predicate: NamedNode {
+                    iri: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                },
+                object: Term::NamedNode(NamedNode { iri: &id_string }),
+            };
+            formatter.format(&triple)?;
+        }
+    }
     for (k, v) in map {
         let pred_iri = format!("{}:{}", state.default_prefix, k);
         let predicate = NamedNode { iri: &pred_iri };
@@ -82,7 +99,8 @@ fn serialize_map<W: Write>(
                 };
                 formatter.format(&triple)?;
             }
-            LinkMLValue::Map { values, .. } => {
+            LinkMLValue::Map { values, class, .. } => {
+                let class = *class;
                 let obj = state.next_subject();
                 let triple = Triple {
                     subject: subject.as_subject(),
@@ -90,7 +108,7 @@ fn serialize_map<W: Write>(
                     object: obj.as_term(),
                 };
                 formatter.format(&triple)?;
-                serialize_map(&obj, values, formatter, state)?;
+                serialize_map(&obj, values, class, formatter, sv, conv, state)?;
             }
             LinkMLValue::List { values, .. } => {
                 for item in values {
@@ -105,7 +123,10 @@ fn serialize_map<W: Write>(
                             };
                             formatter.format(&triple)?;
                         }
-                        LinkMLValue::Map { values: mv, .. } => {
+                        LinkMLValue::Map {
+                            values: mv, class, ..
+                        } => {
+                            let class = *class;
                             let obj = state.next_subject();
                             let triple = Triple {
                                 subject: subject.as_subject(),
@@ -113,7 +134,7 @@ fn serialize_map<W: Write>(
                                 object: obj.as_term(),
                             };
                             formatter.format(&triple)?;
-                            serialize_map(&obj, mv, formatter, state)?;
+                            serialize_map(&obj, mv, class, formatter, sv, conv, state)?;
                         }
                         LinkMLValue::List { .. } => {}
                     }
@@ -128,13 +149,17 @@ pub fn write_turtle<W: Write>(
     value: &LinkMLValue,
     sv: &SchemaView,
     schema: &SchemaDefinition,
-    _conv: &Converter,
+    conv: &Converter,
     w: &mut W,
     options: TurtleOptions,
 ) -> IoResult<()> {
     for (pfx, pref) in &schema.prefixes {
         writeln!(w, "@prefix {}: <{}> .", pfx, pref.prefix_reference)?;
     }
+    writeln!(
+        w,
+        "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ."
+    )?;
     writeln!(w)?;
     let base = schema.id.trim_end_matches('#').to_string();
     let mut state = State {
@@ -153,22 +178,28 @@ pub fn write_turtle<W: Write>(
     };
     let mut formatter = TurtleFormatter::new(w);
     match value {
-        LinkMLValue::Map { values, .. } => {
+        LinkMLValue::Map { values, class, .. } => {
+            let class = *class;
             let subj = Node::Named(format!("{}root", state.base));
-            serialize_map(&subj, values, &mut formatter, &mut state)?;
+            serialize_map(&subj, values, class, &mut formatter, sv, conv, &mut state)?;
         }
         LinkMLValue::List { values, .. } => {
             for item in values {
                 let subj = state.next_subject();
                 match item {
-                    LinkMLValue::Map { values: mv, .. } => {
-                        serialize_map(&subj, mv, &mut formatter, &mut state)?;
+                    LinkMLValue::Map {
+                        values: mv, class, ..
+                    } => {
+                        let class = *class;
+                        serialize_map(&subj, mv, class, &mut formatter, sv, conv, &mut state)?;
                     }
                     LinkMLValue::Scalar { value, .. } => {
                         let lit = literal_value(value);
                         let triple = Triple {
                             subject: subj.as_subject(),
-                            predicate: NamedNode { iri: "a" },
+                            predicate: NamedNode {
+                                iri: "http://www.w3.org/1999/02/22-rdf-syntax-ns#value",
+                            },
                             object: Term::Literal(Literal::Simple { value: &lit }),
                         };
                         formatter.format(&triple)?;
