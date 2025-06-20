@@ -3,6 +3,7 @@ members=[
     "src/main",
     "src/metamodel",
     "src/schemaview",
+    "src/runtime",
 ]
 resolver = "2"
 version="0.1.0"
