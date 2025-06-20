@@ -8,10 +8,13 @@ imports:
   - linkml:types
 default_prefix: personinfo
 classes:
-  Person:
-    class_uri: linkml:Person
+  NamedThing:
     attributes:
       id:
+  Person:
+    is_a: NamedThing
+    class_uri: linkml:Person
+    attributes:
       full_name:
       aliases:
       phone:

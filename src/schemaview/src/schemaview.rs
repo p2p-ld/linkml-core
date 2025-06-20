@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::identifier::{converter_from_schema, Identifier, IdentifierError};
 use curies::Converter;
-use linkml_meta::{ClassDefinition, SchemaDefinition};
+use linkml_meta::{ClassDefinition, SchemaDefinition, SlotDefinition};
 
 use crate::curie::curie2uri;
 
@@ -10,15 +10,127 @@ pub struct SchemaView {
     schema_definitions: HashMap<String, SchemaDefinition>,
     primary_schema: Option<String>,
     class_uri_index: HashMap<String, (String, String)>,
+    slot_uri_index: HashMap<String, (String, String)>,
 }
 
 pub struct ClassView<'a> {
     pub class: &'a ClassDefinition,
+    slots: Vec<SlotView<'a>>,
 }
 
 impl<'a> ClassView<'a> {
-    pub fn new(class: &'a ClassDefinition) -> Self {
-        Self { class }
+    pub fn new(
+        class: &'a ClassDefinition,
+        sv: &'a SchemaView,
+        conv: &Converter,
+    ) -> Result<Self, IdentifierError> {
+        fn gather<'b>(
+            class_def: &'b ClassDefinition,
+            sv: &'b SchemaView,
+            conv: &Converter,
+            visited: &mut HashSet<String>,
+            acc: &mut HashMap<String, SlotView<'b>>,
+        ) -> Result<(), IdentifierError> {
+            if !visited.insert(class_def.name.clone()) {
+                return Ok(());
+            }
+
+            if let Some(parent) = &class_def.is_a {
+                if let Some(cv) = sv.get_class(&Identifier::new(parent), conv)? {
+                    gather(cv.class, sv, conv, visited, acc)?;
+                }
+            }
+            for mixin in &class_def.mixins {
+                if let Some(cv) = sv.get_class(&Identifier::new(mixin), conv)? {
+                    gather(cv.class, sv, conv, visited, acc)?;
+                }
+            }
+
+            for slot_ref in &class_def.slots {
+                let mut defs: Vec<&'b SlotDefinition> = Vec::new();
+                if let Some(base) = sv.get_slot(&Identifier::new(slot_ref), conv)? {
+                    defs.extend(base.definitions);
+                }
+                if let Some(usage) = class_def.slot_usage.get(slot_ref) {
+                    defs.push(usage);
+                }
+                acc.insert(
+                    slot_ref.clone(),
+                    SlotView {
+                        name: slot_ref.clone(),
+                        definitions: defs,
+                    },
+                );
+            }
+
+            for (attr_name, attr_def) in &class_def.attributes {
+                let mut defs = vec![attr_def.as_ref()];
+                if let Some(usage) = class_def.slot_usage.get(attr_name) {
+                    defs.push(usage);
+                }
+                acc.insert(
+                    attr_name.clone(),
+                    SlotView {
+                        name: attr_name.clone(),
+                        definitions: defs,
+                    },
+                );
+            }
+
+            for (usage_name, usage_def) in &class_def.slot_usage {
+                if !class_def.slots.contains(usage_name) && !class_def.attributes.contains_key(usage_name) {
+                    // overrides slot from ancestor
+                    if let Some(existing) = acc.get_mut(usage_name) {
+                        existing.definitions.push(usage_def);
+                    } else if let Some(base) = sv.get_slot(&Identifier::new(usage_name), conv)? {
+                        let mut defs: Vec<&'b SlotDefinition> = base.definitions.to_vec();
+                        defs.push(usage_def);
+                        acc.insert(
+                            usage_name.clone(),
+                            SlotView {
+                                name: usage_name.clone(),
+                                definitions: defs,
+                            },
+                        );
+                    } else {
+                        acc.insert(
+                            usage_name.clone(),
+                            SlotView {
+                                name: usage_name.clone(),
+                                definitions: vec![usage_def],
+                            },
+                        );
+                    }
+                }
+            }
+            Ok(())
+        }
+
+        let mut visited = HashSet::new();
+        let mut acc: HashMap<String, SlotView<'a>> = HashMap::new();
+        gather(class, sv, conv, &mut visited, &mut acc)?;
+        Ok(Self {
+            class,
+            slots: acc.into_values().collect(),
+        })
+    }
+
+    pub fn slots(&self) -> &[SlotView<'a>] {
+        &self.slots
+    }
+}
+
+pub struct SlotView<'a> {
+    pub name: String,
+    pub definitions: Vec<&'a SlotDefinition>,
+}
+
+impl<'a> SlotView<'a> {
+    pub fn new(name: String, slot: &'a SlotDefinition) -> Self {
+        Self {
+            name,
+            definitions: vec![slot],
+        }
     }
 }
 
@@ -28,6 +140,7 @@ impl SchemaView {
             schema_definitions: HashMap::new(),
             primary_schema: None,
             class_uri_index: HashMap::new(),
+            slot_uri_index: HashMap::new(),
         }
     }
 
@@ -35,6 +148,8 @@ impl SchemaView {
         let schema_uri = schema.id.clone();
         let conv = converter_from_schema(&schema);
         self.index_schema_classes(&schema_uri, &schema, &conv)
+            .map_err(|e| format!("{:?}", e))?;
+        self.index_schema_slots(&schema_uri, &schema, &conv)
             .map_err(|e| format!("{:?}", e))?;
         self.schema_definitions.insert(schema_uri.to_string(), schema);
         if self.primary_schema.is_none() {
@@ -77,6 +192,38 @@ impl SchemaView {
         Ok(())
     }
 
+    fn index_schema_slots(
+        &mut self,
+        schema_uri: &str,
+        schema: &SchemaDefinition,
+        conv: &Converter,
+    ) -> Result<(), IdentifierError> {
+        let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
+        for (slot_name, slot_def) in &schema.slot_definitions {
+            let default_uri = Identifier::new(&format!("{}:{}", default_prefix, slot_name))
+                .to_uri(conv)
+                .map(|u| u.0)
+                .unwrap_or_else(|_| format!("{}/{}", schema.id.trim_end_matches('/'), slot_name));
+
+            if let Some(suri) = &slot_def.slot_uri {
+                let explicit_uri = Identifier::new(suri).to_uri(conv)?.0;
+                self.slot_uri_index
+                    .entry(explicit_uri.clone())
+                    .or_insert_with(|| (schema_uri.to_string(), slot_name.clone()));
+                if explicit_uri != default_uri {
+                    self.slot_uri_index
+                        .entry(default_uri.clone())
+                        .or_insert_with(|| (schema_uri.to_string(), slot_name.clone()));
+                }
+            } else {
+                self.slot_uri_index
+                    .entry(default_uri)
+                    .or_insert_with(|| (schema_uri.to_string(), slot_name.clone()));
+            }
+        }
+        Ok(())
+    }
+
     pub fn get_unresolved_schemas(&self) -> Vec<String> {
         // every schemadefinition has imports. check if an import is not in our list
         let mut unresolved = Vec::new();
@@ -112,14 +259,52 @@ impl SchemaView {
                     Some(s) => s,
                     None => return Ok(None),
                 };
-                Ok(schema.classes.get(name).map(|c| ClassView::new(c)))
+                if let Some(class_def) = schema.classes.get(name) {
+                    return Ok(Some(ClassView::new(class_def, self, conv)?));
+                }
+                Ok(None)
             }
             Identifier::Curie(_) | Identifier::Uri(_) => {
                 let target_uri = id.to_uri(conv)?;
                 if let Some((schema_uri, class_name)) = index.get(&target_uri.0) {
                     if let Some(schema) = self.schema_definitions.get(schema_uri) {
                         if let Some(class) = schema.classes.get(class_name) {
-                            return Ok(Some(ClassView::new(class)));
+                            return Ok(Some(ClassView::new(class, self, conv)?));
+                        }
+                    }
+                }
+                Ok(None)
+            }
+        }
+    }
+
+    pub fn get_slot<'a>(
+        &'a self,
+        id: &Identifier,
+        conv: &Converter,
+    ) -> Result<Option<SlotView<'a>>, IdentifierError> {
+        let index = &self.slot_uri_index;
+        match id {
+            Identifier::Name(name) => {
+                let primary = match &self.primary_schema {
+                    Some(p) => p,
+                    None => return Ok(None),
+                };
+                let schema = match self.schema_definitions.get(primary) {
+                    Some(s) => s,
+                    None => return Ok(None),
+                };
+                Ok(schema
+                    .slot_definitions
+                    .get(name)
+                    .map(|s| SlotView::new(name.clone(), s)))
+            }
+            Identifier::Curie(_) | Identifier::Uri(_) => {
+                let target_uri = id.to_uri(conv)?;
+                if let Some((schema_uri, slot_name)) = index.get(&target_uri.0) {
+                    if let Some(schema) = self.schema_definitions.get(schema_uri) {
+                        if let Some(slot) = schema.slot_definitions.get(slot_name) {
+                            return Ok(Some(SlotView::new(slot_name.clone(), slot)));
                         }
                     }
                 }
