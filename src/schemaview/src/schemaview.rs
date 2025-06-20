@@ -16,12 +16,15 @@ pub struct SchemaView {
 pub struct ClassView<'a> {
     pub class: &'a ClassDefinition,
     slots: Vec<SlotView<'a>>,
+    schema_uri: &'a str,
+    sv: &'a SchemaView,
 }
 
 impl<'a> ClassView<'a> {
     pub fn new(
         class: &'a ClassDefinition,
         sv: &'a SchemaView,
+        schema_uri: &'a str,
         conv: &Converter,
     ) -> Result<Self, IdentifierError> {
         fn gather<'b>(
@@ -78,7 +81,9 @@ impl<'a> ClassView<'a> {
             }
 
             for (usage_name, usage_def) in &class_def.slot_usage {
-                if !class_def.slots.contains(usage_name) && !class_def.attributes.contains_key(usage_name) {
+                if !class_def.slots.contains(usage_name)
+                    && !class_def.attributes.contains_key(usage_name)
+                {
                     // overrides slot from ancestor
                     if let Some(existing) = acc.get_mut(usage_name) {
                         existing.definitions.push(usage_def);
@@ -112,11 +117,90 @@ impl<'a> ClassView<'a> {
         Ok(Self {
             class,
             slots: acc.into_values().collect(),
+            schema_uri,
+            sv,
         })
     }
 
     pub fn slots(&self) -> &[SlotView<'a>] {
         &self.slots
+    }
+
+    pub fn get_uri(
+        &self,
+        conv: &Converter,
+        native: bool,
+        expand: bool,
+    ) -> Result<Identifier, IdentifierError> {
+        let schema = self
+            .sv
+            .schema_definitions
+            .get(self.schema_uri)
+            .ok_or_else(|| IdentifierError::NameNotResolvable)?;
+        let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
+        let base = if native || self.class.class_uri.is_none() {
+            format!("{}:{}", default_prefix, self.class.name)
+        } else {
+            self.class.class_uri.as_ref().unwrap().clone()
+        };
+
+        if expand {
+            Ok(Identifier::Uri(Identifier::new(&base).to_uri(conv)?))
+        } else {
+            match Identifier::new(&base) {
+                Identifier::Curie(c) => Ok(Identifier::Curie(c)),
+                Identifier::Uri(_) => Ok(Identifier::Curie(Identifier::new(&base).to_curie(conv)?)),
+                Identifier::Name(_) => {
+                    Ok(Identifier::Curie(Identifier::new(&base).to_curie(conv)?))
+                }
+            }
+        }
+    }
+
+    pub fn get_type_designator_value(
+        &self,
+        type_slot: &SlotDefinition,
+        conv: &Converter,
+    ) -> Result<Identifier, IdentifierError> {
+        if let Some(range) = &type_slot.range {
+            let slot_types = self.sv.type_ancestors(&Identifier::new(range), conv)?;
+            if slot_types.iter().any(|t| t.to_string() == "uri") {
+                return self.get_uri(conv, false, true);
+            } else if slot_types.iter().any(|t| t.to_string() == "uriorcurie") {
+                return self.get_uri(conv, false, false);
+            } else if slot_types.iter().any(|t| t.to_string() == "string") {
+                return Ok(Identifier::Name(self.class.name.clone()));
+            }
+        }
+        self.get_uri(conv, false, false)
+    }
+
+    pub fn get_accepted_type_designator_values(
+        &self,
+        type_slot: &SlotDefinition,
+        conv: &Converter,
+    ) -> Result<Vec<Identifier>, IdentifierError> {
+        let mut vals = vec![
+            self.get_uri(conv, true, true)?,
+            self.get_uri(conv, false, true)?,
+            self.get_uri(conv, true, false)?,
+            self.get_uri(conv, false, false)?,
+        ];
+        let mut seen = std::collections::HashSet::new();
+        vals.retain(|v| seen.insert(v.to_string()));
+
+        if let Some(range) = &type_slot.range {
+            let slot_types = self.sv.type_ancestors(&Identifier::new(range), conv)?;
+            if slot_types
+                .iter()
+                .any(|t| t.to_string() == "uri" || t.to_string() == "uriorcurie")
+            {
+                return Ok(vals);
+            } else if range == "string" {
+                return Ok(vec![Identifier::Name(self.class.name.clone())]);
+            }
+        }
+        Ok(vals)
     }
 }
 
@@ -151,7 +235,8 @@ impl SchemaView {
             .map_err(|e| format!("{:?}", e))?;
         self.index_schema_slots(&schema_uri, &schema, &conv)
             .map_err(|e| format!("{:?}", e))?;
-        self.schema_definitions.insert(schema_uri.to_string(), schema);
+        self.schema_definitions
+            .insert(schema_uri.to_string(), schema);
         if self.primary_schema.is_none() {
             self.primary_schema = Some(schema_uri.to_string());
         }
@@ -169,9 +254,7 @@ impl SchemaView {
             let default_uri = Identifier::new(&format!("{}:{}", default_prefix, class_name))
                 .to_uri(conv)
                 .map(|u| u.0)
-                .unwrap_or_else(|_| {
-                    format!("{}/{}", schema.id.trim_end_matches('/'), class_name)
-                });
+                .unwrap_or_else(|_| format!("{}/{}", schema.id.trim_end_matches('/'), class_name));
 
             if let Some(curi) = &class_def.class_uri {
                 let explicit_uri = Identifier::new(curi).to_uri(conv)?.0;
@@ -260,7 +343,7 @@ impl SchemaView {
                     None => return Ok(None),
                 };
                 if let Some(class_def) = schema.classes.get(name) {
-                    return Ok(Some(ClassView::new(class_def, self, conv)?));
+                    return Ok(Some(ClassView::new(class_def, self, primary, conv)?));
                 }
                 Ok(None)
             }
@@ -269,7 +352,7 @@ impl SchemaView {
                 if let Some((schema_uri, class_name)) = index.get(&target_uri.0) {
                     if let Some(schema) = self.schema_definitions.get(schema_uri) {
                         if let Some(class) = schema.classes.get(class_name) {
-                            return Ok(Some(ClassView::new(class, self, conv)?));
+                            return Ok(Some(ClassView::new(class, self, schema_uri, conv)?));
                         }
                     }
                 }
@@ -311,5 +394,56 @@ impl SchemaView {
                 Ok(None)
             }
         }
+    }
+
+    pub fn type_ancestors(
+        &self,
+        id: &Identifier,
+        conv: &Converter,
+    ) -> Result<Vec<Identifier>, IdentifierError> {
+        fn get_type<'b>(
+            sv: &'b SchemaView,
+            id: &Identifier,
+            conv: &Converter,
+        ) -> Result<Option<&'b linkml_meta::TypeDefinition>, IdentifierError> {
+            match id {
+                Identifier::Name(n) => {
+                    for schema in sv.schema_definitions.values() {
+                        if let Some(t) = schema.types.get(n) {
+                            return Ok(Some(t));
+                        }
+                    }
+                    Ok(None)
+                }
+                Identifier::Curie(_) | Identifier::Uri(_) => {
+                    let target_uri = id.to_uri(conv)?;
+                    for schema in sv.schema_definitions.values() {
+                        for t in schema.types.values() {
+                            if let Some(turi) = &t.type_uri {
+                                if Identifier::new(turi).to_uri(conv)?.0 == target_uri.0 {
+                                    return Ok(Some(t));
+                                }
+                            }
+                        }
+                    }
+                    Ok(None)
+                }
+            }
+        }
+
+        let mut out = Vec::new();
+        let mut cur = get_type(self, id, conv)?;
+        while let Some(t) = cur {
+            out.push(Identifier::Name(t.name.clone()));
+            if let Some(parent) = &t.typeof_ {
+                cur = get_type(self, &Identifier::new(parent), conv)?;
+            } else {
+                break;
+            }
+        }
+        if out.is_empty() {
+            out.push(id.clone());
+        }
+        Ok(out)
     }
 }
