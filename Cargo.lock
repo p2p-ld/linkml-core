@@ -856,6 +856,7 @@ name = "linkml_runtime"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "curies",
  "schemaview",
  "serde_json",
  "serde_yaml",

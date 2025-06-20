@@ -1,0 +1,4 @@
+obj:
+  type: Child
+  id: P1
+  extra: foo

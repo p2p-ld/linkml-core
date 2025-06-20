@@ -22,7 +22,13 @@ fn validate_person_ok() {
         .get_class(&Identifier::new("Person"), &conv)
         .unwrap()
         .expect("class not found");
-    let v = load_yaml_file(Path::new(&data_path("person_valid.yaml")), &sv, Some(&class)).unwrap();
+    let v = load_yaml_file(
+        Path::new(&data_path("person_valid.yaml")),
+        &sv,
+        Some(&class),
+        &conv,
+    )
+    .unwrap();
     assert!(validate(&v).is_ok());
 }
 
@@ -36,6 +42,12 @@ fn validate_person_fail() {
         .get_class(&Identifier::new("Person"), &conv)
         .unwrap()
         .expect("class not found");
-    let v = load_yaml_file(Path::new(&data_path("person_invalid.yaml")), &sv, Some(&class)).unwrap();
+    let v = load_yaml_file(
+        Path::new(&data_path("person_invalid.yaml")),
+        &sv,
+        Some(&class),
+        &conv,
+    )
+    .unwrap();
     assert!(validate(&v).is_err());
 }
