@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
+pub mod turtle;
 pub enum LinkMLValue<'a> {
     Scalar {
         value: JsonValue,
