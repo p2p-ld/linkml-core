@@ -1,6 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::identifier::{converter_from_schema, Identifier, IdentifierError};
+use crate::identifier::{
+    converter_from_schema, converter_from_schemas, Identifier, IdentifierError,
+};
 use curies::Converter;
 use linkml_meta::{ClassDefinition, SchemaDefinition, SlotDefinition};
 
@@ -272,6 +274,22 @@ impl SchemaView {
             self.primary_schema = Some(schema_uri.to_string());
         }
         Ok(())
+    }
+
+    pub fn get_schema(&self, id: &str) -> Option<&SchemaDefinition> {
+        self.schema_definitions.get(id)
+    }
+
+    pub fn converter(&self) -> Converter {
+        converter_from_schemas(self.schema_definitions.values())
+    }
+
+    pub fn get_class_definition<'a>(
+        &'a self,
+        id: &Identifier,
+        conv: &Converter,
+    ) -> Result<Option<&'a ClassDefinition>, IdentifierError> {
+        Ok(self.get_class(id, conv)?.map(|cv| cv.class))
     }
 
     fn index_schema_classes(
