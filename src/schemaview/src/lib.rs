@@ -2,6 +2,8 @@ pub mod curie;
 pub mod identifier;
 pub mod io;
 pub mod resolve;
+pub mod classview;
+pub mod slotview;
 pub mod schemaview;
 extern crate linkml_meta;
 
