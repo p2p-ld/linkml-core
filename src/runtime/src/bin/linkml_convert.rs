@@ -3,9 +3,9 @@ use linkml_runtime::{
     load_json_file, load_yaml_file,
     turtle::{write_turtle, TurtleOptions},
 };
-use schemaview::identifier::converter_from_schema;
-use schemaview::io::from_yaml;
-use schemaview::schemaview::SchemaView;
+use linkml_schemaview::identifier::converter_from_schema;
+use linkml_schemaview::io::from_yaml;
+use linkml_schemaview::schemaview::SchemaView;
 use std::fs::File;
 use std::path::PathBuf;
 

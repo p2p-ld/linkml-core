@@ -1,6 +1,6 @@
-use schemaview::identifier::{converter_from_schemas, Identifier};
-use schemaview::io::from_yaml;
-use schemaview::schemaview::{SchemaView, SlotContainerMode, SlotInlineMode};
+use linkml_schemaview::identifier::{converter_from_schemas, Identifier};
+use linkml_schemaview::io::from_yaml;
+use linkml_schemaview::schemaview::{SchemaView, SlotContainerMode, SlotInlineMode};
 use std::path::{Path, PathBuf};
 
 fn data_path(name: &str) -> PathBuf {

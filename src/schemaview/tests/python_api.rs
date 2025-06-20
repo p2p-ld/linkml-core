@@ -2,7 +2,7 @@
 
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use schemaview::schemaview_module;
+use linkml_schemaview::schemaview_module;
 use std::path::PathBuf;
 
 fn meta_path() -> PathBuf {
@@ -17,12 +17,12 @@ fn meta_path() -> PathBuf {
 fn construct_via_python() {
     pyo3::prepare_freethreaded_python();
     Python::with_gil(|py| {
-        let module = PyModule::new(py, "schemaview").unwrap();
+        let module = PyModule::new(py, "linkml_schemaview").unwrap();
         schemaview_module(&module).unwrap();
         let sys = py.import("sys").unwrap();
         let modules = sys.getattr("modules").unwrap();
         let sys_modules = modules.downcast::<PyDict>().unwrap();
-        sys_modules.set_item("schemaview", module).unwrap();
+        sys_modules.set_item("linkml_schemaview", module).unwrap();
 
         let locals = PyDict::new(py);
         locals
@@ -32,7 +32,7 @@ fn construct_via_python() {
             py,
             *locals,
             r#"
-import schemaview
+import linkml_schemaview as schemaview
 sv = schemaview.SchemaView(meta_path)
 unresolved = sv.get_unresolved_schemas()
 assert "https://w3id.org/linkml/mappings" in unresolved
@@ -46,12 +46,12 @@ fn definitions_via_python() {
     pyo3::prepare_freethreaded_python();
     let yaml = std::fs::read_to_string(meta_path()).unwrap();
     Python::with_gil(|py| {
-        let module = PyModule::new(py, "schemaview").unwrap();
+        let module = PyModule::new(py, "linkml_schemaview").unwrap();
         schemaview_module(&module).unwrap();
         let sys = py.import("sys").unwrap();
         let modules = sys.getattr("modules").unwrap();
         let sys_modules = modules.downcast::<PyDict>().unwrap();
-        sys_modules.set_item("schemaview", module).unwrap();
+        sys_modules.set_item("linkml_schemaview", module).unwrap();
 
         let locals = PyDict::new(py);
         locals.set_item("meta_yaml", &yaml).unwrap();
@@ -59,7 +59,7 @@ fn definitions_via_python() {
             py,
             *locals,
             r#"
-import schemaview
+import linkml_schemaview as schemaview
 sv = schemaview.SchemaView()
 sv.add_schema_str(meta_yaml)
 print('schemas', sv.get_unresolved_schemas())

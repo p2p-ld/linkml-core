@@ -2,9 +2,9 @@ use linkml_runtime::{
     load_yaml_file,
     turtle::{turtle_to_string, TurtleOptions},
 };
-use schemaview::identifier::converter_from_schema;
-use schemaview::io::from_yaml;
-use schemaview::schemaview::SchemaView;
+use linkml_schemaview::identifier::converter_from_schema;
+use linkml_schemaview::io::from_yaml;
+use linkml_schemaview::schemaview::SchemaView;
 use std::path::{Path, PathBuf};
 
 fn data_path(name: &str) -> PathBuf {

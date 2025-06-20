@@ -8,8 +8,8 @@ fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
 }
 
 /// A Python module implemented in Rust.
-#[pymodule]
-fn linkml_schema(m: &Bound<'_, PyModule>) -> PyResult<()> {
+#[pymodule(name = "linkml_runtime")]
+fn linkml_runtime(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
     Ok(())
 }
