@@ -1,5 +1,6 @@
+use curies::{error::CuriesError, Converter, Record};
+use linkml_meta::SchemaDefinition;
 use std::str::FromStr;
-use curies::{Converter, error::CuriesError};
 
 /// Error type for Identifier conversions
 #[derive(Debug)]
@@ -156,4 +157,39 @@ impl FromStr for Identifier {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Identifier::new(s))
     }
+}
+
+/// Build a [`Converter`] from one or more [`SchemaDefinition`]s.
+///
+/// All prefixes declared in the schemas are added to the converter. Duplicate
+/// prefixes are ignored.
+pub fn converter_from_schemas<'a, I>(schemas: I) -> Converter
+where
+    I: IntoIterator<Item = &'a SchemaDefinition>,
+{
+    let mut conv = Converter::default();
+    use std::collections::HashMap;
+    let mut map: HashMap<String, Record> = HashMap::new();
+    for schema in schemas {
+        for (pfx, pref) in &schema.prefixes {
+            match map.get_mut(&pref.prefix_reference) {
+                Some(rec) => {
+                    rec.prefix_synonyms.insert(pfx.clone());
+                }
+                None => {
+                    let r = Record::new(pfx, &pref.prefix_reference);
+                    map.insert(pref.prefix_reference.clone(), r);
+                }
+            }
+        }
+    }
+    for record in map.into_values() {
+        let _ = conv.add_record(record);
+    }
+    conv
+}
+
+/// Convenience function for a single [`SchemaDefinition`].
+pub fn converter_from_schema(schema: &SchemaDefinition) -> Converter {
+    converter_from_schemas([schema])
 }

@@ -1,0 +1,19 @@
+id: https://w3id.org/linkml/examples/container
+name: container
+prefixes:
+  container: https://w3id.org/linkml/examples/container/
+  personinfo: https://w3id.org/linkml/examples/personinfo/
+  alt: https://w3id.org/linkml/examples/personinfo/
+  linkml: https://w3id.org/linkml/
+imports:
+  - linkml:types
+  - https://w3id.org/linkml/examples/personinfo
+default_prefix: container
+classes:
+  Container:
+    tree_root: true
+    attributes:
+      persons:
+        multivalued: true
+        inlined_as_list: true
+        range: personinfo:Person
