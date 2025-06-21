@@ -1,10 +1,10 @@
+pub mod classview;
 pub mod curie;
 pub mod identifier;
 pub mod io;
 pub mod resolve;
-pub mod classview;
-pub mod slotview;
 pub mod schemaview;
+pub mod slotview;
 extern crate linkml_meta;
 
 #[cfg(feature = "python")]
@@ -17,6 +17,8 @@ use linkml_meta::{ClassDefinition, SchemaDefinition};
 use pyo3::exceptions::PyException;
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
+#[cfg(feature = "python")]
+use pyo3::PyRef;
 #[cfg(feature = "python")]
 use serde_path_to_error;
 #[cfg(feature = "python")]
@@ -35,6 +37,20 @@ fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
 #[pyclass(name = "SchemaView")]
 pub struct PySchemaView {
     inner: RustSchemaView,
+}
+
+#[cfg(feature = "python")]
+#[pyclass(name = "ClassView")]
+pub struct PyClassView {
+    class_name: String,
+    sv: Py<PySchemaView>,
+}
+
+#[cfg(feature = "python")]
+#[pyclass(name = "SlotView")]
+pub struct PySlotView {
+    slot_name: String,
+    sv: Py<PySchemaView>,
 }
 
 #[cfg(feature = "python")]
@@ -85,6 +101,76 @@ impl PySchemaView {
             .map_err(|e| PyException::new_err(format!("{:?}", e)))?
             .cloned())
     }
+
+    fn get_class_view<'py>(
+        slf: PyRef<'py, Self>,
+        py: Python<'py>,
+        id: &str,
+    ) -> PyResult<Option<PyClassView>> {
+        let conv = slf.inner.converter();
+        let opt = slf
+            .inner
+            .get_class(&Identifier::new(id), &conv)
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))?;
+        Ok(opt.map(|cv| PyClassView {
+            class_name: cv.class.name.clone(),
+            sv: slf.into_py(py),
+        }))
+    }
+
+    fn get_slot_view<'py>(
+        slf: PyRef<'py, Self>,
+        py: Python<'py>,
+        id: &str,
+    ) -> PyResult<Option<PySlotView>> {
+        let conv = slf.inner.converter();
+        let opt = slf
+            .inner
+            .get_slot(&Identifier::new(id), &conv)
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))?;
+        Ok(opt.map(|svw| PySlotView {
+            slot_name: svw.name,
+            sv: slf.into_py(py),
+        }))
+    }
+}
+
+#[cfg(feature = "python")]
+#[pymethods]
+impl PyClassView {
+    #[getter]
+    fn name(&self) -> String {
+        self.class_name.clone()
+    }
+
+    fn slots(&self, py: Python<'_>) -> PyResult<Vec<PySlotView>> {
+        let sv = self.sv.as_ref(py).borrow();
+        let conv = sv.inner.converter();
+        let opt = sv
+            .inner
+            .get_class(&Identifier::new(&self.class_name), &conv)
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))?;
+        match opt {
+            Some(cv) => Ok(cv
+                .slots()
+                .iter()
+                .map(|s| PySlotView {
+                    slot_name: s.name.clone(),
+                    sv: self.sv.clone_ref(py),
+                })
+                .collect()),
+            None => Ok(Vec::new()),
+        }
+    }
+}
+
+#[cfg(feature = "python")]
+#[pymethods]
+impl PySlotView {
+    #[getter]
+    fn name(&self) -> String {
+        self.slot_name.clone()
+    }
 }
 
 /// A Python module implemented in Rust.
@@ -93,6 +179,8 @@ impl PySchemaView {
 pub fn schemaview_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
     m.add_class::<PySchemaView>()?;
+    m.add_class::<PyClassView>()?;
+    m.add_class::<PySlotView>()?;
     m.add_class::<SchemaDefinition>()?;
     m.add_class::<ClassDefinition>()?;
     Ok(())
