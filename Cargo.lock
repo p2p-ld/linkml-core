@@ -899,6 +899,7 @@ dependencies = [
 name = "linkml-core"
 version = "0.1.0"
 dependencies = [
+ "linkml_runtime",
  "pyo3",
 ]
 
