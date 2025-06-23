@@ -28,18 +28,20 @@ pub enum LinkMLValue<'a> {
 impl<'a> LinkMLValue<'a> {
     fn select_class(
         map: &serde_json::Map<String, JsonValue>,
-        base: ClassView<'a>,
+        base: &ClassView<'a>,
         sv: &'a SchemaView,
         conv: &Converter,
     ) -> ClassView<'a> {
-        let mut cands: Vec<ClassView<'a>> = vec![base.clone()];
-        if let Ok(desc) = base.get_descendants(conv, true) {
-            for d in desc.into_iter() {
-                cands.push(d);
-            }
+        let descendants = match base.get_descendants(conv, true) {
+            Ok(d) => d,
+            Err(_) => Vec::new(),
+        };
+        let mut cand_refs: Vec<&ClassView<'a>> = vec![base];
+        for d in &descendants {
+            cand_refs.push(d);
         }
 
-        let mut preferred: Option<ClassView<'a>> = None;
+        let mut preferred: Option<&ClassView<'a>> = None;
         if let Some(ts) = base
             .slots()
             .iter()
@@ -47,10 +49,10 @@ impl<'a> LinkMLValue<'a> {
         {
             if let Some(JsonValue::String(tv)) = map.get(&ts.name) {
                 if let Some(def) = ts.definitions.iter().rev().find(|d| d.designates_type.unwrap_or(false)) {
-                    for c in &cands {
+                    for c in &cand_refs {
                         if let Ok(vals) = c.get_accepted_type_designator_values(def, conv) {
                             if vals.iter().any(|v| v.to_string() == *tv) {
-                                preferred = Some(c.clone());
+                                preferred = Some(*c);
                                 break;
                             }
                         }
@@ -59,24 +61,24 @@ impl<'a> LinkMLValue<'a> {
             }
         }
         if let Some(p) = preferred {
-            return p;
+            return p.clone();
         }
 
-        for c in &cands {
+        for c in &cand_refs {
             let tmp = LinkMLValue::from_json(
                 JsonValue::Object(map.clone()),
-                Some(c),
+                Some(*c),
                 None,
                 sv,
                 conv,
                 false,
             );
             if validate(&tmp).is_ok() {
-                return c.clone();
+                return (*c).clone();
             }
         }
 
-        base
+        base.clone()
     }
     fn from_json(
         value: JsonValue,
@@ -126,7 +128,7 @@ impl<'a> LinkMLValue<'a> {
                 };
 
                 let chosen: Option<ClassView<'a>> =
-                    base_class.map(|b| Self::select_class(&map, b, sv, conv));
+                    base_class.as_ref().map(|b| Self::select_class(&map, b, sv, conv));
 
                 let mut values = HashMap::new();
                 for (k, v) in map.into_iter() {
