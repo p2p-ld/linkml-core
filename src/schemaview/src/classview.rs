@@ -204,17 +204,19 @@ impl<'a> ClassView<'a> {
         for schema in self.sv.schema_definitions.values() {
             for (cls_name, cls_def) in &schema.classes {
                 if let Some(parent) = &cls_def.is_a {
-                    if let Some(parent_cv) = self.sv.get_class(&Identifier::new(parent), conv)? {
+                    if let Some(parent_cv) =
+                        self.sv.get_class(&Identifier::new(parent), conv)?
+                    {
                         if parent_cv.class.name == self.class.name
                             && parent_cv.schema_uri == self.schema_uri
                         {
                             if let Some(child_cv) =
                                 self.sv.get_class(&Identifier::new(cls_name), conv)?
                             {
-                                out.push(child_cv.clone());
                                 if recurse {
                                     out.extend(child_cv.get_descendants(conv, true)?);
                                 }
+                                out.push(child_cv);
                             }
                         }
                     }
