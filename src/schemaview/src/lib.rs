@@ -18,6 +18,8 @@ use pyo3::exceptions::PyException;
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 #[cfg(feature = "python")]
+use pyo3::IntoPyObjectExt;
+#[cfg(feature = "python")]
 use pyo3::PyRef;
 #[cfg(feature = "python")]
 use serde_path_to_error;
@@ -112,9 +114,11 @@ impl PySchemaView {
             .inner
             .get_class(&Identifier::new(id), &conv)
             .map_err(|e| PyException::new_err(format!("{:?}", e)))?;
+        let tmp = (&slf).into_pyobject_or_pyerr(py)?;
+        let py_self = tmp.to_owned().unbind();
         Ok(opt.map(|cv| PyClassView {
             class_name: cv.class.name.clone(),
-            sv: slf.into_py(py),
+            sv: py_self.clone_ref(py),
         }))
     }
 
@@ -128,9 +132,11 @@ impl PySchemaView {
             .inner
             .get_slot(&Identifier::new(id), &conv)
             .map_err(|e| PyException::new_err(format!("{:?}", e)))?;
+        let tmp = (&slf).into_pyobject_or_pyerr(py)?;
+        let py_self = tmp.to_owned().unbind();
         Ok(opt.map(|svw| PySlotView {
             slot_name: svw.name,
-            sv: slf.into_py(py),
+            sv: py_self.clone_ref(py),
         }))
     }
 }
@@ -144,7 +150,7 @@ impl PyClassView {
     }
 
     fn slots(&self, py: Python<'_>) -> PyResult<Vec<PySlotView>> {
-        let sv = self.sv.as_ref(py).borrow();
+        let sv = self.sv.bind(py).borrow();
         let conv = sv.inner.converter();
         let opt = sv
             .inner
