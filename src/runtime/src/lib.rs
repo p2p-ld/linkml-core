@@ -7,6 +7,8 @@ use std::fs;
 use std::path::Path;
 
 pub mod turtle;
+#[cfg(feature = "python")]
+pub use linkml_schemaview::{PyClassView, PySchemaView, PySlotView};
 pub enum LinkMLValue<'a> {
     Scalar {
         value: JsonValue,
@@ -200,5 +202,29 @@ fn validate_inner<'a>(value: &LinkMLValue<'a>) -> Result<(), String> {
 
 pub fn validate<'a>(value: &LinkMLValue<'a>) -> Result<(), String> {
     validate_inner(value)
+}
+
+#[cfg(feature = "python")]
+use pyo3::prelude::*;
+#[cfg(feature = "python")]
+use pyo3::{wrap_pyfunction, wrap_pymodule};
+#[cfg(feature = "python")]
+use pyo3::exceptions::PyException;
+#[cfg(feature = "python")]
+use linkml_schemaview::{io as sv_io, schemaview::SchemaView as RustSchemaView, schemaview_module};
+
+#[cfg(feature = "python")]
+#[pyfunction]
+fn make_schema_view(path: Option<&str>) -> PyResult<PySchemaView> {
+    PySchemaView::new(path)
+}
+
+/// Python bindings for `linkml_runtime`.
+#[cfg(feature = "python")]
+#[pymodule(name = "linkml_runtime")]
+fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_wrapped(wrap_pymodule!(schemaview_module))?;
+    m.add_function(wrap_pyfunction!(make_schema_view, m)?)?;
+    Ok(())
 }
 

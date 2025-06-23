@@ -5,6 +5,7 @@ edition = "2021"
 
 [lib]
 name = "linkml_runtime"
+crate-type = ["rlib", "cdylib"]
 
 [[bin]]
 name = "linkml-validate"
@@ -23,8 +24,12 @@ curies = "0.1.3"
 linkml_meta = { path = "../metamodel" }
 rio_turtle = "0.8"
 rio_api = "0.8"
+pyo3 = { version = "0.25.0", features = ["extension-module"], optional = true }
 
 [dev-dependencies]
 assert_cmd = "2"
 predicates = "2"
 tempfile = "3"
+
+[features]
+python = ["pyo3", "linkml_schemaview/python", "linkml_meta/pyo3"]
