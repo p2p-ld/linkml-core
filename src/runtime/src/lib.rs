@@ -10,17 +10,17 @@ pub mod turtle;
 pub enum LinkMLValue<'a> {
     Scalar {
         value: JsonValue,
-        slot: Option<&'a SlotView<'a>>,
+        slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
     },
     List {
         values: Vec<LinkMLValue<'a>>,
-        slot: Option<&'a SlotView<'a>>,
+        slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
     },
     Map {
         values: HashMap<String, LinkMLValue<'a>>,
-        class: Option<&'a ClassView<'a>>,
+        class: Option<ClassView<'a>>,
         sv: &'a SchemaView,
     },
 }
@@ -28,20 +28,19 @@ pub enum LinkMLValue<'a> {
 impl<'a> LinkMLValue<'a> {
     fn select_class(
         map: &serde_json::Map<String, JsonValue>,
-        base: &'a ClassView<'a>,
+        base: ClassView<'a>,
         sv: &'a SchemaView,
         conv: &Converter,
-    ) -> &'a ClassView<'a> {
-        let base_box = Box::leak(Box::new(base.clone()));
-        let mut cands: Vec<&'a ClassView<'a>> = vec![base_box];
-        if let Ok(desc) = base_box.get_descendants(conv, true) {
+    ) -> ClassView<'a> {
+        let mut cands: Vec<ClassView<'a>> = vec![base.clone()];
+        if let Ok(desc) = base.get_descendants(conv, true) {
             for d in desc.into_iter() {
-                cands.push(Box::leak(Box::new(d)));
+                cands.push(d);
             }
         }
 
-        let mut preferred: Option<&ClassView<'a>> = None;
-        if let Some(ts) = base_box
+        let mut preferred: Option<ClassView<'a>> = None;
+        if let Some(ts) = base
             .slots()
             .iter()
             .find(|s| s.definitions.iter().rev().any(|d| d.designates_type.unwrap_or(false)))
@@ -51,7 +50,7 @@ impl<'a> LinkMLValue<'a> {
                     for c in &cands {
                         if let Ok(vals) = c.get_accepted_type_designator_values(def, conv) {
                             if vals.iter().any(|v| v.to_string() == *tv) {
-                                preferred = Some(*c);
+                                preferred = Some(c.clone());
                                 break;
                             }
                         }
@@ -64,18 +63,25 @@ impl<'a> LinkMLValue<'a> {
         }
 
         for c in &cands {
-            let tmp = LinkMLValue::from_json(JsonValue::Object(map.clone()), Some(*c), None, sv, conv, false);
+            let tmp = LinkMLValue::from_json(
+                JsonValue::Object(map.clone()),
+                Some(c),
+                None,
+                sv,
+                conv,
+                false,
+            );
             if validate(&tmp).is_ok() {
-                return *c;
+                return c.clone();
             }
         }
 
-        base_box
+        base
     }
     fn from_json(
         value: JsonValue,
         class: Option<&'a ClassView<'a>>,
-        slot: Option<&'a SlotView<'a>>,
+        slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
         conv: &Converter,
         polymorphic: bool,
@@ -93,36 +99,47 @@ impl<'a> LinkMLValue<'a> {
                     if let Some(cls) = class {
                         let mut values = HashMap::new();
                         for (k, v) in map.into_iter() {
-                            let slot_ref = cls.slots().iter().find(|s| s.name == k);
-                            values.insert(k, LinkMLValue::from_json(v, None, slot_ref, sv, conv, true));
+                            let slot_ref = cls
+                                .slots()
+                                .iter()
+                                .find(|s| s.name == k)
+                                .cloned();
+                            values.insert(
+                                k,
+                                LinkMLValue::from_json(v, None, slot_ref, sv, conv, true),
+                            );
                         }
-                        return LinkMLValue::Map { values, class: Some(cls), sv };
+                        return LinkMLValue::Map { values, class: Some(cls.clone()), sv };
                     }
                 }
 
                 // determine base class
-                let base_class_ref: Option<&'a ClassView<'a>> = match class {
-                    Some(c) => Some(Box::leak(Box::new(c.clone())) as &'a ClassView<'a>),
+                let base_class: Option<ClassView<'a>> = match class {
+                    Some(c) => Some(c.clone()),
                     None => slot.and_then(|s| {
                         s.definitions
                             .iter()
                             .rev()
                             .find_map(|d| d.range.as_deref())
                             .and_then(|r| sv.get_class(&Identifier::new(r), conv).ok().flatten())
-                            .map(|cls| Box::leak(Box::new(cls)) as &'a ClassView<'a>)
                     }),
                 };
 
-                let chosen_ref: Option<&'a ClassView<'a>> =
-                    base_class_ref.map(|b| Self::select_class(&map, b, sv, conv));
+                let chosen: Option<ClassView<'a>> =
+                    base_class.map(|b| Self::select_class(&map, b, sv, conv));
 
                 let mut values = HashMap::new();
                 for (k, v) in map.into_iter() {
-                    let slot_ref = chosen_ref
-                        .and_then(|cv| cv.slots().iter().find(|s| s.name == k));
-                    values.insert(k, LinkMLValue::from_json(v, None, slot_ref, sv, conv, true));
+                    let slot_tmp: Option<SlotView<'a>> = chosen
+                        .as_ref()
+                        .and_then(|cv| cv.slots().iter().find(|s| s.name == k))
+                        .cloned();
+                    values.insert(
+                        k,
+                        LinkMLValue::from_json(v, None, slot_tmp, sv, conv, true),
+                    );
                 }
-                LinkMLValue::Map { values, class: chosen_ref, sv }
+                LinkMLValue::Map { values, class: chosen, sv }
             }
             other => LinkMLValue::Scalar { value: other, slot, sv },
         }
@@ -162,7 +179,7 @@ fn validate_inner<'a>(value: &LinkMLValue<'a>) -> Result<(), String> {
             Ok(())
         }
         LinkMLValue::Map { values, class, .. } => {
-            if let Some(cv) = class {
+            if let Some(cv) = class.as_ref() {
                 for (k, v) in values {
                     if cv.slots().iter().all(|s| s.name != *k) {
                         return Err(format!("unknown slot `{}`", k));
