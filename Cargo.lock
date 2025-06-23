@@ -923,6 +923,7 @@ dependencies = [
  "curies",
  "linkml_meta",
  "predicates 2.1.5",
+ "pyo3",
  "rio_api",
  "rio_turtle",
  "schemaview",

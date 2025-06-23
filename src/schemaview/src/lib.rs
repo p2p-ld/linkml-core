@@ -60,7 +60,7 @@ pub struct PySlotView {
 impl PySchemaView {
     #[new]
     #[pyo3(signature = (path=None))]
-    fn new(path: Option<&str>) -> PyResult<Self> {
+    pub fn new(path: Option<&str>) -> PyResult<Self> {
         let mut sv = RustSchemaView::new();
         if let Some(p) = path {
             let schema = crate::io::from_yaml(Path::new(p))
