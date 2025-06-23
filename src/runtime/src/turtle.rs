@@ -220,8 +220,8 @@ pub fn turtle_to_string(
     schema: &SchemaDefinition,
     conv: &Converter,
     options: TurtleOptions,
-) -> String {
+) -> Result<String, std::io::Error> {
     let mut buf = Vec::new();
-    write_turtle(value, sv, schema, conv, &mut buf, options).unwrap();
-    String::from_utf8(buf).unwrap()
+    write_turtle(value, sv, schema, conv, &mut buf, options)?;
+    String::from_utf8(buf).map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
 }

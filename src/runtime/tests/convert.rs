@@ -22,7 +22,7 @@ fn convert_person_to_ttl() {
     sv.add_schema(schema.clone()).unwrap();
     let conv = converter_from_schema(&schema);
     let v = load_yaml_file(Path::new(&data_path("person_valid.yaml")), &sv, None, &conv).unwrap();
-    let ttl = turtle_to_string(&v, &sv, &schema, &conv, TurtleOptions { skolem: false });
+    let ttl = turtle_to_string(&v, &sv, &schema, &conv, TurtleOptions { skolem: false }).unwrap();
     assert!(ttl.contains("@prefix test: <https://example.com/test/> ."));
     assert!(ttl.contains("<test:name> \"Alice\""));
 }
