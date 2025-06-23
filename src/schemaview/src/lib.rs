@@ -8,7 +8,7 @@ pub mod slotview;
 extern crate linkml_meta;
 
 #[cfg(feature = "python")]
-use crate::identifier::{converter_from_schemas, Identifier};
+use crate::identifier::Identifier;
 #[cfg(feature = "python")]
 use crate::schemaview::SchemaView as RustSchemaView;
 #[cfg(feature = "python")]
@@ -18,6 +18,8 @@ use pyo3::exceptions::PyException;
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 #[cfg(feature = "python")]
+use pyo3::types::{PyAny, PyAnyMethods};
+#[cfg(feature = "python")]
 use pyo3::IntoPyObjectExt;
 #[cfg(feature = "python")]
 use pyo3::PyRef;
@@ -26,6 +28,8 @@ use serde_path_to_error;
 #[cfg(feature = "python")]
 use serde_yml;
 #[cfg(feature = "python")]
+use std::fs;
+#[cfg(feature = "python")]
 use std::path::Path;
 
 /// Formats the sum of two numbers as string.
@@ -33,6 +37,24 @@ use std::path::Path;
 #[pyfunction]
 fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
     Ok((a + b).to_string())
+}
+
+#[cfg(feature = "python")]
+fn py_any_to_string(obj: &Bound<'_, PyAny>) -> PyResult<String> {
+    if let Ok(s) = obj.extract::<String>() {
+        if Path::new(&s).exists() {
+            return fs::read_to_string(&s).map_err(|e| PyException::new_err(e.to_string()));
+        }
+        return Ok(s);
+    }
+    if obj.hasattr("__fspath__")? {
+        let p: String = obj.call_method0("__fspath__")?.extract()?;
+        return fs::read_to_string(&p).map_err(|e| PyException::new_err(e.to_string()));
+    }
+    if obj.hasattr("read")? {
+        return obj.call_method0("read")?.extract();
+    }
+    Err(PyException::new_err("expected string or file-like object"))
 }
 
 #[cfg(feature = "python")]
@@ -65,11 +87,13 @@ pub struct PySlotView {
 #[pymethods]
 impl PySchemaView {
     #[new]
-    #[pyo3(signature = (path=None))]
-    pub fn new(path: Option<&str>) -> PyResult<Self> {
+    #[pyo3(signature = (source=None))]
+    pub fn new(source: Option<&Bound<'_, PyAny>>) -> PyResult<Self> {
         let mut sv = RustSchemaView::new();
-        if let Some(p) = path {
-            let schema = crate::io::from_yaml(Path::new(p))
+        if let Some(obj) = source {
+            let text = py_any_to_string(obj)?;
+            let deser = serde_yml::Deserializer::from_str(&text);
+            let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
                 .map_err(|e| PyException::new_err(e.to_string()))?;
             sv.add_schema(schema).map_err(|e| PyException::new_err(e))?;
         }
