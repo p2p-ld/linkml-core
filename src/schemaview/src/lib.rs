@@ -41,6 +41,12 @@ pub struct PySchemaView {
     inner: RustSchemaView,
 }
 
+impl PySchemaView {
+    pub fn as_rust(&self) -> &RustSchemaView {
+        &self.inner
+    }
+}
+
 #[cfg(feature = "python")]
 #[pyclass(name = "ClassView")]
 pub struct PyClassView {
@@ -145,7 +151,7 @@ impl PySchemaView {
 #[pymethods]
 impl PyClassView {
     #[getter]
-    fn name(&self) -> String {
+    pub fn name(&self) -> String {
         self.class_name.clone()
     }
 
@@ -174,7 +180,7 @@ impl PyClassView {
 #[pymethods]
 impl PySlotView {
     #[getter]
-    fn name(&self) -> String {
+    pub fn name(&self) -> String {
         self.slot_name.clone()
     }
 }

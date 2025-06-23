@@ -211,6 +211,11 @@ use pyo3::{wrap_pyfunction, wrap_pymodule};
 #[cfg(feature = "python")]
 use pyo3::exceptions::PyException;
 #[cfg(feature = "python")]
+use pyo3::types::{PyAny, PyModule};
+use pyo3::types::PyAnyMethods;
+use pyo3::Bound;
+#[cfg(feature = "python")]
+#[cfg(feature = "python")]
 use linkml_schemaview::{io as sv_io, schemaview::SchemaView as RustSchemaView, schemaview_module};
 
 #[cfg(feature = "python")]
@@ -222,9 +227,176 @@ fn make_schema_view(path: Option<&str>) -> PyResult<PySchemaView> {
 /// Python bindings for `linkml_runtime`.
 #[cfg(feature = "python")]
 #[pymodule(name = "linkml_runtime")]
-fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
+pub fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pymodule!(schemaview_module))?;
     m.add_function(wrap_pyfunction!(make_schema_view, m)?)?;
+    m.add_function(wrap_pyfunction!(load_yaml, m)?)?;
+    m.add_function(wrap_pyfunction!(load_json, m)?)?;
+    m.add_class::<PyLinkMLValue>()?;
     Ok(())
 }
+
+#[cfg(feature = "python")]
+#[derive(Clone)]
+enum LinkMLValueOwned {
+    Scalar { value: JsonValue, slot: Option<String> },
+    List { values: Vec<LinkMLValueOwned>, slot: Option<String> },
+    Map { values: HashMap<String, LinkMLValueOwned>, class: Option<String> },
+}
+
+#[cfg(feature = "python")]
+impl LinkMLValueOwned {
+    fn from_linkml<'a>(v: &LinkMLValue<'a>) -> Self {
+        match v {
+            LinkMLValue::Scalar { value, slot, .. } => {
+                LinkMLValueOwned::Scalar { value: value.clone(), slot: slot.as_ref().map(|s| s.name.clone()) }
+            }
+            LinkMLValue::List { values, slot, .. } => {
+                LinkMLValueOwned::List {
+                    values: values.iter().map(Self::from_linkml).collect(),
+                    slot: slot.as_ref().map(|s| s.name.clone()),
+                }
+            }
+            LinkMLValue::Map { values, class, .. } => {
+                LinkMLValueOwned::Map {
+                    values: values.iter().map(|(k,v)| (k.clone(), Self::from_linkml(v))).collect(),
+                    class: class.as_ref().map(|c| c.class.name.clone()),
+                }
+            }
+        }
+    }
+
+    fn to_json(&self) -> JsonValue {
+        match self {
+            LinkMLValueOwned::Scalar { value, .. } => value.clone(),
+            LinkMLValueOwned::List { values, .. } => JsonValue::Array(values.iter().map(|v| v.to_json()).collect()),
+            LinkMLValueOwned::Map { values, .. } => {
+                JsonValue::Object(values.iter().map(|(k,v)| (k.clone(), v.to_json())).collect())
+            }
+        }
+    }
+}
+
+#[cfg(feature = "python")]
+#[pyclass(name = "LinkMLValue")]
+pub struct PyLinkMLValue {
+    value: LinkMLValueOwned,
+    sv: Py<PySchemaView>,
+}
+
+#[cfg(feature = "python")]
+impl PyLinkMLValue {
+    fn new(value: LinkMLValueOwned, sv: Py<PySchemaView>) -> Self {
+        Self { value, sv }
+    }
+}
+
+#[cfg(feature = "python")]
+fn json_value_to_py(py: Python<'_>, v: &JsonValue) -> PyObject {
+    let s = serde_json::to_string(v).unwrap();
+    let json_mod = PyModule::import(py, "json").unwrap();
+    json_mod.call_method1("loads", (s,)).unwrap().unbind()
+}
+
+#[cfg(feature = "python")]
+impl Clone for PyLinkMLValue {
+    fn clone(&self) -> Self {
+        Python::with_gil(|py| Self { value: self.value.clone(), sv: self.sv.clone_ref(py) })
+    }
+}
+
+#[cfg(feature = "python")]
+#[pymethods]
+impl PyLinkMLValue {
+    fn slot_name(&self) -> Option<String> {
+        match &self.value {
+            LinkMLValueOwned::Scalar { slot: Some(n), .. } => Some(n.clone()),
+            LinkMLValueOwned::List { slot: Some(n), .. } => Some(n.clone()),
+            _ => None,
+        }
+    }
+
+    fn class_name(&self) -> Option<String> {
+        match &self.value {
+            LinkMLValueOwned::Map { class: Some(n), .. } => Some(n.clone()),
+            _ => None,
+        }
+    }
+
+    fn __len__(&self) -> PyResult<usize> {
+        Ok(match &self.value {
+            LinkMLValueOwned::Scalar { .. } => 0,
+            LinkMLValueOwned::List { values, .. } => values.len(),
+            LinkMLValueOwned::Map { values, .. } => values.len(),
+        })
+    }
+
+    fn __getitem__<'py>(&self, py: Python<'py>, key: &Bound<'py, PyAny>) -> PyResult<PyLinkMLValue> {
+        match &self.value {
+            LinkMLValueOwned::List { values, .. } => {
+                let idx: usize = key.extract()?;
+                values.get(idx).map(|v| PyLinkMLValue::new(v.clone(), self.sv.clone_ref(py))).ok_or_else(|| PyException::new_err("index out of range"))
+            }
+            LinkMLValueOwned::Map { values, .. } => {
+                let k: String = key.extract()?;
+                values.get(&k).map(|v| PyLinkMLValue::new(v.clone(), self.sv.clone_ref(py))).ok_or_else(|| PyException::new_err("key not found"))
+            }
+            _ => Err(PyException::new_err("not indexable")),
+        }
+    }
+
+    fn keys(&self) -> PyResult<Vec<String>> {
+        match &self.value {
+            LinkMLValueOwned::Map { values, .. } => Ok(values.keys().cloned().collect()),
+            _ => Ok(Vec::new()),
+        }
+    }
+
+    fn values<'py>(&self, py: Python<'py>) -> PyResult<Vec<PyLinkMLValue>> {
+        match &self.value {
+            LinkMLValueOwned::Map { values, .. } => Ok(values.values().cloned().map(|v| PyLinkMLValue::new(v, self.sv.clone_ref(py))).collect()),
+            LinkMLValueOwned::List { values, .. } => Ok(values.iter().cloned().map(|v| PyLinkMLValue::new(v, self.sv.clone_ref(py))).collect()),
+            _ => Ok(Vec::new()),
+        }
+    }
+
+    fn as_python<'py>(&self, py: Python<'py>) -> PyObject {
+        json_value_to_py(py, &self.value.to_json())
+    }
+}
+
+#[cfg(feature = "python")]
+#[pyfunction]
+fn load_yaml(py: Python<'_>, path: &str, sv: Py<PySchemaView>, class: Option<Py<PyClassView>>) -> PyResult<PyLinkMLValue> {
+    let sv_ref = sv.bind(py).borrow();
+    let rust_sv = sv_ref.as_rust();
+    let conv = rust_sv.converter();
+    let class_view = match class {
+        Some(cv) => {
+            let cv_ref = cv.bind(py).borrow();
+            rust_sv.get_class(&Identifier::new(&cv_ref.name()), &conv).map_err(|e| PyException::new_err(format!("{:?}", e)))?
+        }
+        None => None,
+    };
+    let v = load_yaml_file(Path::new(path), rust_sv, class_view.as_ref(), &conv).map_err(|e| PyException::new_err(e.to_string()))?;
+    Ok(PyLinkMLValue::new(LinkMLValueOwned::from_linkml(&v), sv))
+}
+
+#[cfg(feature = "python")]
+#[pyfunction]
+fn load_json(py: Python<'_>, path: &str, sv: Py<PySchemaView>, class: Option<Py<PyClassView>>) -> PyResult<PyLinkMLValue> {
+    let sv_ref = sv.bind(py).borrow();
+    let rust_sv = sv_ref.as_rust();
+    let conv = rust_sv.converter();
+    let class_view = match class {
+        Some(cv) => {
+            let cv_ref = cv.bind(py).borrow();
+            rust_sv.get_class(&Identifier::new(&cv_ref.name()), &conv).map_err(|e| PyException::new_err(format!("{:?}", e)))?
+        }
+        None => None,
+    };
+    let v = load_json_file(Path::new(path), rust_sv, class_view.as_ref(), &conv).map_err(|e| PyException::new_err(e.to_string()))?;
+    Ok(PyLinkMLValue::new(LinkMLValueOwned::from_linkml(&v), sv))
+}
+
 
