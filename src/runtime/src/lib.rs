@@ -8,7 +8,9 @@ use std::path::Path;
 
 #[cfg(feature = "python")]
 pub mod python;
+pub mod diff;
 pub mod turtle;
+pub use diff::{Delta, diff, patch};
 #[cfg(feature = "python")]
 pub use python::*;
 pub enum LinkMLValue<'a> {
