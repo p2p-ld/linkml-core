@@ -1,8 +1,8 @@
 #![cfg(feature = "python")]
 
+use linkml_runtime::runtime_module;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use linkml_schemaview::schemaview_module;
 use std::path::PathBuf;
 
 fn meta_path() -> PathBuf {
@@ -17,12 +17,12 @@ fn meta_path() -> PathBuf {
 fn construct_via_python() {
     pyo3::prepare_freethreaded_python();
     Python::with_gil(|py| {
-        let module = PyModule::new(py, "linkml_schemaview").unwrap();
-        schemaview_module(&module).unwrap();
+        let module = PyModule::new(py, "linkml_runtime").unwrap();
+        runtime_module(&module).unwrap();
         let sys = py.import("sys").unwrap();
         let modules = sys.getattr("modules").unwrap();
         let sys_modules = modules.downcast::<PyDict>().unwrap();
-        sys_modules.set_item("linkml_schemaview", module).unwrap();
+        sys_modules.set_item("linkml_runtime", module).unwrap();
 
         let locals = PyDict::new(py);
         locals
@@ -32,8 +32,8 @@ fn construct_via_python() {
             py,
             *locals,
             r#"
-import linkml_schemaview as schemaview
-sv = schemaview.SchemaView(meta_path)
+import linkml_runtime as lr
+sv = lr.make_schema_view(meta_path)
 unresolved = sv.get_unresolved_schemas()
 assert "https://w3id.org/linkml/mappings" in unresolved
 "#
@@ -46,12 +46,12 @@ fn definitions_via_python() {
     pyo3::prepare_freethreaded_python();
     let yaml = std::fs::read_to_string(meta_path()).unwrap();
     Python::with_gil(|py| {
-        let module = PyModule::new(py, "linkml_schemaview").unwrap();
-        schemaview_module(&module).unwrap();
+        let module = PyModule::new(py, "linkml_runtime").unwrap();
+        runtime_module(&module).unwrap();
         let sys = py.import("sys").unwrap();
         let modules = sys.getattr("modules").unwrap();
         let sys_modules = modules.downcast::<PyDict>().unwrap();
-        sys_modules.set_item("linkml_schemaview", module).unwrap();
+        sys_modules.set_item("linkml_runtime", module).unwrap();
 
         let locals = PyDict::new(py);
         locals.set_item("meta_yaml", &yaml).unwrap();
@@ -59,8 +59,8 @@ fn definitions_via_python() {
             py,
             *locals,
             r#"
-import linkml_schemaview as schemaview
-sv = schemaview.SchemaView()
+import linkml_runtime as lr
+sv = lr.make_schema_view()
 sv.add_schema_str(meta_yaml)
 print('schemas', sv.get_unresolved_schemas())
 s = sv.get_schema('https://w3id.org/linkml/meta')

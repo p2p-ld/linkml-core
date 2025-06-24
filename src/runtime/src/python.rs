@@ -1,7 +1,9 @@
 use crate::turtle::{turtle_to_string, TurtleOptions};
 use crate::{load_json_str, load_yaml_str, LinkMLValue};
 use curies::Converter;
+use linkml_meta::{ClassDefinition, SchemaDefinition};
 use linkml_schemaview::identifier::Identifier;
+use linkml_schemaview::io;
 use linkml_schemaview::schemaview::SchemaView;
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
@@ -13,7 +15,8 @@ use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
-fn py_any_to_string(obj: &Bound<'_, PyAny>) -> PyResult<String> {
+use std::sync::Arc;
+fn py_filelike_or_string_to_string(obj: &Bound<'_, PyAny>) -> PyResult<String> {
     if let Ok(s) = obj.extract::<String>() {
         if Path::new(&s).exists() {
             return fs::read_to_string(&s).map_err(|e| PyException::new_err(e.to_string()));
@@ -29,8 +32,165 @@ fn py_any_to_string(obj: &Bound<'_, PyAny>) -> PyResult<String> {
     }
     Err(PyException::new_err("expected string or file-like object"))
 }
-use linkml_schemaview::schemaview_module;
-pub use linkml_schemaview::{PyClassView, PySchemaView, PySlotView};
+
+#[pyfunction]
+fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
+    Ok((a + b).to_string())
+}
+
+#[pyclass(name = "SchemaView")]
+pub struct PySchemaView {
+    inner: Arc<SchemaView>,
+}
+
+impl PySchemaView {
+    pub fn as_rust(&self) -> &SchemaView {
+        self.inner.as_ref()
+    }
+}
+
+#[pyclass(name = "ClassView")]
+pub struct PyClassView {
+    class_name: String,
+    sv: Arc<SchemaView>,
+}
+
+#[pyclass(name = "SlotView")]
+pub struct PySlotView {
+    slot_name: String,
+    sv: Arc<SchemaView>,
+}
+
+#[pymethods]
+impl PySchemaView {
+    #[new]
+    #[pyo3(signature = (source=None))]
+    pub fn new(source: Option<&Bound<'_, PyAny>>) -> PyResult<Self> {
+        let mut sv = SchemaView::new();
+        if let Some(obj) = source {
+            let text = py_filelike_or_string_to_string(obj)?;
+            let deser = serde_yml::Deserializer::from_str(&text);
+            let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
+                .map_err(|e| PyException::new_err(e.to_string()))?;
+            sv.add_schema(schema).map_err(|e| PyException::new_err(e))?;
+        }
+        Ok(Self {
+            inner: Arc::new(sv),
+        })
+    }
+
+    fn add_schema_from_path(&mut self, path: &str) -> PyResult<()> {
+        let schema =
+            io::from_yaml(Path::new(path)).map_err(|e| PyException::new_err(e.to_string()))?;
+        if let Some(inner) = Arc::get_mut(&mut self.inner) {
+            inner
+                .add_schema(schema)
+                .map_err(|e| PyException::new_err(e))
+        } else {
+            Err(PyException::new_err("SchemaView already shared"))
+        }
+    }
+
+    fn add_schema_str(&mut self, data: &str) -> PyResult<()> {
+        let deser = serde_yml::Deserializer::from_str(data);
+        let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
+            .map_err(|e| PyException::new_err(e.to_string()))?;
+        if let Some(inner) = Arc::get_mut(&mut self.inner) {
+            inner
+                .add_schema(schema)
+                .map_err(|e| PyException::new_err(e))
+        } else {
+            Err(PyException::new_err("SchemaView already shared"))
+        }
+    }
+
+    fn get_unresolved_schemas(&self) -> Vec<String> {
+        self.inner.get_unresolved_schemas()
+    }
+
+    fn get_schema(&self, uri: &str) -> Option<SchemaDefinition> {
+        self.inner.get_schema(uri).cloned()
+    }
+
+    fn get_class(&self, id: &str) -> PyResult<Option<ClassDefinition>> {
+        let conv = self.inner.converter();
+        Ok(self
+            .inner
+            .get_class_definition(&Identifier::new(id), &conv)
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))?
+            .cloned())
+    }
+
+    fn get_class_view(&self, id: &str) -> PyResult<Option<PyClassView>> {
+        let conv = self.inner.converter();
+        Ok(self
+            .inner
+            .get_class(&Identifier::new(id), &conv)
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))?
+            .map(|cv| PyClassView {
+                class_name: cv.class.name.clone(),
+                sv: self.inner.clone(),
+            }))
+    }
+
+    fn get_slot_view(&self, id: &str) -> PyResult<Option<PySlotView>> {
+        let conv = self.inner.converter();
+        Ok(self
+            .inner
+            .get_slot(&Identifier::new(id), &conv)
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))?
+            .map(|svw| PySlotView {
+                slot_name: svw.name,
+                sv: self.inner.clone(),
+            }))
+    }
+}
+
+#[pymethods]
+impl PyClassView {
+    #[getter]
+    pub fn name(&self) -> String {
+        self.class_name.clone()
+    }
+
+    fn slots(&self) -> PyResult<Vec<PySlotView>> {
+        let conv = self.sv.converter();
+        let opt = self
+            .sv
+            .get_class(&Identifier::new(&self.class_name), &conv)
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))?;
+        match opt {
+            Some(cv) => Ok(cv
+                .slots()
+                .iter()
+                .map(|s| PySlotView {
+                    slot_name: s.name.clone(),
+                    sv: self.sv.clone(),
+                })
+                .collect()),
+            None => Ok(Vec::new()),
+        }
+    }
+}
+
+#[pymethods]
+impl PySlotView {
+    #[getter]
+    pub fn name(&self) -> String {
+        self.slot_name.clone()
+    }
+}
+
+#[pymodule(name = "linkml_schemaview")]
+pub fn schemaview_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
+    m.add_class::<PySchemaView>()?;
+    m.add_class::<PyClassView>()?;
+    m.add_class::<PySlotView>()?;
+    m.add_class::<SchemaDefinition>()?;
+    m.add_class::<ClassDefinition>()?;
+    Ok(())
+}
 
 #[pyfunction]
 #[pyo3(signature = (source=None))]
@@ -291,7 +451,7 @@ fn load_yaml(
         }
         None => None,
     };
-    let text = py_any_to_string(source)?;
+    let text = py_filelike_or_string_to_string(source)?;
     let v = load_yaml_str(&text, rust_sv, class_view.as_ref(), &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
     Ok(PyLinkMLValue::new(LinkMLValueOwned::from_linkml(&v), sv))
@@ -316,7 +476,7 @@ fn load_json(
         }
         None => None,
     };
-    let text = py_any_to_string(source)?;
+    let text = py_filelike_or_string_to_string(source)?;
     let v = load_json_str(&text, rust_sv, class_view.as_ref(), &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
     Ok(PyLinkMLValue::new(LinkMLValueOwned::from_linkml(&v), sv))
