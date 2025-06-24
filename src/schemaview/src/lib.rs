@@ -20,10 +20,6 @@ use pyo3::prelude::*;
 #[cfg(feature = "python")]
 use pyo3::types::{PyAny, PyAnyMethods};
 #[cfg(feature = "python")]
-use pyo3::IntoPyObjectExt;
-#[cfg(feature = "python")]
-use pyo3::PyRef;
-#[cfg(feature = "python")]
 use serde_path_to_error;
 #[cfg(feature = "python")]
 use serde_yml;
@@ -31,6 +27,8 @@ use serde_yml;
 use std::fs;
 #[cfg(feature = "python")]
 use std::path::Path;
+#[cfg(feature = "python")]
+use std::sync::Arc;
 
 /// Formats the sum of two numbers as string.
 #[cfg(feature = "python")]
@@ -60,12 +58,12 @@ fn py_any_to_string(obj: &Bound<'_, PyAny>) -> PyResult<String> {
 #[cfg(feature = "python")]
 #[pyclass(name = "SchemaView")]
 pub struct PySchemaView {
-    inner: RustSchemaView,
+    inner: Arc<RustSchemaView>,
 }
 
 impl PySchemaView {
     pub fn as_rust(&self) -> &RustSchemaView {
-        &self.inner
+        self.inner.as_ref()
     }
 }
 
@@ -73,14 +71,14 @@ impl PySchemaView {
 #[pyclass(name = "ClassView")]
 pub struct PyClassView {
     class_name: String,
-    sv: Py<PySchemaView>,
+    sv: Arc<RustSchemaView>,
 }
 
 #[cfg(feature = "python")]
 #[pyclass(name = "SlotView")]
 pub struct PySlotView {
     slot_name: String,
-    sv: Py<PySchemaView>,
+    sv: Arc<RustSchemaView>,
 }
 
 #[cfg(feature = "python")]
@@ -97,24 +95,34 @@ impl PySchemaView {
                 .map_err(|e| PyException::new_err(e.to_string()))?;
             sv.add_schema(schema).map_err(|e| PyException::new_err(e))?;
         }
-        Ok(Self { inner: sv })
+        Ok(Self {
+            inner: Arc::new(sv),
+        })
     }
 
     fn add_schema_from_path(&mut self, path: &str) -> PyResult<()> {
         let schema = crate::io::from_yaml(Path::new(path))
             .map_err(|e| PyException::new_err(e.to_string()))?;
-        self.inner
-            .add_schema(schema)
-            .map_err(|e| PyException::new_err(e))
+        if let Some(inner) = Arc::get_mut(&mut self.inner) {
+            inner
+                .add_schema(schema)
+                .map_err(|e| PyException::new_err(e))
+        } else {
+            Err(PyException::new_err("SchemaView already shared"))
+        }
     }
 
     fn add_schema_str(&mut self, data: &str) -> PyResult<()> {
         let deser = serde_yml::Deserializer::from_str(data);
         let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
             .map_err(|e| PyException::new_err(e.to_string()))?;
-        self.inner
-            .add_schema(schema)
-            .map_err(|e| PyException::new_err(e))
+        if let Some(inner) = Arc::get_mut(&mut self.inner) {
+            inner
+                .add_schema(schema)
+                .map_err(|e| PyException::new_err(e))
+        } else {
+            Err(PyException::new_err("SchemaView already shared"))
+        }
     }
 
     fn get_unresolved_schemas(&self) -> Vec<String> {
@@ -134,40 +142,28 @@ impl PySchemaView {
             .cloned())
     }
 
-    fn get_class_view<'py>(
-        slf: PyRef<'py, Self>,
-        py: Python<'py>,
-        id: &str,
-    ) -> PyResult<Option<PyClassView>> {
-        let conv = slf.inner.converter();
-        let opt = slf
+    fn get_class_view(&self, id: &str) -> PyResult<Option<PyClassView>> {
+        let conv = self.inner.converter();
+        Ok(self
             .inner
             .get_class(&Identifier::new(id), &conv)
-            .map_err(|e| PyException::new_err(format!("{:?}", e)))?;
-        let tmp = (&slf).into_pyobject_or_pyerr(py)?;
-        let py_self = tmp.to_owned().unbind();
-        Ok(opt.map(|cv| PyClassView {
-            class_name: cv.class.name.clone(),
-            sv: py_self.clone_ref(py),
-        }))
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))?
+            .map(|cv| PyClassView {
+                class_name: cv.class.name.clone(),
+                sv: self.inner.clone(),
+            }))
     }
 
-    fn get_slot_view<'py>(
-        slf: PyRef<'py, Self>,
-        py: Python<'py>,
-        id: &str,
-    ) -> PyResult<Option<PySlotView>> {
-        let conv = slf.inner.converter();
-        let opt = slf
+    fn get_slot_view(&self, id: &str) -> PyResult<Option<PySlotView>> {
+        let conv = self.inner.converter();
+        Ok(self
             .inner
             .get_slot(&Identifier::new(id), &conv)
-            .map_err(|e| PyException::new_err(format!("{:?}", e)))?;
-        let tmp = (&slf).into_pyobject_or_pyerr(py)?;
-        let py_self = tmp.to_owned().unbind();
-        Ok(opt.map(|svw| PySlotView {
-            slot_name: svw.name,
-            sv: py_self.clone_ref(py),
-        }))
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))?
+            .map(|svw| PySlotView {
+                slot_name: svw.name,
+                sv: self.inner.clone(),
+            }))
     }
 }
 
@@ -179,11 +175,10 @@ impl PyClassView {
         self.class_name.clone()
     }
 
-    fn slots(&self, py: Python<'_>) -> PyResult<Vec<PySlotView>> {
-        let sv = self.sv.bind(py).borrow();
-        let conv = sv.inner.converter();
-        let opt = sv
-            .inner
+    fn slots(&self) -> PyResult<Vec<PySlotView>> {
+        let conv = self.sv.converter();
+        let opt = self
+            .sv
             .get_class(&Identifier::new(&self.class_name), &conv)
             .map_err(|e| PyException::new_err(format!("{:?}", e)))?;
         match opt {
@@ -192,7 +187,7 @@ impl PyClassView {
                 .iter()
                 .map(|s| PySlotView {
                     slot_name: s.name.clone(),
-                    sv: self.sv.clone_ref(py),
+                    sv: self.sv.clone(),
                 })
                 .collect()),
             None => Ok(Vec::new()),
