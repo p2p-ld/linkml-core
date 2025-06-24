@@ -929,7 +929,9 @@ dependencies = [
  "rio_turtle",
  "schemaview",
  "serde_json",
+ "serde_path_to_error",
  "serde_yaml",
+ "serde_yml",
  "tempfile",
 ]
 
@@ -1590,7 +1592,6 @@ version = "0.1.0"
 dependencies = [
  "curies",
  "linkml_meta",
- "pyo3",
  "reqwest",
  "serde_path_to_error",
  "serde_yml",

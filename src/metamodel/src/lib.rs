@@ -406,7 +406,7 @@ impl serde_utils::InlinedPair for Extension {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum ExtensionOrSubtype {    Extension(Extension),     Annotation(Annotation)}
 
 impl From<Extension>   for ExtensionOrSubtype { fn from(x: Extension)   -> Self { Self::Extension(x) } }
@@ -539,7 +539,7 @@ impl<'py> FromPyObject<'py> for Box<Extensible> {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum ExtensibleOrSubtype {    Extensible(Extensible),     Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
 impl From<Extensible>   for ExtensibleOrSubtype { fn from(x: Extensible)   -> Self { Self::Extensible(x) } }
@@ -723,7 +723,7 @@ impl<'py> FromPyObject<'py> for Box<Annotatable> {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum AnnotatableOrSubtype {    Annotatable(Annotatable),     Annotation(Annotation),     Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
 impl From<Annotatable>   for AnnotatableOrSubtype { fn from(x: Annotatable)   -> Self { Self::Annotatable(x) } }
@@ -1117,7 +1117,7 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadata> {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum CommonMetadataOrSubtype {    CommonMetadata(CommonMetadata),     Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
 impl From<CommonMetadata>   for CommonMetadataOrSubtype { fn from(x: CommonMetadata)   -> Self { Self::CommonMetadata(x) } }
@@ -1425,7 +1425,7 @@ impl serde_utils::InlinedPair for Element {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum ElementOrSubtype {    Element(Element),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
 impl From<Element>   for ElementOrSubtype { fn from(x: Element)   -> Self { Self::Element(x) } }
@@ -2403,7 +2403,7 @@ impl serde_utils::InlinedPair for Definition {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum DefinitionOrSubtype {    Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
 impl From<Definition>   for DefinitionOrSubtype { fn from(x: Definition)   -> Self { Self::Definition(x) } }
@@ -3110,7 +3110,7 @@ pub struct Expression {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum ExpressionOrSubtype {    Expression(Expression),     TypeExpression(TypeExpression),     EnumExpression(EnumExpression),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     SlotExpression(SlotExpression),     AnonymousSlotExpression(AnonymousSlotExpression),     SlotDefinition(SlotDefinition),     AnonymousClassExpression(AnonymousClassExpression),     AnonymousEnumExpression(AnonymousEnumExpression),     EnumDefinition(EnumDefinition),     AnonymousTypeExpression(AnonymousTypeExpression),     TypeDefinition(TypeDefinition)}
 
 impl From<Expression>   for ExpressionOrSubtype { fn from(x: Expression)   -> Self { Self::Expression(x) } }
@@ -3281,7 +3281,7 @@ impl<'py> FromPyObject<'py> for Box<TypeExpression> {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum TypeExpressionOrSubtype {    TypeExpression(TypeExpression),     AnonymousTypeExpression(AnonymousTypeExpression),     TypeDefinition(TypeDefinition)}
 
 impl From<TypeExpression>   for TypeExpressionOrSubtype { fn from(x: TypeExpression)   -> Self { Self::TypeExpression(x) } }
@@ -3405,7 +3405,7 @@ impl<'py> FromPyObject<'py> for Box<EnumExpression> {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum EnumExpressionOrSubtype {    EnumExpression(EnumExpression),     AnonymousEnumExpression(AnonymousEnumExpression),     EnumDefinition(EnumDefinition)}
 
 impl From<EnumExpression>   for EnumExpressionOrSubtype { fn from(x: EnumExpression)   -> Self { Self::EnumExpression(x) } }
@@ -3579,7 +3579,7 @@ impl<'py> FromPyObject<'py> for Box<AnonymousExpression> {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum AnonymousExpressionOrSubtype {    AnonymousExpression(AnonymousExpression),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression)}
 
 impl From<AnonymousExpression>   for AnonymousExpressionOrSubtype { fn from(x: AnonymousExpression)   -> Self { Self::AnonymousExpression(x) } }
@@ -3864,7 +3864,7 @@ impl<'py> FromPyObject<'py> for Box<SlotExpression> {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum SlotExpressionOrSubtype {    SlotExpression(SlotExpression),     AnonymousSlotExpression(AnonymousSlotExpression),     SlotDefinition(SlotDefinition)}
 
 impl From<SlotExpression>   for SlotExpressionOrSubtype { fn from(x: SlotExpression)   -> Self { Self::SlotExpression(x) } }
@@ -4457,7 +4457,7 @@ impl<'py> FromPyObject<'py> for Box<ClassExpression> {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum ClassExpressionOrSubtype {    ClassExpression(ClassExpression),     AnonymousClassExpression(AnonymousClassExpression),     ClassDefinition(ClassDefinition)}
 
 impl From<ClassExpression>   for ClassExpressionOrSubtype { fn from(x: ClassExpression)   -> Self { Self::ClassExpression(x) } }
@@ -4872,7 +4872,7 @@ pub struct ClassLevelRule {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[serde(untagged)]
+#[cfg_attr(feature="serde", serde(untagged))]
 pub enum ClassLevelRuleOrSubtype {    ClassLevelRule(ClassLevelRule),     ClassRule(ClassRule)}
 
 impl From<ClassLevelRule>   for ClassLevelRuleOrSubtype { fn from(x: ClassLevelRule)   -> Self { Self::ClassLevelRule(x) } }
