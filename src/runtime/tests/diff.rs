@@ -1,4 +1,4 @@
-use linkml_runtime::{diff, load_yaml_file, patch};
+use linkml_runtime::{diff, load_yaml_file, patch, validate};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
@@ -8,6 +8,13 @@ fn data_path(name: &str) -> PathBuf {
     let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     p.push("tests");
     p.push("data");
+    p.push(name);
+    p
+}
+
+fn info_path(name: &str) -> PathBuf {
+    let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    p.push("tests");
     p.push(name);
     p
 }
@@ -80,4 +87,51 @@ fn diff_ignore_missing_target() {
     let patched_json = patched.to_json();
     let src_json = src.to_json();
     assert_eq!(patched_json, src_json);
+}
+
+#[test]
+fn diff_and_patch_personinfo() {
+    let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
+    let mut sv = SchemaView::new();
+    sv.add_schema(schema.clone()).unwrap();
+    let conv = converter_from_schema(&schema);
+    let src = load_yaml_file(
+        Path::new(&info_path("example_personinfo_data.yaml")),
+        &sv,
+        None,
+        &conv,
+    )
+    .unwrap();
+    let tgt = load_yaml_file(
+        Path::new(&info_path("example_personinfo_data_2.yaml")),
+        &sv,
+        None,
+        &conv,
+    )
+    .unwrap();
+
+    let deltas = diff(&src, &tgt, false);
+    assert!(!deltas.is_empty());
+    let patched = patch(&src, &deltas, &sv);
+    assert_eq!(patched.to_json(), tgt.to_json());
+}
+
+#[test]
+fn personinfo_invalid_fails() {
+    let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
+    let mut sv = SchemaView::new();
+    sv.add_schema(schema.clone()).unwrap();
+    let conv = converter_from_schema(&schema);
+    let class = sv
+        .get_class(&Identifier::new("Person"), &conv)
+        .unwrap()
+        .expect("class not found");
+    let v = load_yaml_file(
+        Path::new(&info_path("example_personinfo_data_invalid.yaml")),
+        &sv,
+        Some(&class),
+        &conv,
+    )
+    .unwrap();
+    assert!(validate(&v).is_err());
 }
