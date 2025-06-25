@@ -20,3 +20,14 @@ fn detect_invalid_schema() {
         .stdout(predicate::str::contains("Unknown parent class"))
         .stdout(predicate::str::contains("Unknown slot"));
 }
+
+#[test]
+fn person_schema_missing_slot() {
+    let schema = data_path("personinfo.yaml");
+    let mut cmd = Command::cargo_bin("linkml-schema-validate").unwrap();
+    cmd.arg(&schema);
+    cmd.assert()
+        .failure()
+        .stdout(predicate::str::contains("Unknown slot `persons`"))
+        .stdout(predicate::str::contains("Unknown slot `street`").not());
+}

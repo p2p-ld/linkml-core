@@ -1,4 +1,5 @@
-use clap::Parser;
+use clap::{Parser, ValueEnum};
+use serde_json;
 use linkml_schemaview::{
     io::from_yaml,
     schemaview::SchemaView,
@@ -12,6 +13,15 @@ use std::path::PathBuf;
 struct Args {
     /// LinkML schema YAML file
     schema: PathBuf,
+    /// Output format
+    #[arg(long, value_enum, default_value_t = OutputFormat::Text)]
+    output: OutputFormat,
+}
+
+#[derive(ValueEnum, Clone)]
+enum OutputFormat {
+    Text,
+    Json,
 }
 
 fn type_exists(
@@ -35,6 +45,43 @@ fn type_exists(
                 for t in schema.types.values() {
                     if let Some(turi) = &t.type_uri {
                         if Identifier::new(turi).to_uri(conv)?.0 == target_uri.0 {
+                            return Ok(true);
+                        }
+                    }
+                }
+            }
+            Ok(false)
+        }
+    }
+}
+
+fn enum_exists(
+    sv: &SchemaView,
+    id: &Identifier,
+    conv: &curies::Converter,
+) -> Result<bool, linkml_schemaview::identifier::IdentifierError> {
+    use linkml_schemaview::identifier::Identifier as Id;
+    match id {
+        Id::Name(n) => {
+            for (_, schema) in sv.iter_schemas() {
+                if schema.enums.contains_key(n) {
+                    return Ok(true);
+                }
+            }
+            Ok(false)
+        }
+        Id::Curie(_) | Id::Uri(_) => {
+            let target_uri = id.to_uri(conv)?;
+            for (_, schema) in sv.iter_schemas() {
+                for (name, e) in &schema.enums {
+                    if let Some(euri) = &e.enum_uri {
+                        if Identifier::new(euri).to_uri(conv)?.0 == target_uri.0 {
+                            return Ok(true);
+                        }
+                    } else {
+                        let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
+                        let default_uri = Identifier::new(&format!("{}:{}", default_prefix, name)).to_uri(conv)?.0;
+                        if default_uri == target_uri.0 {
                             return Ok(true);
                         }
                     }
@@ -69,7 +116,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .map_err(|e| format!("{e:?}"))?
                     .is_some();
                 let ty_exists = type_exists(&sv, &id, &conv).map_err(|e| format!("{e:?}"))?;
-                if !class_exists && !ty_exists {
+                let en_exists = enum_exists(&sv, &id, &conv).map_err(|e| format!("{e:?}"))?;
+                if !class_exists && !ty_exists && !en_exists {
                     errors.push(format!(
                         "Unknown range `{}` for slot `{}` in schema `{}`",
                         range, slot_name, schema_uri
@@ -109,11 +157,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     if errors.is_empty() {
-        println!("schema valid");
+        match args.output {
+            OutputFormat::Text => println!("schema valid"),
+            OutputFormat::Json => println!("{}", serde_json::json!({"status":"valid"})),
+        }
         Ok(())
     } else {
-        for e in &errors {
-            println!("{e}");
+        match args.output {
+            OutputFormat::Text => {
+                for e in &errors {
+                    println!("{e}");
+                }
+            }
+            OutputFormat::Json => {
+                println!("{}", serde_json::to_string_pretty(&errors)?);
+            }
         }
         std::process::exit(1);
     }
