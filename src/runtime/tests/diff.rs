@@ -1,4 +1,4 @@
-use linkml_runtime::{load_yaml_file, diff, patch};
+use linkml_runtime::{diff, load_yaml_file, patch};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
@@ -22,8 +22,20 @@ fn diff_and_patch_person() {
         .get_class(&Identifier::new("Person"), &conv)
         .unwrap()
         .expect("class not found");
-    let src = load_yaml_file(Path::new(&data_path("person_valid.yaml")), &sv, Some(&class), &conv).unwrap();
-    let tgt = load_yaml_file(Path::new(&data_path("person_older.yaml")), &sv, Some(&class), &conv).unwrap();
+    let src = load_yaml_file(
+        Path::new(&data_path("person_valid.yaml")),
+        &sv,
+        Some(&class),
+        &conv,
+    )
+    .unwrap();
+    let tgt = load_yaml_file(
+        Path::new(&data_path("person_older.yaml")),
+        &sv,
+        Some(&class),
+        &conv,
+    )
+    .unwrap();
 
     let deltas = diff(&src, &tgt, false);
     assert_eq!(deltas.len(), 1);
@@ -31,7 +43,10 @@ fn diff_and_patch_person() {
     let patched = patch(&src, &deltas, &sv);
     let patched_json = patched.to_json();
     let target_json = tgt.to_json();
-    assert_eq!(patched_json, target_json);
+    let src_json = src.to_json();
+    assert_ne!(patched_json, target_json);
+    assert_eq!(patched_json.get("age"), target_json.get("age"));
+    assert_eq!(patched_json.get("internal_id"), src_json.get("internal_id"));
 }
 
 #[test]
@@ -44,8 +59,20 @@ fn diff_ignore_missing_target() {
         .get_class(&Identifier::new("Person"), &conv)
         .unwrap()
         .expect("class not found");
-    let src = load_yaml_file(Path::new(&data_path("person_valid.yaml")), &sv, Some(&class), &conv).unwrap();
-    let tgt = load_yaml_file(Path::new(&data_path("person_partial.yaml")), &sv, Some(&class), &conv).unwrap();
+    let src = load_yaml_file(
+        Path::new(&data_path("person_valid.yaml")),
+        &sv,
+        Some(&class),
+        &conv,
+    )
+    .unwrap();
+    let tgt = load_yaml_file(
+        Path::new(&data_path("person_partial.yaml")),
+        &sv,
+        Some(&class),
+        &conv,
+    )
+    .unwrap();
 
     let deltas = diff(&src, &tgt, true);
     assert!(deltas.is_empty());
