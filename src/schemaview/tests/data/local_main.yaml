@@ -1,0 +1,15 @@
+id: http://example.com/local_main
+name: local_main
+prefixes:
+  local_main: http://example.com/local_main/
+  local_target: http://example.com/local_target/
+default_prefix: local_main
+imports:
+  - tests/data/local_target.yaml
+classes:
+  MainThing:
+    attributes:
+      id:
+        identifier: true
+      target:
+        range: local_target:TargetThing

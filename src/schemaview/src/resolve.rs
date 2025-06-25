@@ -1,4 +1,5 @@
-use crate::{io::{from_uri}, schemaview::SchemaView};
+use crate::{io::{from_uri, from_yaml}, schemaview::SchemaView};
+use std::path::Path;
 
 fn get_uri_for_id(id: &str) -> Option<&'static str> {
     match id {
@@ -26,7 +27,20 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
             };
             sv.add_schema(schema)?;
         } else {
-            return Err(format!("No resolution found for URI: {}", uri));
+            // Attempt to treat the unresolved entry as a local file path
+            let path = Path::new(&uri);
+            if path.exists() {
+                let schema = match from_yaml(path) {
+                    Ok(s) => s,
+                    Err(e) => return Err(format!("Failed to load schema from {}: {}", path.display(), e)),
+                };
+                sv.add_schema(schema.clone())?;
+                // also track the loaded schema by the original import path so
+                // subsequent unresolved checks consider this resolved
+                sv.schema_definitions.insert(uri.clone(), schema);
+            } else {
+                return Err(format!("No resolution found for URI: {}", uri));
+            }
         }
     }
     Ok(())

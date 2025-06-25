@@ -140,7 +140,14 @@ impl SchemaView {
                             unresolved.push(uri);
                         }
                     }
-                    None => {}
+                    None => {
+                        // if the import cannot be expanded to a URI, treat it as a
+                        // potential local file path and attempt to resolve later
+                        let path = import.to_string();
+                        if !self.schema_definitions.contains_key(&path) {
+                            unresolved.push(path);
+                        }
+                    }
                 }
             }
         }
