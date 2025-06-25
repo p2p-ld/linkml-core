@@ -1,7 +1,8 @@
 use clap::Parser;
-use linkml_runtime::{load_json_file, load_yaml_file, validate};
-use linkml_schemaview::identifier::{converter_from_schema, Identifier};
+use linkml_runtime::{load_json_file, load_yaml_file, validate_errors};
+use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io::from_yaml;
+use linkml_schemaview::resolve::resolve_schemas;
 use linkml_schemaview::schemaview::SchemaView;
 use std::path::PathBuf;
 
@@ -20,7 +21,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let schema = from_yaml(&args.schema)?;
     let mut sv = SchemaView::new();
     sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
-    let conv = converter_from_schema(&schema);
+    resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
+    let conv = sv.converter();
     let class_view = sv
         .get_class(&Identifier::new(&args.class), &conv)
         .map_err(|e| format!("{e:?}"))?
@@ -35,14 +37,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         load_yaml_file(data_path, &sv, Some(&class_view), &conv)?
     };
-    match validate(&value) {
-        Ok(_) => {
-            println!("valid");
-            Ok(())
+    let errs = validate_errors(&value);
+    if errs.is_empty() {
+        println!("valid");
+        Ok(())
+    } else {
+        for e in errs {
+            println!("{e}");
         }
-        Err(e) => {
-            println!("invalid: {}", e);
-            std::process::exit(1);
-        }
+        std::process::exit(1);
     }
 }

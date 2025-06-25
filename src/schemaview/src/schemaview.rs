@@ -48,6 +48,10 @@ impl SchemaView {
         self.schema_definitions.get(id)
     }
 
+    pub fn iter_schemas(&self) -> std::collections::hash_map::Iter<'_, String, SchemaDefinition> {
+        self.schema_definitions.iter()
+    }
+
     pub fn converter(&self) -> Converter {
         converter_from_schemas(self.schema_definitions.values())
     }

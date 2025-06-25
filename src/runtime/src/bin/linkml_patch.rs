@@ -1,7 +1,8 @@
 use clap::Parser;
 use linkml_runtime::{load_json_file, load_yaml_file, patch, Delta};
-use linkml_schemaview::identifier::{converter_from_schema, Identifier};
+use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io::from_yaml;
+use linkml_schemaview::resolve::resolve_schemas;
 use linkml_schemaview::schemaview::{ClassView, SchemaView};
 use std::fs::File;
 use std::io::Write;
@@ -95,7 +96,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let schema = from_yaml(&args.schema)?;
     let mut sv = SchemaView::new();
     sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
-    let conv = converter_from_schema(&schema);
+    resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
+    let conv = sv.converter();
     let class_view = choose_class(&sv, &schema, &args.class, &conv)?;
 
     let src = load_value(&args.source, &sv, class_view.as_ref(), &conv)?;

@@ -23,6 +23,10 @@ path = "src/bin/linkml_diff.rs"
 name = "linkml-patch"
 path = "src/bin/linkml_patch.rs"
 
+[[bin]]
+name = "linkml-schema-validate"
+path = "src/bin/linkml_schema_validate.rs"
+
 [dependencies]
 linkml_schemaview = { package = "schemaview", path = "../schemaview" }
 serde_json = "1.0"
