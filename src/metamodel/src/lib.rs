@@ -329,7 +329,9 @@ pub struct AnyValue {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Extension {
+    #[cfg_attr(feature = "serde", serde(alias = "tag"))]
     pub extension_tag: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(alias = "value"))]
     pub extension_value: AnyValue,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -877,7 +879,9 @@ pub struct Annotation {
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: HashMap<String, Box<Annotation>>,
+    #[cfg_attr(feature = "serde", serde(alias = "tag"))]
     pub extension_tag: uriorcurie,
+    #[cfg_attr(feature = "serde", serde(alias = "value"))]
     pub extension_value: AnyValue,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -1006,12 +1010,57 @@ impl<'py> FromPyObject<'py> for Box<UnitOfMeasure> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
-pub struct Anything {
+#[derive(Clone, PartialEq)]
+pub struct Anything(
+    #[cfg(feature = "serde")] pub serde_value::Value,
+    #[cfg(not(feature = "serde"))] pub (),
+);
+
+
+#[cfg(feature = "serde")]
+impl Serialize for Anything {
+    fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+    where S: serde::Serializer {
+        self.0.serialize(ser)
+    }
 }
 
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for Anything {
+    fn deserialize<D>(de: D) -> Result<Self, D::Error>
+    where D: serde::Deserializer<'de> {
+        <serde_value::Value as Deserialize>::deserialize(de).map(Anything)
+    }
+}
+
+#[cfg(all(feature = "pyo3", feature = "serde"))]
+impl<'py> FromPyObject<'py> for Anything {
+    fn extract_bound(obj: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        Ok(Anything(serde_value::Value::Unit))
+    }
+}
+
+/* ---------- getter side ---------- */
+#[cfg(all(feature = "pyo3", feature = "serde"))]
+impl<'py> IntoPyObject<'py> for Anything {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        Ok(py.None().into_bound(py))
+    }
+}
+
+impl std::fmt::Debug for Anything {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        #[cfg(feature = "serde")]
+        return write!(f, "Anything({:?})", self.0);
+
+        #[cfg(not(feature = "serde"))]
+        return f.write_str("Anything(<opaque>)");
+    }
+}
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -1616,6 +1665,7 @@ pub struct SchemaDefinition {
     pub enums: HashMap<String, EnumDefinition>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "slots"))]
     pub slot_definitions: HashMap<String, SlotDefinition>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -1865,10 +1915,12 @@ impl<'py> FromPyObject<'py> for Box<AnonymousTypeExpression> {
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct TypeDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "typeof"))]
     pub typeof_: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub base: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "uri"))]
     pub type_uri: Option<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub repr: Option<String>,
@@ -2231,6 +2283,7 @@ pub struct Definition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_a: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "abstract"))]
     pub abstract_: Option<bool>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub mixin: Option<bool>,
@@ -2609,6 +2662,7 @@ pub struct EnumDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_a: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "abstract"))]
     pub abstract_: Option<bool>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub mixin: Option<bool>,
@@ -2994,10 +3048,12 @@ impl<'py> FromPyObject<'py> for Box<ReachabilityQuery> {
 pub struct StructuredAlias {
     pub literal_form: String,
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "predicate"))]
     pub alias_predicate: Option<String>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
     pub categories: Vec<uriorcurie>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value"))]#[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "contexts"))]
     pub alias_contexts: Vec<uri>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map"))]
     #[cfg_attr(feature = "serde", serde(default))]
@@ -4237,6 +4293,7 @@ pub struct SlotDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_a: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "abstract"))]
     pub abstract_: Option<bool>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub mixin: Option<bool>,
@@ -4694,6 +4751,7 @@ pub struct ClassDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_a: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "abstract"))]
     pub abstract_: Option<bool>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub mixin: Option<bool>,
@@ -5825,8 +5883,10 @@ pub struct Example {
     #[cfg_attr(feature = "serde", serde(default))]
     pub value: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "description"))]
     pub value_description: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "object"))]
     pub value_object: Option<Anything>
 }
 #[cfg(feature = "pyo3")]
@@ -5865,7 +5925,9 @@ impl<'py> FromPyObject<'py> for Box<Example> {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AltDescription {
+    #[cfg_attr(feature = "serde", serde(alias = "source"))]
     pub alt_description_source: String,
+    #[cfg_attr(feature = "serde", serde(alias = "description"))]
     pub alt_description_text: String
 }
 #[cfg(feature = "pyo3")]
@@ -6256,8 +6318,10 @@ impl serde_utils::InlinedPair for UniqueKey {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct TypeMapping {
+    #[cfg_attr(feature = "serde", serde(alias = "framework"))]
     pub framework_key: String,
     #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(alias = "type"))]
     pub mapped_type: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub string_serialization: Option<String>,
