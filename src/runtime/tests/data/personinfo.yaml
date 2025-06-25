@@ -164,10 +164,13 @@ classes:
   Container:
     tree_root: true
     slots:
-      - persons
+      - objects
       - organizations
 
 slots:
+  things:
+    range: NamedThing
+    inlined_as_list: true
   type:
     range: uri
     designates_type: true
