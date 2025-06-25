@@ -23,8 +23,7 @@ fn slot_lookup_and_class_slots() {
 
     let conv = converter_from_schemas([&units_schema, &mappings_schema]);
 
-    // slot lookup currently returns None as slots are defined inline
-    assert!(sv.get_slot(&Identifier::new("abbreviation"), &conv).unwrap().is_none());
+    assert!(!sv.get_slot(&Identifier::new("abbreviation"), &conv).unwrap().is_none());
 
     // class slots with slot_usage
     let class = sv
@@ -36,6 +35,6 @@ fn slot_lookup_and_class_slots() {
     for s in slots {
         map.insert(s.name.clone(), s.definitions.len());
     }
-    assert_eq!(map.get("symbol"), Some(&0usize));
+    assert_eq!(map.get("symbol"), Some(&1usize));
     assert_eq!(map.get("exact mappings"), Some(&1usize));
 }

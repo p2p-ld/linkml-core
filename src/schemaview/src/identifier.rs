@@ -179,6 +179,12 @@ impl From<Identifier> for String {
     }
 }
 
+fn add_missing_prefix(prefix: &str, uri: &str, conv: &mut Converter)  {
+    if conv.find_by_prefix(prefix).is_err() {
+        conv.add_prefix(prefix, uri).unwrap();
+    }
+}
+
 /// Build a [`Converter`] from one or more [`SchemaDefinition`]s.
 ///
 /// All prefixes declared in the schemas are added to the converter. Duplicate
@@ -206,6 +212,10 @@ where
     for record in map.into_values() {
         let _ = conv.add_record(record);
     }
+    add_missing_prefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#", &mut conv);
+    add_missing_prefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#", &mut conv);
+    add_missing_prefix("dcterms", "http://purl.org/dc/terms/", &mut conv);
+
     conv
 }
 
