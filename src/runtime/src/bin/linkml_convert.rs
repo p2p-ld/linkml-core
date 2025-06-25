@@ -20,9 +20,9 @@ struct Args {
     /// Name of the class to use as the root object
     #[arg(short, long)]
     class: Option<String>,
-    /// Output TTL file
+    /// Output TTL file; defaults to stdout
     #[arg(short, long)]
-    output: PathBuf,
+    output: Option<PathBuf>,
     /// Use skolem IRIs instead of blank nodes
     #[arg(long)]
     skolem: bool,
@@ -57,13 +57,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         eprintln!("invalid: {e}");
         std::process::exit(1);
     }
-    let mut f = File::create(&args.output)?;
+    let mut writer: Box<dyn std::io::Write> = if let Some(out) = &args.output {
+        Box::new(File::create(out)?)
+    } else {
+        Box::new(std::io::stdout())
+    };
     write_turtle(
         &value,
         &sv,
         &schema,
         &conv,
-        &mut f,
+        &mut writer,
         TurtleOptions {
             skolem: args.skolem,
         },

@@ -19,6 +19,10 @@ path = "src/bin/linkml_convert.rs"
 name = "linkml-diff"
 path = "src/bin/linkml_diff.rs"
 
+[[bin]]
+name = "linkml-patch"
+path = "src/bin/linkml_patch.rs"
+
 [dependencies]
 linkml_schemaview = { package = "schemaview", path = "../schemaview" }
 serde_json = "1.0"

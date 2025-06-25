@@ -1,5 +1,5 @@
 use clap::Parser;
-use linkml_runtime::{diff, load_json_file, load_yaml_file, Delta};
+use linkml_runtime::{load_json_file, load_yaml_file, patch, Delta};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::{ClassView, SchemaView};
@@ -8,7 +8,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
-#[command(name = "linkml-diff")]
+#[command(name = "linkml-patch")]
 struct Args {
     /// LinkML schema YAML file
     schema: PathBuf,
@@ -17,9 +17,9 @@ struct Args {
     class: Option<String>,
     /// Source data file (YAML or JSON)
     source: PathBuf,
-    /// Target data file (YAML or JSON)
-    target: PathBuf,
-    /// Output file for deltas; defaults to stdout
+    /// Delta file (YAML or JSON)
+    delta: PathBuf,
+    /// Output patched file; defaults to stdout
     #[arg(short, long)]
     output: Option<PathBuf>,
 }
@@ -67,6 +67,29 @@ fn choose_class<'a>(
     }
 }
 
+fn write_value(
+    path: Option<&Path>,
+    value: &linkml_runtime::LinkMLValue,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let json = value.to_json();
+    let mut writer: Box<dyn Write> = if let Some(p) = path {
+        Box::new(File::create(p)?)
+    } else {
+        Box::new(std::io::stdout())
+    };
+    if let Some(ext) = path.and_then(|p| p.extension().and_then(|s| s.to_str())) {
+        if ext == "json" {
+            serde_json::to_writer_pretty(&mut writer, &json)?;
+        } else {
+            serde_yaml::to_writer(&mut writer, &json)?;
+        }
+    } else {
+        serde_yaml::to_writer(&mut writer, &json)?;
+    }
+    writer.write_all(b"\n")?;
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let schema = from_yaml(&args.schema)?;
@@ -76,27 +99,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let class_view = choose_class(&sv, &schema, &args.class, &conv)?;
 
     let src = load_value(&args.source, &sv, class_view.as_ref(), &conv)?;
-    let tgt = load_value(&args.target, &sv, class_view.as_ref(), &conv)?;
-    let deltas = diff(&src, &tgt, false);
-
-    let mut writer: Box<dyn Write> = if let Some(out) = &args.output {
-        Box::new(File::create(out)?)
-    } else {
-        Box::new(std::io::stdout())
-    };
-    if let Some(ext) = args
-        .output
-        .as_ref()
-        .and_then(|p| p.extension().and_then(|s| s.to_str()))
-    {
+    let delta_text = std::fs::read_to_string(&args.delta)?;
+    let deltas: Vec<Delta> = if let Some(ext) = args.delta.extension().and_then(|s| s.to_str()) {
         if ext == "json" {
-            serde_json::to_writer_pretty(&mut writer, &deltas)?;
+            serde_json::from_str(&delta_text)?
         } else {
-            serde_yaml::to_writer(&mut writer, &deltas)?;
+            serde_yaml::from_str(&delta_text)?
         }
     } else {
-        serde_yaml::to_writer(&mut writer, &deltas)?;
-    }
-    writer.write_all(b"\n")?;
+        serde_yaml::from_str(&delta_text)?
+    };
+    let patched = patch(&src, &deltas, &sv);
+    write_value(args.output.as_deref(), &patched)?;
     Ok(())
 }
