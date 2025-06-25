@@ -8,3 +8,7 @@ classes:
     attributes:
       name:
       age:
+      internal_id:
+        annotations:
+          diff.linkml.io/ignore:
+            extension_value: {}
