@@ -4,6 +4,7 @@ use std::path::PathBuf;
 fn info_path(name: &str) -> PathBuf {
     let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     p.push("tests");
+    p.push("data");
     p.push(name);
     p
 }
@@ -18,21 +19,11 @@ fn cli_diff_and_patch_personinfo() {
     let out = tmp.path().join("out.yaml");
 
     let mut cmd = Command::cargo_bin("linkml-diff").unwrap();
-    cmd.arg(&schema)
-        .arg("diff")
-        .arg(&src)
-        .arg(&tgt)
-        .arg("-o")
-        .arg(&delta);
+    cmd.arg(&schema).arg(&src).arg(&tgt).arg("-o").arg(&delta);
     cmd.assert().success();
 
-    let mut cmd = Command::cargo_bin("linkml-diff").unwrap();
-    cmd.arg(&schema)
-        .arg("patch")
-        .arg(&src)
-        .arg(&delta)
-        .arg("-o")
-        .arg(&out);
+    let mut cmd = Command::cargo_bin("linkml-patch").unwrap();
+    cmd.arg(&schema).arg(&src).arg(&delta).arg("-o").arg(&out);
     cmd.assert().success();
 
     let out_data: serde_yaml::Value =
