@@ -1,0 +1,13 @@
+id: https://example.com/invalid
+name: invalid
+prefixes:
+  ex: https://example.com/
+default_prefix: ex
+classes:
+  A:
+    is_a: B
+    slots:
+      - unknown_slot
+slots:
+  name:
+    range: string

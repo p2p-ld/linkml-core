@@ -77,6 +77,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         }
+
+        for (class_name, class_def) in &schema_def.classes {
+            if let Some(parent) = &class_def.is_a {
+                let id = Identifier::new(parent);
+                if sv
+                    .get_class(&id, &conv)
+                    .map_err(|e| format!("{e:?}"))?
+                    .is_none()
+                {
+                    errors.push(format!(
+                        "Unknown parent class `{}` referenced by class `{}` in schema `{}`",
+                        parent, class_name, schema_uri
+                    ));
+                }
+            }
+            for slot in &class_def.slots {
+                let id = Identifier::new(slot);
+                if sv
+                    .get_slot(&id, &conv)
+                    .map_err(|e| format!("{e:?}"))?
+                    .is_none()
+                {
+                    errors.push(format!(
+                        "Unknown slot `{}` used in class `{}` in schema `{}`",
+                        slot, class_name, schema_uri
+                    ));
+                }
+            }
+        }
     }
 
     if errors.is_empty() {
