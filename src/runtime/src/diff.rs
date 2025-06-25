@@ -1,16 +1,20 @@
 use crate::{load_json_str, LinkMLValue};
 use linkml_schemaview::schemaview::{SchemaView, SlotView};
+use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value as JsonValue};
 
 const IGNORE_ANNOTATION: &str = "diff.linkml.io/ignore";
 
 fn slot_is_ignored(slot: &SlotView) -> bool {
+    if slot.definitions.is_empty() {
+        return false;
+    }
     slot.merged_definition()
         .annotations
         .contains_key(IGNORE_ANNOTATION)
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Delta {
     pub path: Vec<String>,
     pub old: Option<JsonValue>,
