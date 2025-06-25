@@ -928,6 +928,7 @@ dependencies = [
  "rio_api",
  "rio_turtle",
  "schemaview",
+ "serde",
  "serde_json",
  "serde_path_to_error",
  "serde_yaml",
