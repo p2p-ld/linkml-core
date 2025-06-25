@@ -113,6 +113,27 @@ pub fn diff<'a>(
                     }
                 }
             }
+            (LinkMLValue::List { values: sl, .. }, LinkMLValue::List { values: tl, .. }) => {
+                let max_len = std::cmp::max(sl.len(), tl.len());
+                for i in 0..max_len {
+                    path.push(i.to_string());
+                    match (sl.get(i), tl.get(i)) {
+                        (Some(sv), Some(tv)) => inner(path, None, sv, tv, ignore_missing, out),
+                        (Some(sv), None) => out.push(Delta {
+                            path: path.clone(),
+                            old: Some(sv.to_json()),
+                            new: None,
+                        }),
+                        (None, Some(tv)) => out.push(Delta {
+                            path: path.clone(),
+                            old: None,
+                            new: Some(tv.to_json()),
+                        }),
+                        (None, None) => {}
+                    }
+                    path.pop();
+                }
+            }
             _ => {
                 let sv = s.to_json();
                 let tv = t.to_json();
@@ -185,6 +206,35 @@ fn apply_delta_inner(value: &mut JsonValue, path: &[String], newv: &Option<JsonV
                     .entry(key.clone())
                     .or_insert(JsonValue::Object(Map::new()));
                 apply_delta_inner(entry, &path[1..], newv);
+            }
+        }
+        JsonValue::Array(arr) => {
+            let idx: usize = path[0].parse().unwrap();
+            if path.len() == 1 {
+                match newv {
+                    Some(v) => {
+                        if idx < arr.len() {
+                            arr[idx] = v.clone();
+                        } else if idx == arr.len() {
+                            arr.push(v.clone());
+                        } else {
+                            while arr.len() < idx {
+                                arr.push(JsonValue::Null);
+                            }
+                            arr.push(v.clone());
+                        }
+                    }
+                    None => {
+                        if idx < arr.len() {
+                            arr.remove(idx);
+                        }
+                    }
+                }
+            } else {
+                if idx >= arr.len() {
+                    arr.resize(idx + 1, JsonValue::Null);
+                }
+                apply_delta_inner(&mut arr[idx], &path[1..], newv);
             }
         }
         _ => {
