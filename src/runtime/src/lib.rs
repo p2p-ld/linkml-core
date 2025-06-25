@@ -237,3 +237,34 @@ fn validate_inner<'a>(value: &LinkMLValue<'a>) -> Result<(), String> {
 pub fn validate<'a>(value: &LinkMLValue<'a>) -> Result<(), String> {
     validate_inner(value)
 }
+
+fn validate_collect<'a>(value: &LinkMLValue<'a>, errors: &mut Vec<String>) {
+    match value {
+        LinkMLValue::Scalar { .. } => {}
+        LinkMLValue::List { values, .. } => {
+            for v in values {
+                validate_collect(v, errors);
+            }
+        }
+        LinkMLValue::Map { values, class, .. } => {
+            if let Some(cv) = class.as_ref() {
+                for (k, v) in values {
+                    if cv.slots().iter().all(|s| s.name != *k) {
+                        errors.push(format!("unknown slot `{}`", k));
+                    }
+                    validate_collect(v, errors);
+                }
+            } else {
+                for v in values.values() {
+                    validate_collect(v, errors);
+                }
+            }
+        }
+    }
+}
+
+pub fn validate_errors<'a>(value: &LinkMLValue<'a>) -> Vec<String> {
+    let mut errs = Vec::new();
+    validate_collect(value, &mut errs);
+    errs
+}
