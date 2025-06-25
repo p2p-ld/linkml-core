@@ -31,6 +31,8 @@ emit_prefixes:
 
 classes:
 
+    
+
   NamedThing:
     description: >-
       A generic grouping for any identifiable entity
@@ -127,6 +129,7 @@ classes:
     slots:
       - started_at_time
       - ended_at_time
+      - role
       - related_to
       - type
 
@@ -199,7 +202,7 @@ slots:
   has_familial_relationships:
     range: FamilialRelationship
     multivalued: true
-    inlined_as_list: true
+    inlined: true
   in_location:
     range: Place
   current_address:
@@ -211,6 +214,9 @@ slots:
     minimum_value: 0
     maximum_value: 999
   related_to:
+  role:
+    range: string
+    key: true
   type:
   street:
   city:

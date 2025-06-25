@@ -7,6 +7,11 @@ objects:
     type: https://w3id.org/linkml/examples/personinfo/Person
     primary_email: fred.bloggs@example.com
     age_in_years: 33
+  - id: P:003
+    type: https://w3id.org/linkml/examples/personinfo/Person
+    name: alice smith
+    primary_email: alice.smith@example.com
+    age_in_years: 34
   - id: P:002
     type: https://w3id.org/linkml/examples/personinfo/Person
     name: joe schmoe
@@ -20,7 +25,7 @@ objects:
         related_to: P:001
         type: SIBLING_OF
       mother:
-        related_to: P:001
+        related_to: P:003
         type: PARENT_OF
     has_medical_history:
       - started_at_time: 2019-01-01
