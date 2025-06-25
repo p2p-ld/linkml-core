@@ -7,11 +7,6 @@ objects:
     type: https://w3id.org/linkml/examples/personinfo/Person
     primary_email: fred.bloggs@example.com
     age_in_years: 33
-  - id: P:003
-    type: https://w3id.org/linkml/examples/personinfo/Person
-    name: alice smith
-    primary_email: alice.smith@example.com
-    age_in_years: 34
   - id: P:002
     type: https://w3id.org/linkml/examples/personinfo/Person
     name: joe schmoe
@@ -36,6 +31,11 @@ objects:
         procedure:
           id: CODE:P0001
           name: trepanation
+  - id: P:003
+    type: https://w3id.org/linkml/examples/personinfo/Person
+    name: alice smith
+    primary_email: alice.smith@example.com
+    age_in_years: 34
 #    current_address:
 #      street: 1 foo street
 #      city: foo city
