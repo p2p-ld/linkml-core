@@ -18,7 +18,6 @@ pub struct SchemaView {
     pub(crate) slot_uri_index: HashMap<String, (String, String)>,
 }
 
-
 impl SchemaView {
     pub fn new() -> Self {
         SchemaView {
@@ -173,6 +172,15 @@ impl SchemaView {
                 if let Some(class_def) = schema.classes.get(name) {
                     return Ok(Some(ClassView::new(class_def, self, primary, conv)?));
                 }
+                // search other schemas if not found in primary
+                for (uri, schema) in &self.schema_definitions {
+                    if uri == primary {
+                        continue;
+                    }
+                    if let Some(class_def) = schema.classes.get(name) {
+                        return Ok(Some(ClassView::new(class_def, self, uri, conv)?));
+                    }
+                }
                 Ok(None)
             }
             Identifier::Curie(_) | Identifier::Uri(_) => {
@@ -205,10 +213,18 @@ impl SchemaView {
                     Some(s) => s,
                     None => return Ok(None),
                 };
-                Ok(schema
-                    .slot_definitions
-                    .get(name)
-                    .map(|s| SlotView::new(name.clone(), s)))
+                if let Some(slot_def) = schema.slot_definitions.get(name) {
+                    return Ok(Some(SlotView::new(name.clone(), slot_def)));
+                }
+                for (uri, schema) in &self.schema_definitions {
+                    if uri == primary {
+                        continue;
+                    }
+                    if let Some(slot_def) = schema.slot_definitions.get(name) {
+                        return Ok(Some(SlotView::new(name.clone(), slot_def)));
+                    }
+                }
+                Ok(None)
             }
             Identifier::Curie(_) | Identifier::Uri(_) => {
                 let target_uri = id.to_uri(conv)?;
