@@ -226,6 +226,17 @@ impl<'a> ClassView<'a> {
         Ok(out)
     }
 
+    pub fn parent_class(&self) -> Result<Option<ClassView<'a>>, IdentifierError> {
+        let conv = match self.sv.converter_for_schema(self.schema_uri) {
+            Some(c) => c,
+            None => return Ok(None),
+        };
+        match &self.class.is_a {
+            Some(parent) => self.sv.get_class(&Identifier::new(parent), &conv),
+            None => Ok(None),
+        }
+    }
+
     pub fn key_or_identifier_slot(&'a self) -> Option<&'a SlotView<'a>> {
         self.slots.iter().find(|s| {
             let d = s.merged_definition();
