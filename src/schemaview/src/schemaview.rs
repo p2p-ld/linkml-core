@@ -55,6 +55,12 @@ impl SchemaView {
         converter_from_schemas(self.schema_definitions.values())
     }
 
+    pub fn converter_for_schema(&self, schema_uri: &str) -> Option<Converter> {
+        self.schema_definitions
+            .get(schema_uri)
+            .map(|s| converter_from_schema(s))
+    }
+
     pub fn get_class_definition<'a>(
         &'a self,
         id: &Identifier,
