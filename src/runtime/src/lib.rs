@@ -95,7 +95,7 @@ impl<'a> LinkMLValue<'a> {
         for c in &cand_refs {
             if let Ok(tmp) = LinkMLValue::from_json(
                 JsonValue::Object(map.clone()),
-                Some(*c),
+                Some((*c).clone()),
                 None,
                 sv,
                 conv,
@@ -111,7 +111,7 @@ impl<'a> LinkMLValue<'a> {
     }
     fn from_json(
         value: JsonValue,
-        class: Option<&'a ClassView<'a>>,
+        class: Option<ClassView<'a>>,
         slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
         conv: &Converter,
@@ -123,10 +123,11 @@ impl<'a> LinkMLValue<'a> {
                 SlotContainerMode::List => match value {
                     JsonValue::Array(arr) => {
                         let mut values = Vec::new();
+                        let class_range = sl.get_class_range(sv);
                         for v in arr.into_iter() {
-                            values.push(LinkMLValue::from_json(v, None, Some(sl.clone()), sv, conv, true)?);
+                            values.push(LinkMLValue::from_json(v, class_range.clone(), None, sv, conv, true)?);
                         }
-                        return Ok(LinkMLValue::List { values, slot: sl.clone(), class: class.cloned(), sv });
+                        return Ok(LinkMLValue::List { values, slot: sl.clone(), class: class.clone(), sv });
                     }
                     other => {
                         return Err(LinkMLError(format!(
@@ -197,7 +198,7 @@ impl<'a> LinkMLValue<'a> {
                                 sv,
                             });
                         }
-                        return Ok(LinkMLValue::List { values, slot: sl.clone(), class: class.cloned(), sv });
+                        return Ok(LinkMLValue::List { values, slot: sl.clone(), class: class.clone(), sv });
                     }
                     other => {
                         return Err(LinkMLError(format!(
@@ -217,7 +218,7 @@ impl<'a> LinkMLValue<'a> {
                 for v in arr.into_iter() {
                     values.push(LinkMLValue::from_json(v, None, None, sv, conv, true)?);
                 }
-                return Ok(LinkMLValue::List { values, slot: sl, class: class.cloned(), sv });
+                return Ok(LinkMLValue::List { values, slot: sl, class: class.clone(), sv });
             }
             JsonValue::Object(map) => {
                 if !polymorphic && slot.is_none() {
@@ -273,7 +274,7 @@ impl<'a> LinkMLValue<'a> {
                 return Ok(LinkMLValue::Scalar {
                     value: other,
                     slot: sl,
-                    class: class.cloned(),
+                    class: class.clone(),
                     sv,
                 });
             }
@@ -299,7 +300,7 @@ pub fn load_yaml_str<'a>(
 ) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let value: serde_yaml::Value = serde_yaml::from_str(data)?;
     let json = serde_json::to_value(value)?;
-    LinkMLValue::from_json(json, class, None, sv, conv, true).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
+    LinkMLValue::from_json(json, class.cloned(), None, sv, conv, true).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
 pub fn load_json_file<'a>(
@@ -319,7 +320,7 @@ pub fn load_json_str<'a>(
     conv: &Converter,
 ) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let value: JsonValue = serde_json::from_str(data)?;
-    LinkMLValue::from_json(value, class, None, sv, conv, true).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
+    LinkMLValue::from_json(value, class.cloned(), None, sv, conv, true).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
 fn validate_inner<'a>(value: &LinkMLValue<'a>) -> std::result::Result<(), String> {
