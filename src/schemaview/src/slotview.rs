@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+
 use curies::Converter;
 use linkml_meta::SlotDefinition;
 
@@ -38,35 +39,11 @@ impl<'a> SlotView<'a> {
     }
 
     pub fn definition(&self) -> SlotDefinition {
-        // fixme use merge crate
-        let mut base = self.definitions[0].clone();
+        let mut b = self.definitions[0].clone();
         for d in self.definitions.iter().skip(1) {
-            if let Some(v) = &d.range {
-                base.range = Some(v.clone());
-            }
-            if let Some(v) = d.multivalued {
-                base.multivalued = Some(v);
-            }
-            if let Some(v) = d.inlined {
-                base.inlined = Some(v);
-            }
-            if let Some(v) = d.inlined_as_list {
-                base.inlined_as_list = Some(v);
-            }
-            if let Some(v) = d.key {
-                base.key = Some(v);
-            }
-            if let Some(v) = d.identifier {
-                base.identifier = Some(v);
-            }
-            if let Some(v) = d.designates_type {
-                base.designates_type = Some(v);
-            }
-            if let Some(v) = d.key {
-                base.key = Some(v);
-            }
+            b.merge_with(*d);
         }
-        base
+        return b;
     }
 
     pub fn get_class_range(&self, sv: &'a SchemaView) -> Option<ClassView<'a>> {

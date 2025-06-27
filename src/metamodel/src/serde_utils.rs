@@ -1,9 +1,9 @@
 #[cfg(feature = "serde")]
-use serde::de::Error;
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer};
 #[cfg(feature = "serde")]
 use serde_value::{Value, ValueDeserializer};
+#[cfg(feature = "serde")]
+use serde::de::Error;
 #[cfg(feature = "serde")]
 use std::collections::{BTreeMap, HashMap};
 
@@ -13,17 +13,17 @@ pub trait InlinedPair: Sized {
     type Value: serde::de::DeserializeOwned;
     type Error: std::fmt::Display;
 
-    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self, Self::Error>;
-    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self, Self::Error>;
+    fn from_pair_mapping(k: Self::Key, v: Value) -> Result<Self,Self::Error>;
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error>;
     fn extract_key(&self) -> &Self::Key;
 }
 
 #[cfg(feature = "serde")]
 impl<T> InlinedPair for Box<T>
 where
-    T: InlinedPair + ?Sized, // allow unsized boxes too
+    T: InlinedPair + ?Sized,           // allow unsized boxes too
 {
-    type Key = T::Key;
+    type Key   = T::Key;
     type Value = T::Value;
     type Error = T::Error;
 
@@ -33,14 +33,15 @@ where
     }
 
     #[inline]
-    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self, Self::Error> {
+    fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self, Self::Error>  {
         T::from_pair_simple(k, v).map(|x| Box::new(x))
     }
 
     #[inline]
     fn extract_key(&self) -> &Self::Key {
         T::extract_key(self)
-    }
+     }
+
 }
 
 #[cfg(feature = "serde")]
@@ -50,20 +51,22 @@ where
     T: InlinedPair,
 {
     let raw: BTreeMap<T::Key, Value> = BTreeMap::deserialize(de)?;
-    raw.into_iter()
-        .map(|(k, v)| {
-            let obj = T::from_pair_mapping(k.clone(), v).map_err(D::Error::custom)?;
-            Ok(obj)
-        })
-        .collect()
+    raw.into_iter().map(|(k, v)| {
+        let obj = T::from_pair_mapping(k.clone(), v).map_err(D::Error::custom)?;
+        Ok(obj)
+    }).collect()
+
 }
 
 #[cfg(feature = "serde")]
-pub fn deserialize_inlined_dict_map<'de, D, T>(de: D) -> Result<HashMap<T::Key, T>, D::Error>
+pub fn deserialize_inlined_dict_map<'de, D, T>(
+    de: D,
+) -> Result<HashMap<T::Key, T>, D::Error>
 where
     D: Deserializer<'de>,
     T: InlinedPair + Deserialize<'de>,
 {
+
     // Parse into a generic AST once
     let ast: Value = Value::deserialize(de)?;
 
@@ -73,21 +76,25 @@ where
             let mut out = HashMap::with_capacity(m.len());
             for (k_ast, v_ast) in m {
                 // 1) convert key and value separately
-                let key: T::Key =
-                    Deserialize::deserialize(ValueDeserializer::<D::Error>::new(k_ast))
-                        .map_err(D::Error::custom)?;
+                let key: T::Key = Deserialize::deserialize(
+                    ValueDeserializer::<D::Error>::new(k_ast)
+                ).map_err(D::Error::custom)?;
+
 
                 // ----------------- decide by the *value* shape
                 let obj = match v_ast {
                     // ① full object (mapping) → deserialize directly
                     Value::Map(_) => {
-                        let m: Value =
-                            Deserialize::deserialize(ValueDeserializer::<D::Error>::new(v_ast))
-                                .map_err(D::Error::custom)?;
+                        let m: Value = Deserialize::deserialize(
+                            ValueDeserializer::<D::Error>::new(v_ast)
+                        ).map_err(D::Error::custom)?;
                         T::from_pair_mapping(key.clone(), m).map_err(D::Error::custom)?
                     }
-                    other => T::from_pair_simple(key.clone(), other).map_err(D::Error::custom)?,
+                    other => {
+                        T::from_pair_simple(key.clone(), other).map_err(D::Error::custom)?
+                    }
                 };
+
 
                 out.insert(key, obj);
             }
@@ -98,8 +105,9 @@ where
         Value::Seq(seq) => {
             let mut out = HashMap::with_capacity(seq.len());
             for v_ast in seq {
-                let val: T = Deserialize::deserialize(ValueDeserializer::<D::Error>::new(v_ast))
-                    .map_err(D::Error::custom)?;
+                let val: T = Deserialize::deserialize(
+                    ValueDeserializer::<D::Error>::new(v_ast)
+                ).map_err(D::Error::custom)?;
 
                 let key = val.extract_key().clone();
                 if out.insert(key, val).is_some() {
@@ -114,23 +122,20 @@ where
 }
 
 pub fn deserialize_primitive_list_or_single_value<'de, D, T>(
-    deserializer: D,
-) -> Result<Vec<T>, D::Error>
-where
-    D: Deserializer<'de>,
-    T: Deserialize<'de>,
-{
+    deserializer:  D
+) -> Result<Vec<T>, D::Error> where D: Deserializer<'de>, T: Deserialize<'de> {
     let ast: Value = Value::deserialize(deserializer)?;
     match ast {
-        Value::Seq(seq) => seq
-            .into_iter()
-            .map(|v| T::deserialize(ValueDeserializer::<D::Error>::new(v)))
-            .collect(),
+        Value::Seq(seq) => {
+            seq.into_iter()
+                .map(|v| T::deserialize(ValueDeserializer::<D::Error>::new(v)))
+                .collect()
+        }
         Value::Unit => Ok(vec![]),
         other => {
-            let single_value: T =
-                Deserialize::deserialize(ValueDeserializer::<D::Error>::new(other))
-                    .map_err(D::Error::custom)?;
+            let single_value: T = Deserialize::deserialize(
+                ValueDeserializer::<D::Error>::new(other)
+            ).map_err(D::Error::custom)?;
             Ok(vec![single_value])
         }
     }
