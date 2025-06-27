@@ -8,9 +8,9 @@ use serde_json::Value as JsonValue;
 use std::io::{Result as IoResult, Write};
 
 use regex::Regex;
-use rio_api::formatter::TriplesFormatter;
-use rio_api::model::{BlankNode, Literal, NamedNode, Subject, Term, Triple};
-use rio_turtle::TurtleFormatter;
+use oxrdf::{BlankNode, Literal, NamedNode, Subject, Term, Triple};
+use oxttl::TurtleSerializer;
+use oxttl::turtle::WriterTurtleSerializer;
 
 use crate::LinkMLValue;
 
@@ -24,17 +24,17 @@ enum Node {
 }
 
 impl Node {
-    fn as_subject(&self) -> Subject<'_> {
+    fn as_subject(&self) -> Subject {
         match self {
-            Node::Named(iri) => Subject::NamedNode(NamedNode { iri }),
-            Node::Blank(id) => Subject::BlankNode(BlankNode { id }),
+            Node::Named(iri) => Subject::NamedNode(NamedNode::new_unchecked(iri.clone())),
+            Node::Blank(id) => Subject::BlankNode(BlankNode::new_unchecked(id.clone())),
         }
     }
 
-    fn as_term(&self) -> Term<'_> {
+    fn as_term(&self) -> Term {
         match self {
-            Node::Named(iri) => Term::NamedNode(NamedNode { iri }),
-            Node::Blank(id) => Term::BlankNode(BlankNode { id }),
+            Node::Named(iri) => Term::NamedNode(NamedNode::new_unchecked(iri.clone())),
+            Node::Blank(id) => Term::BlankNode(BlankNode::new_unchecked(id.clone())),
         }
     }
 }
@@ -99,7 +99,7 @@ fn serialize_map<W: Write>(
     subject: &Node,
     map: &std::collections::HashMap<String, LinkMLValue>,
     class: Option<&ClassView>,
-    formatter: &mut TurtleFormatter<W>,
+    formatter: &mut WriterTurtleSerializer<W>,
     sv: &SchemaView,
     conv: &Converter,
     state: &mut State,
@@ -110,12 +110,12 @@ fn serialize_map<W: Write>(
             let id_string = id.to_string();
             let triple = Triple {
                 subject: subject.as_subject(),
-                predicate: NamedNode {
-                    iri: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                },
-                object: Term::NamedNode(NamedNode { iri: &id_string }),
+                predicate: NamedNode::new_unchecked(
+                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#type".to_string(),
+                ),
+                object: Term::NamedNode(NamedNode::new_unchecked(id_string)),
             };
-            formatter.format(&triple)?;
+            formatter.serialize_triple(triple.as_ref())?;
         }
     } else {
         return Err(std::io::Error::new(
@@ -128,7 +128,7 @@ fn serialize_map<W: Write>(
             continue;
         }
         let pred_iri = format!("{}:{}", state.default_prefix, k);
-        let predicate = NamedNode { iri: &pred_iri };
+        let predicate = NamedNode::new_unchecked(pred_iri.clone());
         match v {
             LinkMLValue::Scalar { value, slot, .. } => {
                 let inline_mode = slot.determine_slot_inline_mode(sv);
@@ -140,31 +140,31 @@ fn serialize_map<W: Write>(
                         .unwrap_or(lit);
                     let triple = Triple {
                         subject: subject.as_subject(),
-                        predicate,
-                        object: Term::NamedNode(NamedNode { iri: &iri }),
+                        predicate: predicate.clone(),
+                        object: Term::NamedNode(NamedNode::new_unchecked(iri)),
                     };
-                    formatter.format(&triple)?;
+                    formatter.serialize_triple(triple.as_ref())?;
                 } else {
                     let (lit, dt_opt) = literal_and_type(value, slot);
                     if let Some(dt) = dt_opt {
-                        let object = Term::Literal(Literal::Typed {
-                            value: &lit,
-                            datatype: NamedNode { iri: &dt },
-                        });
+                        let object = Term::Literal(Literal::new_typed_literal(
+                            lit.clone(),
+                            NamedNode::new_unchecked(dt.clone()),
+                        ));
                         let triple = Triple {
                             subject: subject.as_subject(),
-                            predicate,
+                            predicate: predicate.clone(),
                             object,
                         };
-                        formatter.format(&triple)?;
+                        formatter.serialize_triple(triple.as_ref())?;
                     } else {
-                        let object = Term::Literal(Literal::Simple { value: &lit });
+                    let object = Term::Literal(Literal::new_simple_literal(lit.clone()));
                         let triple = Triple {
                             subject: subject.as_subject(),
-                            predicate,
+                            predicate: predicate.clone(),
                             object,
                         };
-                        formatter.format(&triple)?;
+                        formatter.serialize_triple(triple.as_ref())?;
                     }
                 }
             }
@@ -173,10 +173,10 @@ fn serialize_map<W: Write>(
                 let (obj, child_id) = identifier_node(values, class_ref, conv, state);
                 let triple = Triple {
                     subject: subject.as_subject(),
-                    predicate,
+                    predicate: predicate.clone(),
                     object: obj.as_term(),
                 };
-                formatter.format(&triple)?;
+                formatter.serialize_triple(triple.as_ref())?;
                 serialize_map(
                     &obj,
                     values,
@@ -201,31 +201,31 @@ fn serialize_map<W: Write>(
                                     .unwrap_or(lit);
                                 let triple = Triple {
                                     subject: subject.as_subject(),
-                                    predicate,
-                                    object: Term::NamedNode(NamedNode { iri: &iri }),
+                                    predicate: predicate.clone(),
+                                    object: Term::NamedNode(NamedNode::new_unchecked(iri)),
                                 };
-                                formatter.format(&triple)?;
+                                formatter.serialize_triple(triple.as_ref())?;
                             } else {
                                 let (lit, dt_opt) = literal_and_type(value, slot);
                                 if let Some(dt) = dt_opt {
-                                    let object = Term::Literal(Literal::Typed {
-                                        value: &lit,
-                                        datatype: NamedNode { iri: &dt },
-                                    });
+                                    let object = Term::Literal(Literal::new_typed_literal(
+                                        lit.clone(),
+                                        NamedNode::new_unchecked(dt.clone()),
+                                    ));
                                     let triple = Triple {
                                         subject: subject.as_subject(),
-                                        predicate,
+                                        predicate: predicate.clone(),
                                         object,
                                     };
-                                    formatter.format(&triple)?;
+                                    formatter.serialize_triple(triple.as_ref())?;
                                 } else {
-                                    let object = Term::Literal(Literal::Simple { value: &lit });
+                                    let object = Term::Literal(Literal::new_simple_literal(lit.clone()));
                                     let triple = Triple {
                                         subject: subject.as_subject(),
-                                        predicate,
+                                        predicate: predicate.clone(),
                                         object,
                                     };
-                                    formatter.format(&triple)?;
+                                    formatter.serialize_triple(triple.as_ref())?;
                                 }
                             }
                         }
@@ -236,10 +236,10 @@ fn serialize_map<W: Write>(
                             let (obj, child_id) = identifier_node(mv, class_ref, conv, state);
                             let triple = Triple {
                                 subject: subject.as_subject(),
-                                predicate,
+                                predicate: predicate.clone(),
                                 object: obj.as_term(),
                             };
-                            formatter.format(&triple)?;
+                            formatter.serialize_triple(triple.as_ref())?;
                             serialize_map(
                                 &obj,
                                 mv,
@@ -292,8 +292,7 @@ pub fn write_turtle<W: Write>(
             .unwrap_or(&schema.name)
             .to_string(),
     };
-    let mut buf = Vec::new();
-    let mut formatter = TurtleFormatter::new(&mut buf);
+    let mut formatter = TurtleSerializer::new().for_writer(Vec::new());
     match value {
         LinkMLValue::Map { values, class, .. } => {
             let cv = &class;
@@ -346,28 +345,28 @@ pub fn write_turtle<W: Write>(
                     LinkMLValue::Scalar { value, slot, .. } => {
                         let (lit, dt_opt) = literal_and_type(value, slot);
                         if let Some(dt) = dt_opt {
-                            let object = Term::Literal(Literal::Typed {
-                                value: &lit,
-                                datatype: NamedNode { iri: &dt },
-                            });
+                            let object = Term::Literal(Literal::new_typed_literal(
+                                lit.clone(),
+                                NamedNode::new_unchecked(dt.clone()),
+                            ));
                             let triple = Triple {
                                 subject: subj.as_subject(),
-                                predicate: NamedNode {
-                                    iri: "http://www.w3.org/1999/02/22-rdf-syntax-ns#value",
-                                },
+                                predicate: NamedNode::new_unchecked(
+                                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#value".to_string(),
+                                ),
                                 object,
                             };
-                            formatter.format(&triple)?;
+                            formatter.serialize_triple(triple.as_ref())?;
                         } else {
-                            let object = Term::Literal(Literal::Simple { value: &lit });
+                            let object = Term::Literal(Literal::new_simple_literal(lit.clone()));
                             let triple = Triple {
                                 subject: subj.as_subject(),
-                                predicate: NamedNode {
-                                    iri: "http://www.w3.org/1999/02/22-rdf-syntax-ns#value",
-                                },
+                                predicate: NamedNode::new_unchecked(
+                                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#value".to_string(),
+                                ),
                                 object,
                             };
-                            formatter.format(&triple)?;
+                            formatter.serialize_triple(triple.as_ref())?;
                         }
                     }
                     LinkMLValue::List { .. } => {}
@@ -376,8 +375,8 @@ pub fn write_turtle<W: Write>(
         }
         LinkMLValue::Scalar { .. } => {}
     }
-    formatter.finish()?;
-    let mut out = String::from_utf8(buf).unwrap_or_default();
+    let out_buf = formatter.finish()?;
+    let mut out = String::from_utf8(out_buf).unwrap_or_default();
     let iri_re = Regex::new(r"<([^>]+)>").unwrap();
     out = iri_re
         .replace_all(&out, |caps: &regex::Captures| {
