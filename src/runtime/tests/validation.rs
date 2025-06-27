@@ -13,7 +13,6 @@ fn info_path(name: &str) -> PathBuf {
 }
 
 #[test]
-#[ignore]
 fn validate_personinfo_example1() {
     let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
     let mut sv = SchemaView::new();
@@ -34,7 +33,6 @@ fn validate_personinfo_example1() {
 }
 
 #[test]
-#[ignore]
 fn validate_personinfo_example2() {
     let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
     let mut sv = SchemaView::new();

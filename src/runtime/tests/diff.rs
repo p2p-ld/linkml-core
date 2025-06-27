@@ -91,7 +91,6 @@ fn diff_ignore_missing_target() {
 }
 
 #[test]
-#[ignore]
 fn diff_and_patch_personinfo() {
     let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
     let mut sv = SchemaView::new();
