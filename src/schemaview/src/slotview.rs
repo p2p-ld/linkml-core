@@ -36,6 +36,7 @@ impl<'a> SlotView<'a> {
     }
 
     pub fn definition(&self) -> SlotDefinition {
+        // fixme use merge crate
         let mut base = self.definitions[0].clone();
         for d in self.definitions.iter().skip(1) {
             if let Some(v) = &d.range {
@@ -58,6 +59,9 @@ impl<'a> SlotView<'a> {
             }
             if let Some(v) = d.designates_type {
                 base.designates_type = Some(v);
+            }
+            if let Some(v) = d.key {
+                base.key = Some(v);
             }
         }
         base
