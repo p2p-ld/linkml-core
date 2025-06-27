@@ -189,7 +189,7 @@ fn serialize_map<W: Write>(
         let predicate = NamedNode::new_unchecked(pred_iri.clone());
         match v {
             LinkMLValue::Scalar { value, slot, .. } => {
-                let inline_mode = slot.determine_slot_inline_mode(sv);
+                let inline_mode = slot.determine_slot_inline_mode();
                 if inline_mode == SlotInlineMode::Reference {
                     let lit = literal_value(value);
                     let iri = Identifier::new(&lit)
@@ -251,7 +251,7 @@ fn serialize_map<W: Write>(
                 for (idx, item) in values.iter().enumerate() {
                     match item {
                         LinkMLValue::Scalar { value, .. } => {
-                            let inline_mode = slot.determine_slot_inline_mode(sv);
+                            let inline_mode = slot.determine_slot_inline_mode();
                             if inline_mode == SlotInlineMode::Reference {
                                 let lit = literal_value(value);
                                 let iri = Identifier::new(&lit)

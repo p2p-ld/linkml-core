@@ -4,7 +4,7 @@ use curies::Converter;
 use linkml_meta::{ClassDefinition, SlotDefinition};
 
 use crate::identifier::{Identifier, IdentifierError};
-use crate::schemaview::SchemaView;
+use crate::schemaview::{SchemaView, SchemaViewError};
 use crate::slotview::SlotView;
 
 #[derive(Clone)]
@@ -24,7 +24,7 @@ impl<'a> ClassView<'a> {
         sv: &'a SchemaView,
         schema_uri: &'a str,
         conv: &Converter,
-    ) -> Result<Self, IdentifierError> {
+    ) -> Result<Self, SchemaViewError> {
         fn gather<'b>(
             class_def: &'b ClassDefinition,
             schema_uri: &'b str,
@@ -32,7 +32,7 @@ impl<'a> ClassView<'a> {
             conv: &Converter,
             visited: &mut HashSet<String>,
             acc: &mut HashMap<String, SlotView<'b>>,
-        ) -> Result<(), IdentifierError> {
+        ) -> Result<(), SchemaViewError> {
             if !visited.insert(class_def.name.clone()) {
                 return Ok(());
             }
@@ -64,6 +64,7 @@ impl<'a> ClassView<'a> {
                         name: slot_ref.clone(),
                         schema_uri: slot_schema_uri,
                         definitions: defs,
+                        sv: sv,
                     },
                 );
             }
@@ -79,6 +80,7 @@ impl<'a> ClassView<'a> {
                         name: attr_name.clone(),
                         schema_uri,
                         definitions: defs,
+                        sv: sv,
                     },
                 );
             }
@@ -98,6 +100,7 @@ impl<'a> ClassView<'a> {
                                 name: usage_name.clone(),
                                 schema_uri: base.schema_uri,
                                 definitions: defs,
+                                sv: sv,
                             },
                         );
                     } else {
@@ -107,6 +110,7 @@ impl<'a> ClassView<'a> {
                                 name: usage_name.clone(),
                                 schema_uri,
                                 definitions: vec![usage_def],
+                                sv: sv,
                             },
                         );
                     }
@@ -211,7 +215,7 @@ impl<'a> ClassView<'a> {
         &self,
         conv: &Converter,
         recurse: bool,
-    ) -> Result<Vec<ClassView<'a>>, IdentifierError> {
+    ) -> Result<Vec<ClassView<'a>>, SchemaViewError> {
         let mut out = Vec::new();
         for schema in self.sv.schema_definitions.values() {
             for (cls_name, cls_def) in &schema.classes {
@@ -236,10 +240,10 @@ impl<'a> ClassView<'a> {
         Ok(out)
     }
 
-    pub fn parent_class(&self) -> Result<Option<ClassView<'a>>, IdentifierError> {
+    pub fn parent_class(&self) -> Result<Option<ClassView<'a>>, SchemaViewError> {
         let conv = match self.sv.converter_for_schema(self.schema_uri) {
             Some(c) => c,
-            None => return Ok(None),
+            None => return Err(SchemaViewError::NotFound),
         };
         match &self.class.is_a {
             Some(parent) => self.sv.get_class(&Identifier::new(parent), &conv),

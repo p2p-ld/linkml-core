@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 
 use curies::Converter;
-use linkml_meta::SlotDefinition;
+use linkml_meta::{EnumDefinition, SlotDefinition};
 
 use crate::classview::ClassView;
 use crate::identifier::Identifier;
@@ -27,14 +27,16 @@ pub struct SlotView<'a> {
     pub name: String,
     pub(crate) schema_uri: &'a str,
     pub definitions: Vec<&'a SlotDefinition>,
+    pub(crate) sv: &'a SchemaView,
 }
 
 impl<'a> SlotView<'a> {
-    pub fn new(name: String, slot: &'a SlotDefinition, schema_uri: &'a str) -> Self {
+    pub fn new(name: String, slot: &'a SlotDefinition, schema_uri: &'a str, schemaview: &'a SchemaView) -> Self {
         Self {
             name,
             schema_uri,
             definitions: vec![slot],
+            sv: schemaview,
         }
     }
 
@@ -46,20 +48,40 @@ impl<'a> SlotView<'a> {
         return b;
     }
 
-    pub fn get_class_range(&self, sv: &'a SchemaView) -> Option<ClassView<'a>> {
-        let conv = sv.converter_for_schema(self.schema_uri)?;
+    pub fn get_range_class(&self) -> Option<ClassView<'a>> {
+        let conv = self.sv.converter_for_schema(self.schema_uri)?;
         self.definition()
             .range
             .as_ref()
-            .and_then(|r| sv.get_class(&Identifier::new(r), &conv).ok().flatten())
+            .and_then(|r| self.sv.get_class(&Identifier::new(r), &conv).ok().flatten())
     }
 
-    pub fn determine_slot_container_mode(&self, sv: &'a SchemaView) -> SlotContainerMode {
-        let conv = sv.converter_for_schema(self.schema_uri).unwrap();
+    pub fn get_range_enum(&self) -> Option<EnumDefinition> {
+        self.definition()
+            .range
+            .as_ref()
+            .and_then(|r| self.sv.get_enum_definition(&Identifier::new(r)))
+    }
+
+    pub fn is_range_scalar(&self) -> bool {
+        // its scalar if its not a class range
+        let cr = self.get_range_class();
+        if let Some(cr) = cr {
+            if cr.name() == "Anything" || cr.name() == "AnyValue" {
+                return true;
+            }
+            return false;
+        }
+        true
+    }
+
+
+    pub fn determine_slot_container_mode(&self) -> SlotContainerMode {
+        let conv = self.sv.converter_for_schema(self.schema_uri).unwrap();
         let s = self.definition();
         let multivalued = s.multivalued.unwrap_or(false);
         let class_range = match &s.range {
-            Some(r) => sv
+            Some(r) => self.sv
                 .get_class(&Identifier::new(r), &conv)
                 .ok()
                 .flatten()
@@ -82,7 +104,7 @@ impl<'a> SlotView<'a> {
         let range_cv = s
             .range
             .as_ref()
-            .and_then(|r| sv.get_class(&Identifier::new(r), &conv).ok().flatten());
+            .and_then(|r| self.sv.get_class(&Identifier::new(r), &conv).ok().flatten());
         let key_slot = range_cv.as_ref().and_then(|cv| cv.key_or_identifier_slot());
         let identifier_slot = range_cv.as_ref().and_then(|cv| cv.identifier_slot());
 
@@ -106,12 +128,12 @@ impl<'a> SlotView<'a> {
         }
     }
 
-    pub fn determine_slot_inline_mode(&self, sv: &'a SchemaView) -> SlotInlineMode {
-        let conv = sv.converter_for_schema(self.schema_uri).unwrap();
+    pub fn determine_slot_inline_mode(&self) -> SlotInlineMode {
+        let conv = self.sv.converter_for_schema(self.schema_uri).unwrap();
         let s = self.definition();
         let multivalued = s.multivalued.unwrap_or(false);
         let class_range = match &s.range {
-            Some(r) => sv
+            Some(r) => self.sv
                 .get_class(&Identifier::new(r), &conv)
                 .ok()
                 .flatten()
@@ -130,7 +152,7 @@ impl<'a> SlotView<'a> {
         let range_cv = s
             .range
             .as_ref()
-            .and_then(|r| sv.get_class(&Identifier::new(r), &conv).ok().flatten());
+            .and_then(|r| self.sv.get_class(&Identifier::new(r), &conv).ok().flatten());
         let identifier_slot = range_cv.as_ref().and_then(|cv| cv.identifier_slot());
 
         let mut inlined = s.inlined.unwrap_or(false);

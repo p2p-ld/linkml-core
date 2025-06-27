@@ -11,6 +11,7 @@ pub enum IdentifierError {
     CurieError(CuriesError),
     /// Attempted to convert an [`Identifier`] into the wrong variant
     WrongVariant,
+    NoConverter,
 }
 
 impl From<CuriesError> for IdentifierError {

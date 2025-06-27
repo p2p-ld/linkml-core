@@ -26,11 +26,11 @@ impl<'a> LinkMLValue<'a> {
         match self {
             LinkMLValue::Scalar { value, .. } => value.clone(),
             LinkMLValue::List {
-                values, slot, sv, ..
-            } => match slot.determine_slot_container_mode(sv) {
+                values, slot, ..
+            } => match slot.determine_slot_container_mode() {
                 SlotContainerMode::Mapping => {
                     let range_cv = slot
-                        .get_class_range(sv)
+                        .get_range_class()
                         .expect("mapping slot must have class range");
                     let key_slot_name = range_cv
                         .key_or_identifier_slot()
@@ -144,14 +144,13 @@ pub fn diff<'a>(
                 LinkMLValue::List {
                     values: sl,
                     slot,
-                    sv,
                     ..
                 },
                 LinkMLValue::List { values: tl, .. },
-            ) => match slot.determine_slot_container_mode(sv) {
+            ) => match slot.determine_slot_container_mode() {
                 SlotContainerMode::Mapping => {
                     let range_cv = slot
-                        .get_class_range(sv)
+                        .get_range_class()
                         .expect("mapping slot must have class range");
                     let key_slot_name = range_cv
                         .key_or_identifier_slot()

@@ -66,7 +66,7 @@ print('schemas', sv.get_unresolved_schemas())
 s = sv.get_schema('https://w3id.org/linkml/meta')
 print('schema', s)
 assert s is not None and s.name == 'meta'
-c = sv.get_class('linkml:class_definition')
+c = sv.get_class_view('linkml:class_definition')
 print('class', c)
 assert c is not None and c.name == 'class_definition'
 "#

@@ -58,8 +58,6 @@ impl<'a> LinkMLValue<'a> {
     fn find_scalar_slot_for_inlined_map(
         class: &ClassView<'a>,
         key_slot_name: &str,
-        sv: &'a SchemaView,
-        conv: &Converter,
     ) -> Option<SlotView<'a>> {
         for s in class.slots() {
             if s.name == key_slot_name {
@@ -69,15 +67,8 @@ impl<'a> LinkMLValue<'a> {
             if def.multivalued.unwrap_or(false) {
                 continue;
             }
-            if let Some(r) = &def.range {
-                if sv
-                    .get_class(&Identifier::new(r), conv)
-                    .ok()
-                    .flatten()
-                    .is_some()
-                {
-                    continue;
-                }
+            if !s.is_range_scalar() {
+                continue;
             }
             return Some(s.clone());
         }
@@ -158,7 +149,7 @@ impl<'a> LinkMLValue<'a> {
         match (inside_list, value) {
             (false, JsonValue::Array(arr)) => {
                 let mut values = Vec::new();
-                let class_range = sl.get_class_range(sv);
+                let class_range = sl.get_range_class();
                 for (i, v) in arr.into_iter().enumerate() {
                     let mut p = path.clone();
                     p.push(format!("{}[{}]", sl.name, i));
@@ -248,8 +239,6 @@ impl<'a> LinkMLValue<'a> {
                             let scalar_slot = Self::find_scalar_slot_for_inlined_map(
                                 &chosen,
                                 &key_slot.name,
-                                sv,
-                                conv,
                             )
                             .ok_or_else(|| {
                                 LinkMLError(format!(
@@ -418,7 +407,7 @@ impl<'a> LinkMLValue<'a> {
         path: Vec<String>,
     ) -> LResult<Self> {
         if let Some(ref sl) = slot {
-            let container_mode = sl.determine_slot_container_mode(sv);
+            let container_mode = sl.determine_slot_container_mode();
             match container_mode {
                 SlotContainerMode::List => {
                     return Self::parse_list_slot(value, class.clone(), sl, sv, conv, inside_list, path);

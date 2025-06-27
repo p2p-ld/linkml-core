@@ -112,14 +112,6 @@ impl PySchemaView {
         self.inner.get_schema(uri).cloned()
     }
 
-    fn get_class(&self, id: &str) -> PyResult<Option<ClassDefinition>> {
-        let conv = self.inner.converter();
-        Ok(self
-            .inner
-            .get_class_definition(&Identifier::new(id), &conv)
-            .map_err(|e| PyException::new_err(format!("{:?}", e)))?
-            .cloned())
-    }
 
     fn get_class_view(&self, id: &str) -> PyResult<Option<PyClassView>> {
         let conv = self.inner.converter();

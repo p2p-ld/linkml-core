@@ -4,12 +4,25 @@ use crate::identifier::{
     converter_from_schema, converter_from_schemas, Identifier, IdentifierError,
 };
 use curies::Converter;
-use linkml_meta::{ClassDefinition, SchemaDefinition};
+use linkml_meta::SchemaDefinition;
 
 use crate::curie::curie2uri;
 // re-export views from submodules
 pub use crate::classview::ClassView;
 pub use crate::slotview::{SlotContainerMode, SlotInlineMode, SlotView};
+
+#[derive(Debug)]
+pub enum SchemaViewError {
+    IdentifierError(IdentifierError),
+    NoPrimarySchema(String),
+    NotFound
+}
+
+impl From<IdentifierError> for SchemaViewError {
+    fn from(err: IdentifierError) -> Self {
+        SchemaViewError::IdentifierError(err)
+    }
+}
 
 pub struct SchemaView {
     pub(crate) schema_definitions: HashMap<String, SchemaDefinition>,
@@ -93,12 +106,9 @@ impl SchemaView {
             .and_then(|uri| self.converter_for_schema(uri))
     }
 
-    pub fn get_class_definition<'a>(
-        &'a self,
-        id: &Identifier,
-        conv: &Converter,
-    ) -> Result<Option<&'a ClassDefinition>, IdentifierError> {
-        Ok(self.get_class(id, conv)?.map(|cv| cv.class))
+    pub fn get_enum_definition(&self, _identifier: &Identifier) -> Option<linkml_meta::EnumDefinition> {
+        // TODO implement this
+        None
     }
 
     fn index_schema_classes(
@@ -205,7 +215,7 @@ impl SchemaView {
         &'a self,
         id: &Identifier,
         conv: &Converter,
-    ) -> Result<Option<ClassView<'a>>, IdentifierError> {
+    ) -> Result<Option<ClassView<'a>>, SchemaViewError> {
         let index = &self.class_uri_index;
         match id {
             Identifier::Name(name) => {
@@ -232,7 +242,7 @@ impl SchemaView {
                 Ok(None)
             }
             Identifier::Curie(_) | Identifier::Uri(_) => {
-                let target_uri = id.to_uri(conv)?;
+                let target_uri = id.to_uri(conv).map_err(|e| SchemaViewError::IdentifierError(e))?;
                 if let Some((schema_uri, class_name)) = index.get(&target_uri.0) {
                     if let Some(schema) = self.schema_definitions.get(schema_uri) {
                         if let Some(class) = schema.classes.get(class_name) {
@@ -262,14 +272,14 @@ impl SchemaView {
                     None => return Ok(None),
                 };
                 if let Some(slot_def) = schema.slot_definitions.get(name) {
-                    return Ok(Some(SlotView::new(name.clone(), slot_def, &schema.id)));
+                    return Ok(Some(SlotView::new(name.clone(), slot_def, &schema.id, self)));
                 }
                 for (uri, schema) in &self.schema_definitions {
                     if uri == primary {
                         continue;
                     }
                     if let Some(slot_def) = schema.slot_definitions.get(name) {
-                        return Ok(Some(SlotView::new(name.clone(), slot_def, &schema.id)));
+                        return Ok(Some(SlotView::new(name.clone(), slot_def, &schema.id, self)));
                     }
                 }
                 Ok(None)
@@ -279,7 +289,7 @@ impl SchemaView {
                 if let Some((schema_uri, slot_name)) = index.get(&target_uri.0) {
                     if let Some(schema) = self.schema_definitions.get(schema_uri) {
                         if let Some(slot) = schema.slot_definitions.get(slot_name) {
-                            return Ok(Some(SlotView::new(slot_name.clone(), slot, &schema.id)));
+                            return Ok(Some(SlotView::new(slot_name.clone(), slot, &schema.id, self)));
                         }
                     }
                 }
