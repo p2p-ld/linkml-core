@@ -24,7 +24,7 @@ fn skolem_flag_creates_named_nodes() {
     cmd.assert().success();
 
     let ttl = std::fs::read_to_string(&out_path).unwrap();
-    assert!(ttl.contains("poly:gen1"));
+    assert!(ttl.contains("poly:root/gen1"));
 }
 
 #[test]
