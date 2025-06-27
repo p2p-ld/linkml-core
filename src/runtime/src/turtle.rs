@@ -8,6 +8,7 @@ use serde_json::Value as JsonValue;
 use std::io::{Result as IoResult, Write};
 
 use regex::Regex;
+use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use oxrdf::{BlankNode, Literal, NamedNode, Subject, Term, Triple};
 use oxttl::TurtleSerializer;
 use oxttl::turtle::WriterTurtleSerializer;
@@ -37,6 +38,13 @@ impl Node {
             Node::Blank(id) => Term::BlankNode(BlankNode::new_unchecked(id.clone())),
         }
     }
+
+    fn id(&self) -> &str {
+        match self {
+            Node::Named(iri) => iri,
+            Node::Blank(id) => id,
+        }
+    }
 }
 
 struct State {
@@ -55,6 +63,16 @@ impl State {
             Node::Blank(format!("b{}", self.counter))
         }
     }
+
+    fn child_subject(&mut self, parent: &Node, part: &str) -> Node {
+        if self.skolem {
+            let parent_id = parent.id();
+            let delim = if parent_id.ends_with('/') { "" } else { "/" };
+            Node::Named(format!("{}{}{}", parent_id, delim, part))
+        } else {
+            self.next_subject()
+        }
+    }
 }
 
 fn literal_value(v: &JsonValue) -> String {
@@ -64,6 +82,10 @@ fn literal_value(v: &JsonValue) -> String {
         JsonValue::Bool(b) => b.to_string(),
         _ => v.to_string(),
     }
+}
+
+fn encode_path_part(s: &str) -> String {
+    utf8_percent_encode(s, NON_ALPHANUMERIC).to_string()
 }
 
 fn literal_and_type(value: &JsonValue, slot: &SlotView) -> (String, Option<String>) {
@@ -81,6 +103,8 @@ fn identifier_node(
     class: &ClassView,
     conv: &Converter,
     state: &mut State,
+    parent: Option<&Node>,
+    index: Option<usize>,
 ) -> (Node, Option<String>) {
     if let Some(id_slot) = class.identifier_slot() {
         if let Some(LinkMLValue::Scalar { value, .. }) = map.get(&id_slot.name) {
@@ -90,6 +114,32 @@ fn identifier_node(
             } else {
                 return (Node::Named(lit), Some(id_slot.name.clone()));
             }
+        }
+    }
+    if state.skolem {
+        if let Some(p) = parent {
+            let part_opt = class
+                .key_or_identifier_slot()
+                .and_then(|ks| {
+                    map.get(&ks.name).and_then(|v| match v {
+                        LinkMLValue::Scalar { value, .. } => {
+                            if let JsonValue::String(s) = value {
+                                Some(encode_path_part(s))
+                            } else {
+                                Some(encode_path_part(&literal_value(value)))
+                            }
+                        }
+                        _ => None,
+                    })
+                });
+            let part = part_opt
+                .or_else(|| index.map(|i| i.to_string()))
+                .unwrap_or_else(|| {
+                    state.counter += 1;
+                    format!("gen{}", state.counter)
+                });
+            let node = state.child_subject(p, &part);
+            return (node, None);
         }
     }
     (state.next_subject(), None)
@@ -178,7 +228,8 @@ fn serialize_map<W: Write>(
             }
             LinkMLValue::Map { values, class, .. } => {
                 let class_ref = &class;
-                let (obj, child_id) = identifier_node(values, class_ref, conv, state);
+                let (obj, child_id) =
+                    identifier_node(values, class_ref, conv, state, Some(subject), None);
                 let triple = Triple {
                     subject: subject.as_subject(),
                     predicate: predicate.clone(),
@@ -197,7 +248,7 @@ fn serialize_map<W: Write>(
                 )?;
             }
             LinkMLValue::List { values, slot, .. } => {
-                for item in values {
+                for (idx, item) in values.iter().enumerate() {
                     match item {
                         LinkMLValue::Scalar { value, .. } => {
                             let inline_mode = slot.determine_slot_inline_mode(sv);
@@ -241,7 +292,14 @@ fn serialize_map<W: Write>(
                             values: mv, class, ..
                         } => {
                             let class_ref = &class;
-                            let (obj, child_id) = identifier_node(mv, class_ref, conv, state);
+                            let (obj, child_id) = identifier_node(
+                                mv,
+                                class_ref,
+                                conv,
+                                state,
+                                Some(subject),
+                                Some(idx),
+                            );
                             let triple = Triple {
                                 subject: subject.as_subject(),
                                 predicate: predicate.clone(),
@@ -332,8 +390,12 @@ pub fn write_turtle<W: Write>(
             )?;
         }
         LinkMLValue::List { values, .. } => {
-            for item in values {
-                let subj = state.next_subject();
+            for (idx, item) in values.iter().enumerate() {
+                let subj = if options.skolem {
+                    Node::Named(format!("{}root/{}", state.base, idx))
+                } else {
+                    state.next_subject()
+                };
                 match item {
                     LinkMLValue::Map {
                         values: mv, class, ..
