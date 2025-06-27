@@ -2,7 +2,7 @@ use linkml_runtime::{
     load_yaml_file,
     turtle::{turtle_to_string, TurtleOptions},
 };
-use linkml_schemaview::identifier::converter_from_schema;
+use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
 use std::path::{Path, PathBuf};
@@ -21,7 +21,17 @@ fn convert_person_to_ttl() {
     let mut sv = SchemaView::new();
     sv.add_schema(schema.clone()).unwrap();
     let conv = converter_from_schema(&schema);
-    let v = load_yaml_file(Path::new(&data_path("person_valid.yaml")), &sv, None, &conv).unwrap();
+    let class = sv
+        .get_class(&Identifier::new("Person"), &conv)
+        .unwrap()
+        .unwrap();
+    let v = load_yaml_file(
+        Path::new(&data_path("person_valid.yaml")),
+        &sv,
+        Some(&class),
+        &conv,
+    )
+    .unwrap();
     let ttl = turtle_to_string(&v, &sv, &schema, &conv, TurtleOptions { skolem: false }).unwrap();
     assert!(ttl.contains("@prefix test: <https://example.com/test/> ."));
     assert!(ttl.contains("<test:name> \"Alice\""));
