@@ -28,11 +28,11 @@ fn test_slot_modes() {
         .find(|s| s.name == "persons")
         .unwrap();
     assert_eq!(
-        persons_slot.determine_slot_container_mode(&sv, &conv),
+        persons_slot.determine_slot_container_mode(&sv),
         SlotContainerMode::List
     );
     assert_eq!(
-        persons_slot.determine_slot_inline_mode(&sv, &conv),
+        persons_slot.determine_slot_inline_mode(&sv),
         SlotInlineMode::Inline
     );
 
@@ -42,11 +42,11 @@ fn test_slot_modes() {
         .find(|s| s.name == "best_friend")
         .unwrap();
     assert_eq!(
-        best_friend.determine_slot_container_mode(&sv, &conv),
+        best_friend.determine_slot_container_mode(&sv),
         SlotContainerMode::SingleValue
     );
     assert_eq!(
-        best_friend.determine_slot_inline_mode(&sv, &conv),
+        best_friend.determine_slot_inline_mode(&sv),
         SlotInlineMode::Reference
     );
 
@@ -56,11 +56,11 @@ fn test_slot_modes() {
         .unwrap();
     let name_slot = person.slots().iter().find(|s| s.name == "name").unwrap();
     assert_eq!(
-        name_slot.determine_slot_container_mode(&sv, &conv),
+        name_slot.determine_slot_container_mode(&sv),
         SlotContainerMode::SingleValue
     );
     assert_eq!(
-        name_slot.determine_slot_inline_mode(&sv, &conv),
+        name_slot.determine_slot_inline_mode(&sv),
         SlotInlineMode::Primitive
     );
 
@@ -70,11 +70,11 @@ fn test_slot_modes() {
         .unwrap();
     let exts_slot = holder.slots().iter().find(|s| s.name == "exts").unwrap();
     assert_eq!(
-        exts_slot.determine_slot_container_mode(&sv, &conv),
+        exts_slot.determine_slot_container_mode(&sv),
         SlotContainerMode::Mapping
     );
     assert_eq!(
-        exts_slot.determine_slot_inline_mode(&sv, &conv),
+        exts_slot.determine_slot_inline_mode(&sv),
         SlotInlineMode::Inline
     );
 }

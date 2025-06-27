@@ -24,13 +24,15 @@ pub enum SlotInlineMode {
 #[derive(Clone)]
 pub struct SlotView<'a> {
     pub name: String,
+    pub(crate) schema_uri: &'a str,
     pub definitions: Vec<&'a SlotDefinition>,
 }
 
 impl<'a> SlotView<'a> {
-    pub fn new(name: String, slot: &'a SlotDefinition) -> Self {
+    pub fn new(name: String, slot: &'a SlotDefinition, schema_uri: &'a str) -> Self {
         Self {
             name,
+            schema_uri,
             definitions: vec![slot],
         }
     }
@@ -67,16 +69,24 @@ impl<'a> SlotView<'a> {
         base
     }
 
+    pub fn get_class_range(&self, sv: &'a SchemaView) -> Option<ClassView<'a>> {
+        let conv = sv.converter_for_schema(self.schema_uri)?;
+        self.definition()
+            .range
+            .as_ref()
+            .and_then(|r| sv.get_class(&Identifier::new(r), &conv).ok().flatten())
+    }
+
     pub fn determine_slot_container_mode(
         &self,
         sv: &'a SchemaView,
-        conv: &Converter,
     ) -> SlotContainerMode {
+        let conv = sv.converter_for_schema(self.schema_uri).unwrap();
         let s = self.definition();
         let multivalued = s.multivalued.unwrap_or(false);
         let class_range = match &s.range {
             Some(r) => sv
-                .get_class(&Identifier::new(r), conv)
+                .get_class(&Identifier::new(r), &conv)
                 .ok()
                 .flatten()
                 .is_some(),
@@ -98,7 +108,7 @@ impl<'a> SlotView<'a> {
         let range_cv = s
             .range
             .as_ref()
-            .and_then(|r| sv.get_class(&Identifier::new(r), conv).ok().flatten());
+            .and_then(|r| sv.get_class(&Identifier::new(r), &conv).ok().flatten());
         let key_slot = range_cv.as_ref().and_then(|cv| cv.key_or_identifier_slot());
         let identifier_slot = range_cv.as_ref().and_then(|cv| cv.identifier_slot());
 
@@ -125,13 +135,13 @@ impl<'a> SlotView<'a> {
     pub fn determine_slot_inline_mode(
         &self,
         sv: &'a SchemaView,
-        conv: &Converter,
     ) -> SlotInlineMode {
+        let conv = sv.converter_for_schema(self.schema_uri).unwrap();
         let s = self.definition();
         let multivalued = s.multivalued.unwrap_or(false);
         let class_range = match &s.range {
             Some(r) => sv
-                .get_class(&Identifier::new(r), conv)
+                .get_class(&Identifier::new(r), &conv)
                 .ok()
                 .flatten()
                 .is_some(),
@@ -149,7 +159,7 @@ impl<'a> SlotView<'a> {
         let range_cv = s
             .range
             .as_ref()
-            .and_then(|r| sv.get_class(&Identifier::new(r), conv).ok().flatten());
+            .and_then(|r| sv.get_class(&Identifier::new(r), &conv).ok().flatten());
         let identifier_slot = range_cv.as_ref().and_then(|cv| cv.identifier_slot());
 
         let mut inlined = s.inlined.unwrap_or(false);
@@ -170,17 +180,6 @@ impl<'a> SlotView<'a> {
         } else {
             SlotInlineMode::Inline
         }
-    }
-
-    pub fn determine_slot_mode(
-        &self,
-        sv: &'a SchemaView,
-        conv: &Converter,
-    ) -> (SlotContainerMode, SlotInlineMode) {
-        (
-            self.determine_slot_container_mode(sv, conv),
-            self.determine_slot_inline_mode(sv, conv),
-        )
     }
 
     pub fn can_contain_reference_to_class(

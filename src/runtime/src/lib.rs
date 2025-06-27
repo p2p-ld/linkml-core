@@ -102,7 +102,7 @@ impl<'a> LinkMLValue<'a> {
         polymorphic: bool,
     ) -> Self {
         if let Some(ref sl) = slot {
-            let container_mode = sl.determine_slot_container_mode(sv, conv);
+            let container_mode = sl.determine_slot_container_mode(sv);
             match container_mode {
                 SlotContainerMode::List => match value {
                     JsonValue::Array(arr) => {

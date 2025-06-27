@@ -262,14 +262,14 @@ impl SchemaView {
                     None => return Ok(None),
                 };
                 if let Some(slot_def) = schema.slot_definitions.get(name) {
-                    return Ok(Some(SlotView::new(name.clone(), slot_def)));
+                    return Ok(Some(SlotView::new(name.clone(), slot_def, &schema.id)));
                 }
                 for (uri, schema) in &self.schema_definitions {
                     if uri == primary {
                         continue;
                     }
                     if let Some(slot_def) = schema.slot_definitions.get(name) {
-                        return Ok(Some(SlotView::new(name.clone(), slot_def)));
+                        return Ok(Some(SlotView::new(name.clone(), slot_def, &schema.id)));
                     }
                 }
                 Ok(None)
@@ -279,7 +279,7 @@ impl SchemaView {
                 if let Some((schema_uri, slot_name)) = index.get(&target_uri.0) {
                     if let Some(schema) = self.schema_definitions.get(schema_uri) {
                         if let Some(slot) = schema.slot_definitions.get(slot_name) {
-                            return Ok(Some(SlotView::new(slot_name.clone(), slot)));
+                            return Ok(Some(SlotView::new(slot_name.clone(), slot, &schema.id)));
                         }
                     }
                 }
