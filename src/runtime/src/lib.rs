@@ -444,8 +444,7 @@ impl<'a> LinkMLValue<'a> {
     ) -> LResult<Self> {
         let sl = slot.ok_or_else(|| {
             LinkMLError(format!(
-                "scalar requires slot for class {} at {}",
-                class.name(),
+                "scalar requires slot for at {}",
                 path_to_string(&path)
             ))
         })?;
