@@ -260,10 +260,9 @@ impl<'a> LinkMLValue<'a> {
                     .get_slot(&Identifier::new(&key_slot_name), conv)
                     .ok()
                     .flatten()
-                    .ok_or_else(|| LinkMLError(format!(
-                        "key slot not found at {}",
-                        path_to_string(&path)
-                    )))?
+                    .ok_or_else(|| {
+                        LinkMLError(format!("key slot not found at {}", path_to_string(&path)))
+                    })?
                     .clone();
                 let mut values = Vec::new();
                 for (k, v) in map.into_iter() {
@@ -275,16 +274,14 @@ impl<'a> LinkMLValue<'a> {
                                 .ok()
                                 .flatten()
                                 .unwrap_or_else(|| range_cv.clone());
-                            let scalar_slot = Self::find_scalar_slot_for_inlined_map(
-                                &chosen,
-                                &key_slot.name,
-                            )
-                            .ok_or_else(|| {
-                                LinkMLError(format!(
-                                    "no scalar slot available for inlined mapping at {}",
-                                    path_to_string(&path)
-                                ))
-                            })?;
+                            let scalar_slot =
+                                Self::find_scalar_slot_for_inlined_map(&chosen, &key_slot.name)
+                                    .ok_or_else(|| {
+                                        LinkMLError(format!(
+                                            "no scalar slot available for inlined mapping at {}",
+                                            path_to_string(&path)
+                                        ))
+                                    })?;
                             let mut tmp = serde_json::Map::new();
                             tmp.insert(scalar_slot.name.clone(), other);
                             tmp
@@ -301,7 +298,7 @@ impl<'a> LinkMLValue<'a> {
                         let slot_tmp = chosen
                             .slots()
                             .iter()
-                        .find(|s| slot_matches_key(s, &ck))
+                            .find(|s| slot_matches_key(s, &ck))
                             .cloned();
                         let mut p = path.clone();
                         p.push(format!("{}:{}", k, ck));
@@ -353,15 +350,16 @@ impl<'a> LinkMLValue<'a> {
         conv: &Converter,
         path: Vec<String>,
     ) -> LResult<Self> {
-        let sl = slot.ok_or_else(|| LinkMLError(format!(
-            "list requires slot at {}",
-            path_to_string(&path)
-        )))?;
+        let sl = slot.ok_or_else(|| {
+            LinkMLError(format!("list requires slot at {}", path_to_string(&path)))
+        })?;
         let mut values = Vec::new();
         for (i, v) in arr.into_iter().enumerate() {
             let mut p = path.clone();
             p.push(format!("[{}]", i));
-            values.push(Self::from_json_internal(v, None, None, sv, conv, true, false, p)?);
+            values.push(Self::from_json_internal(
+                v, None, None, sv, conv, true, false, p,
+            )?);
         }
         Ok(LinkMLValue::List {
             values,
@@ -436,11 +434,7 @@ impl<'a> LinkMLValue<'a> {
         for (k, v) in map.into_iter() {
             let slot_tmp: Option<SlotView<'a>> = chosen
                 .as_ref()
-                .and_then(|cv| {
-                    cv.slots()
-                        .iter()
-                        .find(|s| slot_matches_key(s, &k))
-                })
+                .and_then(|cv| cv.slots().iter().find(|s| slot_matches_key(s, &k)))
                 .cloned();
             let mut p = path.clone();
             p.push(k.clone());
@@ -450,16 +444,7 @@ impl<'a> LinkMLValue<'a> {
                 .unwrap_or_else(|| k.clone());
             values.insert(
                 key_name,
-                Self::from_json_internal(
-                    v,
-                    chosen.clone(),
-                    slot_tmp,
-                    sv,
-                    conv,
-                    true,
-                    false,
-                    p,
-                )?,
+                Self::from_json_internal(v, chosen.clone(), slot_tmp, sv, conv, true, false, p)?,
             );
         }
         Ok(LinkMLValue::Map {
@@ -471,20 +456,18 @@ impl<'a> LinkMLValue<'a> {
 
     fn parse_scalar_value(
         value: JsonValue,
-        class: &ClassView<'a>,
+        class: Option<&ClassView<'a>>,
         slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
         path: Vec<String>,
     ) -> LResult<Self> {
-        let sl = slot.ok_or_else(|| LinkMLError(format!(
-            "scalar requires slot for class {} at {}",
-            class.name(),
-            path_to_string(&path)
-        )))?;
+        let sl = slot.ok_or_else(|| {
+            LinkMLError(format!("scalar requires slot at {}", path_to_string(&path)))
+        })?;
         Ok(LinkMLValue::Scalar {
             value,
             slot: sl,
-            class: Some(class.clone()),
+            class: class.cloned(),
             sv,
         })
     }
@@ -502,7 +485,15 @@ impl<'a> LinkMLValue<'a> {
             let container_mode = sl.determine_slot_container_mode();
             match container_mode {
                 SlotContainerMode::List => {
-                    return Self::parse_list_slot(value, class.clone(), sl, sv, conv, inside_list, path);
+                    return Self::parse_list_slot(
+                        value,
+                        class.clone(),
+                        sl,
+                        sv,
+                        conv,
+                        inside_list,
+                        path,
+                    );
                 }
                 SlotContainerMode::Mapping => {
                     return Self::parse_mapping_slot(value, class.clone(), sl, sv, conv, path);
@@ -518,13 +509,12 @@ impl<'a> LinkMLValue<'a> {
                 Self::parse_object_value(map, cls_arg, slot, sv, conv, polymorphic, path)
             }
             other => {
-                let cls = class.as_ref().ok_or_else(|| {
-                    LinkMLError(format!(
-                        "class not determined for scalar at {}",
-                        path_to_string(&path)
-                    ))
-                })?;
-                Self::parse_scalar_value(other, cls, slot, sv, path)
+                if class.is_none() {
+                    Self::parse_scalar_value(other, None, slot, sv, path)
+                } else {
+                    let cls = class.as_ref().unwrap();
+                    Self::parse_scalar_value(other, Some(cls), slot, sv, path)
+                }
             }
         }
     }

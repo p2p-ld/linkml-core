@@ -219,20 +219,34 @@ impl<'a> ClassView<'a> {
         let mut out = Vec::new();
         for schema in self.sv.schema_definitions.values() {
             for (cls_name, cls_def) in &schema.classes {
+                let mut is_descendant = false;
                 if let Some(parent) = &cls_def.is_a {
                     if let Some(parent_cv) = self.sv.get_class(&Identifier::new(parent), conv)? {
                         if parent_cv.class.name == self.class.name
                             && parent_cv.schema_uri == self.schema_uri
                         {
-                            if let Some(child_cv) =
-                                self.sv.get_class(&Identifier::new(cls_name), conv)?
+                            is_descendant = true;
+                        }
+                    }
+                }
+                if !is_descendant {
+                    for mixin in &cls_def.mixins {
+                        if let Some(mixin_cv) = self.sv.get_class(&Identifier::new(mixin), conv)? {
+                            if mixin_cv.class.name == self.class.name
+                                && mixin_cv.schema_uri == self.schema_uri
                             {
-                                if recurse {
-                                    out.extend(child_cv.get_descendants(conv, true)?);
-                                }
-                                out.push(child_cv);
+                                is_descendant = true;
+                                break;
                             }
                         }
+                    }
+                }
+                if is_descendant {
+                    if let Some(child_cv) = self.sv.get_class(&Identifier::new(cls_name), conv)? {
+                        if recurse {
+                            out.extend(child_cv.get_descendants(conv, true)?);
+                        }
+                        out.push(child_cv);
                     }
                 }
             }
