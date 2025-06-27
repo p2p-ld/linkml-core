@@ -261,6 +261,16 @@ impl SchemaView {
         conv: &Converter,
     ) -> Result<Option<SlotView<'a>>, IdentifierError> {
         let index = &self.slot_uri_index;
+        fn alt_names(name: &str) -> Vec<String> {
+            let mut v = Vec::new();
+            if name.contains('_') {
+                v.push(name.replace('_', " "));
+            }
+            if name.contains(' ') {
+                v.push(name.replace(' ', "_"));
+            }
+            v
+        }
         match id {
             Identifier::Name(name) => {
                 let primary = match &self.primary_schema {
@@ -274,12 +284,22 @@ impl SchemaView {
                 if let Some(slot_def) = schema.slot_definitions.get(name) {
                     return Ok(Some(SlotView::new(name.clone(), slot_def, &schema.id, self)));
                 }
+                for alt in alt_names(name) {
+                    if let Some(slot_def) = schema.slot_definitions.get(&alt) {
+                        return Ok(Some(SlotView::new(alt, slot_def, &schema.id, self)));
+                    }
+                }
                 for (uri, schema) in &self.schema_definitions {
                     if uri == primary {
                         continue;
                     }
                     if let Some(slot_def) = schema.slot_definitions.get(name) {
                         return Ok(Some(SlotView::new(name.clone(), slot_def, &schema.id, self)));
+                    }
+                    for alt in alt_names(name) {
+                        if let Some(slot_def) = schema.slot_definitions.get(&alt) {
+                            return Ok(Some(SlotView::new(alt, slot_def, &schema.id, self)));
+                        }
                     }
                 }
                 Ok(None)
