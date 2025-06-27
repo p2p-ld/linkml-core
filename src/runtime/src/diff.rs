@@ -71,12 +71,10 @@ pub fn diff<'a>(
             ) => {
                 for (k, sv) in sm {
                     let slot_view = sc
-                        .as_ref()
-                        .and_then(|cv| cv.slots().iter().find(|s| s.name == *k))
-                        .or_else(|| {
-                            tc.as_ref()
-                                .and_then(|cv| cv.slots().iter().find(|s| s.name == *k))
-                        });
+                        .slots()
+                        .iter()
+                        .find(|s| s.name == *k)
+                        .or_else(|| tc.slots().iter().find(|s| s.name == *k));
                     path.push(k.clone());
                     match tm.get(k) {
                         Some(tv) => inner(path, slot_view, sv, tv, ignore_missing, out),
@@ -95,12 +93,10 @@ pub fn diff<'a>(
                 for (k, tv) in tm {
                     if !sm.contains_key(k) {
                         let slot_view = sc
-                            .as_ref()
-                            .and_then(|cv| cv.slots().iter().find(|s| s.name == *k))
-                            .or_else(|| {
-                                tc.as_ref()
-                                    .and_then(|cv| cv.slots().iter().find(|s| s.name == *k))
-                            });
+                            .slots()
+                            .iter()
+                            .find(|s| s.name == *k)
+                            .or_else(|| tc.slots().iter().find(|s| s.name == *k));
                         if !slot_view.map_or(false, slot_is_ignored) {
                             path.push(k.clone());
                             out.push(Delta {
@@ -171,9 +167,9 @@ pub fn patch<'a>(
     let json_str = serde_json::to_string(&json).unwrap();
     let conv = sv.converter();
     match source {
-        LinkMLValue::Map {
-            class: Some(ref c), ..
-        } => load_json_str(&json_str, sv, Some(c), &conv).unwrap(),
+        LinkMLValue::Map { class: ref c, .. } => {
+            load_json_str(&json_str, sv, Some(c), &conv).unwrap()
+        }
         _ => load_json_str(&json_str, sv, None, &conv).unwrap(),
     }
 }

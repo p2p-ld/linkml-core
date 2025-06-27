@@ -230,18 +230,18 @@ impl LinkMLValueOwned {
         match v {
             LinkMLValue::Scalar { value, slot, .. } => LinkMLValueOwned::Scalar {
                 value: value.clone(),
-                slot: slot.as_ref().map(|s| s.name.clone()),
+                slot: Some(slot.name.clone()),
             },
             LinkMLValue::List { values, slot, .. } => LinkMLValueOwned::List {
                 values: values.iter().map(Self::from_linkml).collect(),
-                slot: slot.as_ref().map(|s| s.name.clone()),
+                slot: Some(slot.name.clone()),
             },
             LinkMLValue::Map { values, class, .. } => LinkMLValueOwned::Map {
                 values: values
                     .iter()
                     .map(|(k, v)| (k.clone(), Self::from_linkml(v)))
                     .collect(),
-                class: class.as_ref().map(|c| c.class.name.clone()),
+                class: Some(class.class.name.clone()),
             },
         }
     }
@@ -271,27 +271,32 @@ impl LinkMLValueOwned {
                 LinkMLValueOwned::Scalar { value, slot } => {
                     let slot_view = slot
                         .as_ref()
-                        .and_then(|n| sv.get_slot(&Identifier::new(n), conv).ok().flatten());
+                        .and_then(|n| sv.get_slot(&Identifier::new(n), conv).ok().flatten())
+                        .expect("slot not found");
                     LinkMLValue::Scalar {
                         value: value.clone(),
                         slot: slot_view,
+                        class: None,
                         sv,
                     }
                 }
                 LinkMLValueOwned::List { values, slot } => {
                     let slot_view = slot
                         .as_ref()
-                        .and_then(|n| sv.get_slot(&Identifier::new(n), conv).ok().flatten());
+                        .and_then(|n| sv.get_slot(&Identifier::new(n), conv).ok().flatten())
+                        .expect("slot not found");
                     LinkMLValue::List {
                         values: values.iter().map(|v| inner(v, sv, conv)).collect(),
                         slot: slot_view,
+                        class: None,
                         sv,
                     }
                 }
                 LinkMLValueOwned::Map { values, class } => {
                     let class_view = class
                         .as_ref()
-                        .and_then(|n| sv.get_class(&Identifier::new(n), conv).ok().flatten());
+                        .and_then(|n| sv.get_class(&Identifier::new(n), conv).ok().flatten())
+                        .expect("class not found");
                     LinkMLValue::Map {
                         values: values
                             .iter()

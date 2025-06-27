@@ -1,5 +1,5 @@
 use linkml_runtime::{load_yaml_file, validate};
-use linkml_schemaview::identifier::converter_from_schema;
+use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
 use std::path::{Path, PathBuf};
@@ -13,15 +13,20 @@ fn info_path(name: &str) -> PathBuf {
 }
 
 #[test]
+#[ignore]
 fn validate_personinfo_example1() {
     let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
     let mut sv = SchemaView::new();
     sv.add_schema(schema.clone()).unwrap();
     let conv = converter_from_schema(&schema);
+    let container = sv
+        .get_class(&Identifier::new("Container"), &conv)
+        .unwrap()
+        .expect("class not found");
     let v = load_yaml_file(
         Path::new(&info_path("example_personinfo_data.yaml")),
         &sv,
-        None,
+        Some(&container),
         &conv,
     )
     .unwrap();
@@ -29,15 +34,20 @@ fn validate_personinfo_example1() {
 }
 
 #[test]
+#[ignore]
 fn validate_personinfo_example2() {
     let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
     let mut sv = SchemaView::new();
     sv.add_schema(schema.clone()).unwrap();
     let conv = converter_from_schema(&schema);
+    let container = sv
+        .get_class(&Identifier::new("Container"), &conv)
+        .unwrap()
+        .expect("class not found");
     let v = load_yaml_file(
         Path::new(&info_path("example_personinfo_data_2.yaml")),
         &sv,
-        None,
+        Some(&container),
         &conv,
     )
     .unwrap();

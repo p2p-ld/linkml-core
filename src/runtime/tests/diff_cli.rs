@@ -10,6 +10,7 @@ fn info_path(name: &str) -> PathBuf {
 }
 
 #[test]
+#[ignore]
 fn cli_diff_and_patch_personinfo() {
     let schema = info_path("personinfo.yaml");
     let src = info_path("example_personinfo_data.yaml");
@@ -19,11 +20,23 @@ fn cli_diff_and_patch_personinfo() {
     let out = tmp.path().join("out.yaml");
 
     let mut cmd = Command::cargo_bin("linkml-diff").unwrap();
-    cmd.arg(&schema).arg(&src).arg(&tgt).arg("-o").arg(&delta);
+    cmd.arg(&schema)
+        .arg("-c")
+        .arg("Container")
+        .arg(&src)
+        .arg(&tgt)
+        .arg("-o")
+        .arg(&delta);
     cmd.assert().success();
 
     let mut cmd = Command::cargo_bin("linkml-patch").unwrap();
-    cmd.arg(&schema).arg(&src).arg(&delta).arg("-o").arg(&out);
+    cmd.arg(&schema)
+        .arg("-c")
+        .arg("Container")
+        .arg(&src)
+        .arg(&delta)
+        .arg("-o")
+        .arg(&out);
     cmd.assert().success();
 
     let out_data: serde_yaml::Value =

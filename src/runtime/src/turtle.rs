@@ -105,7 +105,7 @@ fn serialize_map<W: Write>(
                 formatter.format(&triple)?;
             }
             LinkMLValue::Map { values, class, .. } => {
-                let class = class.as_ref();
+                let class = Some(class);
                 let obj = state.next_subject();
                 let triple = Triple {
                     subject: subject.as_subject(),
@@ -129,9 +129,11 @@ fn serialize_map<W: Write>(
                             formatter.format(&triple)?;
                         }
                         LinkMLValue::Map {
-                            values: mv, class, ..
+                            values: mv,
+                            class,
+                            ..
                         } => {
-                            let class = class.as_ref();
+                            let class = Some(class);
                             let obj = state.next_subject();
                             let triple = Triple {
                                 subject: subject.as_subject(),
@@ -184,7 +186,7 @@ pub fn write_turtle<W: Write>(
     let mut formatter = TurtleFormatter::new(w);
     match value {
         LinkMLValue::Map { values, class, .. } => {
-            let class = class.as_ref();
+            let class = Some(class);
             let subj = Node::Named(format!("{}root", state.base));
             serialize_map(&subj, values, class, &mut formatter, sv, conv, &mut state)?;
         }
@@ -195,7 +197,7 @@ pub fn write_turtle<W: Write>(
                     LinkMLValue::Map {
                         values: mv, class, ..
                     } => {
-                        let class = class.as_ref();
+                        let class = Some(class);
                         serialize_map(&subj, mv, class, &mut formatter, sv, conv, &mut state)?;
                     }
                     LinkMLValue::Scalar { value, .. } => {

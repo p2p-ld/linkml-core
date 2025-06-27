@@ -47,7 +47,6 @@ fn validate_person_fail() {
         &sv,
         Some(&class),
         &conv,
-    )
-    .unwrap();
-    assert!(validate(&v).is_err());
+    );
+    assert!(v.is_err());
 }

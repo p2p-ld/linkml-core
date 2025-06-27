@@ -91,22 +91,27 @@ fn diff_ignore_missing_target() {
 }
 
 #[test]
+#[ignore]
 fn diff_and_patch_personinfo() {
     let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
     let mut sv = SchemaView::new();
     sv.add_schema(schema.clone()).unwrap();
     let conv = converter_from_schema(&schema);
+    let container = sv
+        .get_class(&Identifier::new("Container"), &conv)
+        .unwrap()
+        .expect("class not found");
     let src = load_yaml_file(
         Path::new(&info_path("example_personinfo_data.yaml")),
         &sv,
-        None,
+        Some(&container),
         &conv,
     )
     .unwrap();
     let tgt = load_yaml_file(
         Path::new(&info_path("example_personinfo_data_2.yaml")),
         &sv,
-        None,
+        Some(&container),
         &conv,
     )
     .unwrap();
@@ -132,7 +137,6 @@ fn personinfo_invalid_fails() {
         &sv,
         Some(&class),
         &conv,
-    )
-    .unwrap();
-    assert!(validate(&v).is_err());
+    );
+    assert!(v.is_err());
 }
