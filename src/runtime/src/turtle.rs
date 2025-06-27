@@ -3,9 +3,11 @@ use linkml_meta::SchemaDefinition;
 
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::schemaview::{ClassView, SchemaView};
+use linkml_schemaview::slotview::{SlotInlineMode, SlotView};
 use serde_json::Value as JsonValue;
 use std::io::{Result as IoResult, Write};
 
+use regex::Regex;
 use rio_api::formatter::TriplesFormatter;
 use rio_api::model::{BlankNode, Literal, NamedNode, Subject, Term, Triple};
 use rio_turtle::TurtleFormatter;
@@ -64,6 +66,16 @@ fn literal_value(v: &JsonValue) -> String {
     }
 }
 
+fn literal_and_type(value: &JsonValue, slot: &SlotView) -> (String, Option<String>) {
+    let lit = literal_value(value);
+    let dt = match slot.definition().range.as_deref() {
+        Some("date") => Some("http://www.w3.org/2001/XMLSchema#date".to_string()),
+        Some("datetime") => Some("http://www.w3.org/2001/XMLSchema#dateTime".to_string()),
+        _ => None,
+    };
+    (lit, dt)
+}
+
 fn identifier_node(
     map: &std::collections::HashMap<String, LinkMLValue>,
     class: &ClassView,
@@ -118,15 +130,43 @@ fn serialize_map<W: Write>(
         let pred_iri = format!("{}:{}", state.default_prefix, k);
         let predicate = NamedNode { iri: &pred_iri };
         match v {
-            LinkMLValue::Scalar { value, .. } => {
-                let lit = literal_value(value);
-                let object = Term::Literal(Literal::Simple { value: &lit });
-                let triple = Triple {
-                    subject: subject.as_subject(),
-                    predicate,
-                    object,
-                };
-                formatter.format(&triple)?;
+            LinkMLValue::Scalar { value, slot, .. } => {
+                let inline_mode = slot.determine_slot_inline_mode(sv);
+                if inline_mode == SlotInlineMode::Reference {
+                    let lit = literal_value(value);
+                    let iri = Identifier::new(&lit)
+                        .to_uri(conv)
+                        .map(|u| u.0)
+                        .unwrap_or(lit);
+                    let triple = Triple {
+                        subject: subject.as_subject(),
+                        predicate,
+                        object: Term::NamedNode(NamedNode { iri: &iri }),
+                    };
+                    formatter.format(&triple)?;
+                } else {
+                    let (lit, dt_opt) = literal_and_type(value, slot);
+                    if let Some(dt) = dt_opt {
+                        let object = Term::Literal(Literal::Typed {
+                            value: &lit,
+                            datatype: NamedNode { iri: &dt },
+                        });
+                        let triple = Triple {
+                            subject: subject.as_subject(),
+                            predicate,
+                            object,
+                        };
+                        formatter.format(&triple)?;
+                    } else {
+                        let object = Term::Literal(Literal::Simple { value: &lit });
+                        let triple = Triple {
+                            subject: subject.as_subject(),
+                            predicate,
+                            object,
+                        };
+                        formatter.format(&triple)?;
+                    }
+                }
             }
             LinkMLValue::Map { values, class, .. } => {
                 let class_ref = &class;
@@ -148,18 +188,46 @@ fn serialize_map<W: Write>(
                     child_id.as_deref(),
                 )?;
             }
-            LinkMLValue::List { values, .. } => {
+            LinkMLValue::List { values, slot, .. } => {
                 for item in values {
                     match item {
                         LinkMLValue::Scalar { value, .. } => {
-                            let lit = literal_value(value);
-                            let object = Term::Literal(Literal::Simple { value: &lit });
-                            let triple = Triple {
-                                subject: subject.as_subject(),
-                                predicate,
-                                object,
-                            };
-                            formatter.format(&triple)?;
+                            let inline_mode = slot.determine_slot_inline_mode(sv);
+                            if inline_mode == SlotInlineMode::Reference {
+                                let lit = literal_value(value);
+                                let iri = Identifier::new(&lit)
+                                    .to_uri(conv)
+                                    .map(|u| u.0)
+                                    .unwrap_or(lit);
+                                let triple = Triple {
+                                    subject: subject.as_subject(),
+                                    predicate,
+                                    object: Term::NamedNode(NamedNode { iri: &iri }),
+                                };
+                                formatter.format(&triple)?;
+                            } else {
+                                let (lit, dt_opt) = literal_and_type(value, slot);
+                                if let Some(dt) = dt_opt {
+                                    let object = Term::Literal(Literal::Typed {
+                                        value: &lit,
+                                        datatype: NamedNode { iri: &dt },
+                                    });
+                                    let triple = Triple {
+                                        subject: subject.as_subject(),
+                                        predicate,
+                                        object,
+                                    };
+                                    formatter.format(&triple)?;
+                                } else {
+                                    let object = Term::Literal(Literal::Simple { value: &lit });
+                                    let triple = Triple {
+                                        subject: subject.as_subject(),
+                                        predicate,
+                                        object,
+                                    };
+                                    formatter.format(&triple)?;
+                                }
+                            }
                         }
                         LinkMLValue::Map {
                             values: mv, class, ..
@@ -200,14 +268,15 @@ pub fn write_turtle<W: Write>(
     w: &mut W,
     options: TurtleOptions,
 ) -> IoResult<()> {
+    let mut header = String::new();
     for (pfx, pref) in &schema.prefixes {
-        writeln!(w, "@prefix {}: <{}> .", pfx, pref.prefix_reference)?;
+        header.push_str(&format!("@prefix {}: <{}> .\n", pfx, pref.prefix_reference));
     }
-    writeln!(
-        w,
-        "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ."
-    )?;
-    writeln!(w)?;
+    header.push_str("@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n");
+    if !schema.prefixes.contains_key("xsd") {
+        header.push_str("@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n");
+    }
+    header.push_str("\n");
     let base = schema.id.trim_end_matches('#').to_string();
     let mut state = State {
         counter: 0,
@@ -223,7 +292,8 @@ pub fn write_turtle<W: Write>(
             .unwrap_or(&schema.name)
             .to_string(),
     };
-    let mut formatter = TurtleFormatter::new(w);
+    let mut buf = Vec::new();
+    let mut formatter = TurtleFormatter::new(&mut buf);
     match value {
         LinkMLValue::Map { values, class, .. } => {
             let cv = &class;
@@ -273,16 +343,32 @@ pub fn write_turtle<W: Write>(
                             None,
                         )?;
                     }
-                    LinkMLValue::Scalar { value, .. } => {
-                        let lit = literal_value(value);
-                        let triple = Triple {
-                            subject: subj.as_subject(),
-                            predicate: NamedNode {
-                                iri: "http://www.w3.org/1999/02/22-rdf-syntax-ns#value",
-                            },
-                            object: Term::Literal(Literal::Simple { value: &lit }),
-                        };
-                        formatter.format(&triple)?;
+                    LinkMLValue::Scalar { value, slot, .. } => {
+                        let (lit, dt_opt) = literal_and_type(value, slot);
+                        if let Some(dt) = dt_opt {
+                            let object = Term::Literal(Literal::Typed {
+                                value: &lit,
+                                datatype: NamedNode { iri: &dt },
+                            });
+                            let triple = Triple {
+                                subject: subj.as_subject(),
+                                predicate: NamedNode {
+                                    iri: "http://www.w3.org/1999/02/22-rdf-syntax-ns#value",
+                                },
+                                object,
+                            };
+                            formatter.format(&triple)?;
+                        } else {
+                            let object = Term::Literal(Literal::Simple { value: &lit });
+                            let triple = Triple {
+                                subject: subj.as_subject(),
+                                predicate: NamedNode {
+                                    iri: "http://www.w3.org/1999/02/22-rdf-syntax-ns#value",
+                                },
+                                object,
+                            };
+                            formatter.format(&triple)?;
+                        }
                     }
                     LinkMLValue::List { .. } => {}
                 }
@@ -291,6 +377,22 @@ pub fn write_turtle<W: Write>(
         LinkMLValue::Scalar { .. } => {}
     }
     formatter.finish()?;
+    let mut out = String::from_utf8(buf).unwrap_or_default();
+    let iri_re = Regex::new(r"<([^>]+)>").unwrap();
+    out = iri_re
+        .replace_all(&out, |caps: &regex::Captures| {
+            let iri = &caps[1];
+            if iri == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" {
+                "a".to_string()
+            } else if let Ok(curie) = conv.compress(iri) {
+                curie
+            } else {
+                caps[0].to_string()
+            }
+        })
+        .to_string();
+    w.write_all(header.as_bytes())?;
+    w.write_all(out.as_bytes())?;
     Ok(())
 }
 

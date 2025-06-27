@@ -925,6 +925,7 @@ dependencies = [
  "linkml_meta",
  "predicates 2.1.5",
  "pyo3",
+ "regex",
  "rio_api",
  "rio_turtle",
  "schemaview",
