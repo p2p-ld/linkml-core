@@ -126,6 +126,7 @@ impl<'a> LinkMLValue<'a> {
                 sv,
                 conv,
                 false,
+                false,
             ) {
                 if validate(&tmp).is_ok() {
                     return (*c).clone();
@@ -142,21 +143,23 @@ impl<'a> LinkMLValue<'a> {
         sv: &'a SchemaView,
         conv: &Converter,
         polymorphic: bool,
+        inside_list: bool,
     ) -> LResult<Self> {
         if let Some(ref sl) = slot {
             let container_mode = sl.determine_slot_container_mode(sv);
             match container_mode {
-                SlotContainerMode::List => match value {
-                    JsonValue::Array(arr) => {
+                SlotContainerMode::List => match (inside_list, value) {
+                    (false, JsonValue::Array(arr)) => {
                         let mut values = Vec::new();
                         let class_range = sl.get_class_range(sv);
                         for v in arr.into_iter() {
                             values.push(LinkMLValue::from_json(
                                 v,
                                 class_range.clone(),
-                                None,
+                                slot.clone(),
                                 sv,
                                 conv,
+                                true,
                                 true,
                             )?);
                         }
@@ -167,11 +170,19 @@ impl<'a> LinkMLValue<'a> {
                             sv,
                         });
                     }
-                    other => {
+                    (false, other) => {
                         return Err(LinkMLError(format!(
                             "expected list for slot `{}`, found {:?}",
                             sl.name, other
                         )));
+                    }
+                    (true, other) => {
+                        return Ok(LinkMLValue::Scalar {
+                            value: other,
+                            slot: sl.clone(),
+                            class: class.clone(),
+                            sv,
+                        });
                     }
                 },
                 SlotContainerMode::Mapping => match value {
@@ -215,7 +226,7 @@ impl<'a> LinkMLValue<'a> {
                                     )
                                     .ok_or_else(|| {
                                         LinkMLError(
-                                            "no scalar slot available for inlined mapping".to_string(),
+                                            format!("no scalar slot available for inlined mapping"),
                                         )
                                     })?;
                                     let mut tmp = serde_json::Map::new();
@@ -235,7 +246,7 @@ impl<'a> LinkMLValue<'a> {
                                     chosen.slots().iter().find(|s| s.name == ck).cloned();
                                 child_values.insert(
                                     ck,
-                                    LinkMLValue::from_json(cv, None, slot_tmp, sv, conv, true)?,
+                                    LinkMLValue::from_json(cv, None, slot_tmp, sv, conv, true, false)?,
                                 );
                             }
                             values.push(LinkMLValue::Map {
@@ -267,7 +278,7 @@ impl<'a> LinkMLValue<'a> {
                 let sl = slot.ok_or_else(|| LinkMLError("list requires slot".to_string()))?;
                 let mut values = Vec::new();
                 for v in arr.into_iter() {
-                    values.push(LinkMLValue::from_json(v, None, None, sv, conv, true)?);
+                    values.push(LinkMLValue::from_json(v, None, None, sv, conv, true, false)?);
                 }
                 return Ok(LinkMLValue::List {
                     values,
@@ -284,7 +295,7 @@ impl<'a> LinkMLValue<'a> {
                             let slot_ref = cls.slots().iter().find(|s| s.name == k).cloned();
                             values.insert(
                                 k,
-                                LinkMLValue::from_json(v, None, slot_ref, sv, conv, true)?,
+                                LinkMLValue::from_json(v, None, slot_ref, sv, conv, true, false)?,
                             );
                         }
                         return Ok(LinkMLValue::Map {
@@ -319,7 +330,7 @@ impl<'a> LinkMLValue<'a> {
                         .cloned();
                     values.insert(
                         k,
-                        LinkMLValue::from_json(v, None, slot_tmp, sv, conv, true)?,
+                        LinkMLValue::from_json(v, None, slot_tmp, sv, conv, true, false)?,
                     );
                 }
                 return Ok(LinkMLValue::Map {
@@ -329,7 +340,7 @@ impl<'a> LinkMLValue<'a> {
                 });
             }
             other => {
-                let sl = slot.ok_or_else(|| LinkMLError("scalar requires slot".to_string()))?;
+                let sl = slot.ok_or_else(|| LinkMLError(format!("scalar requires slot {}", class.clone().map(|c| c.name().to_owned()).unwrap_or("null".to_owned()) )))?;
                 return Ok(LinkMLValue::Scalar {
                     value: other,
                     slot: sl,
@@ -359,7 +370,7 @@ pub fn load_yaml_str<'a>(
 ) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let value: serde_yaml::Value = serde_yaml::from_str(data)?;
     let json = serde_json::to_value(value)?;
-    LinkMLValue::from_json(json, class.cloned(), None, sv, conv, true)
+    LinkMLValue::from_json(json, class.cloned(), None, sv, conv, true, false)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
@@ -380,7 +391,7 @@ pub fn load_json_str<'a>(
     conv: &Converter,
 ) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let value: JsonValue = serde_json::from_str(data)?;
-    LinkMLValue::from_json(value, class.cloned(), None, sv, conv, true)
+    LinkMLValue::from_json(value, class.cloned(), None, sv, conv, true, false)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
