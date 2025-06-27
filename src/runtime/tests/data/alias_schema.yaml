@@ -1,0 +1,25 @@
+id: https://example.com/alias
+name: alias
+prefixes:
+  ex: https://example.com/alias/
+default_prefix: ex
+classes:
+  AltDescription:
+    slots:
+      - alt_description_text
+      - alt_description_source
+  Container:
+    slots:
+      - description
+slots:
+  alt_description_text:
+    alias: description
+    domain: AltDescription
+    range: string
+  alt_description_source:
+    alias: source
+    domain: AltDescription
+    range: string
+  description:
+    range: AltDescription
+    inlined: true

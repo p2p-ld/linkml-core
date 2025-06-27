@@ -45,6 +45,18 @@ fn alt_names(name: &str) -> Vec<String> {
     v
 }
 
+fn slot_matches_key(slot: &SlotView, key: &str) -> bool {
+    if slot.name == key || alt_names(key).iter().any(|a| slot.name == *a) {
+        return true;
+    }
+    if let Some(alias) = &slot.definition().alias {
+        if alias == key || alt_names(key).iter().any(|a| alias == a) {
+            return true;
+        }
+    }
+    false
+}
+
 pub enum LinkMLValue<'a> {
     Scalar {
         value: JsonValue,
@@ -273,12 +285,16 @@ impl<'a> LinkMLValue<'a> {
                         let slot_tmp = chosen
                             .slots()
                             .iter()
-                            .find(|s| s.name == ck || alt_names(&ck).iter().any(|a| s.name == *a))
+                        .find(|s| slot_matches_key(s, &ck))
                             .cloned();
                         let mut p = path.clone();
                         p.push(format!("{}:{}", k, ck));
+                        let key_name = slot_tmp
+                            .as_ref()
+                            .map(|s| s.name.clone())
+                            .unwrap_or_else(|| ck.clone());
                         child_values.insert(
-                            ck,
+                            key_name,
                             Self::from_json_internal(cv, None, slot_tmp, sv, conv, true, false, p)?,
                         );
                     }
@@ -346,12 +362,16 @@ impl<'a> LinkMLValue<'a> {
                     let slot_ref = cls
                         .slots()
                         .iter()
-                        .find(|s| s.name == k || alt_names(&k).iter().any(|a| s.name == *a))
+                        .find(|s| slot_matches_key(s, &k))
                         .cloned();
                     let mut p = path.clone();
                     p.push(k.clone());
+                    let key_name = slot_ref
+                        .as_ref()
+                        .map(|s| s.name.clone())
+                        .unwrap_or_else(|| k.clone());
                     values.insert(
-                        k,
+                        key_name,
                         Self::from_json_internal(v, None, slot_ref, sv, conv, true, false, p)?,
                     );
                 }
@@ -385,13 +405,17 @@ impl<'a> LinkMLValue<'a> {
                 .and_then(|cv| {
                     cv.slots()
                         .iter()
-                        .find(|s| s.name == k || alt_names(&k).iter().any(|a| s.name == *a))
+                        .find(|s| slot_matches_key(s, &k))
                 })
                 .cloned();
             let mut p = path.clone();
             p.push(k.clone());
+            let key_name = slot_tmp
+                .as_ref()
+                .map(|s| s.name.clone())
+                .unwrap_or_else(|| k.clone());
             values.insert(
-                k,
+                key_name,
                 Self::from_json_internal(v, None, slot_tmp, sv, conv, true, false, p)?,
             );
         }
