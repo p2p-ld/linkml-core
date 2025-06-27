@@ -6,11 +6,11 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
+pub mod diff;
 #[cfg(feature = "python")]
 pub mod python;
-pub mod diff;
 pub mod turtle;
-pub use diff::{Delta, diff, patch};
+pub use diff::{diff, patch, Delta};
 #[cfg(feature = "python")]
 pub use python::*;
 pub enum LinkMLValue<'a> {
@@ -104,7 +104,7 @@ impl<'a> LinkMLValue<'a> {
             JsonValue::Array(arr) => {
                 let values = arr
                     .into_iter()
-                    .map(|v| LinkMLValue::from_json(v, None, None, sv, conv, true))
+                    .map(|v| LinkMLValue::from_json(v, None, slot.clone(), sv, conv, true))
                     .collect();
                 LinkMLValue::List { values, slot, sv }
             }
@@ -220,7 +220,7 @@ fn validate_inner<'a>(value: &LinkMLValue<'a>) -> Result<(), String> {
             if let Some(cv) = class.as_ref() {
                 for (k, v) in values {
                     if cv.slots().iter().all(|s| s.name != *k) {
-                        return Err(format!("unknown slot `{}`", k));
+                        return Err(format!("unknown slot `{}` for class `{}`", k, cv.name()));
                     }
                     validate_inner(v)?;
                 }
@@ -250,7 +250,7 @@ fn validate_collect<'a>(value: &LinkMLValue<'a>, errors: &mut Vec<String>) {
             if let Some(cv) = class.as_ref() {
                 for (k, v) in values {
                     if cv.slots().iter().all(|s| s.name != *k) {
-                        errors.push(format!("unknown slot `{}`", k));
+                        errors.push(format!("unknown slot `{}` for class `{}`", k, cv.name()));
                     }
                     validate_collect(v, errors);
                 }

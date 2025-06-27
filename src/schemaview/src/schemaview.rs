@@ -28,6 +28,31 @@ impl SchemaView {
         }
     }
 
+    pub fn get_tree_root_or(&self, class_name: Option<&str>) -> Option<ClassView<'_>> {
+        let converter = self.converter_for_primary_schema()?;
+        // if there is a class_name then its simple!
+        if let Some(name) = class_name {
+            if let Ok(Some(cv)) = self.get_class(&Identifier::new(name), &converter) {
+                return Some(cv);
+            }
+        } else {
+            // find a class with tree_root set to true in the primary schema
+            if let Some(primary) = &self.primary_schema {
+                if let Some(schema) = self.schema_definitions.get(primary) {
+                    for (name, class_def) in &schema.classes {
+                        if class_def.tree_root.is_some_and(|x| x == true) {
+                            if let Ok(Some(cv)) = self.get_class(&Identifier::new(name), &converter) {
+                                return Some(cv);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return None;
+        // only search in the primary schema for a class having an attribute `tree_root`
+    }
+
     pub fn add_schema(&mut self, schema: SchemaDefinition) -> Result<(), String> {
         let schema_uri = schema.id.clone();
         let conv = converter_from_schema(&schema);
@@ -59,6 +84,12 @@ impl SchemaView {
         self.schema_definitions
             .get(schema_uri)
             .map(|s| converter_from_schema(s))
+    }
+
+    pub fn converter_for_primary_schema(&self) -> Option<Converter> {
+        self.primary_schema
+            .as_ref()
+            .and_then(|uri| self.converter_for_schema(uri))
     }
 
     pub fn get_class_definition<'a>(

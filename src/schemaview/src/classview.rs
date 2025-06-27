@@ -16,6 +16,9 @@ pub struct ClassView<'a> {
 }
 
 impl<'a> ClassView<'a> {
+    pub fn name(&self) -> &str {
+        &self.class.name
+    }
     pub fn new(
         class: &'a ClassDefinition,
         sv: &'a SchemaView,

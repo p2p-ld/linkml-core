@@ -42,32 +42,6 @@ fn load_value<'a>(
     }
 }
 
-fn choose_class<'a>(
-    sv: &'a SchemaView,
-    schema: &'a linkml_meta::SchemaDefinition,
-    class_name: &Option<String>,
-    conv: &curies::Converter,
-) -> Result<Option<ClassView<'a>>, Box<dyn std::error::Error>> {
-    if let Some(n) = class_name {
-        Ok(Some(
-            sv.get_class(&Identifier::new(n), conv)
-                .map_err(|e| format!("{:?}", e))?
-                .ok_or("class not found")?,
-        ))
-    } else {
-        for (name, def) in &schema.classes {
-            if def.tree_root.unwrap_or(false) {
-                return Ok(Some(
-                    sv.get_class(&Identifier::new(name), conv)
-                        .map_err(|e| format!("{:?}", e))?
-                        .ok_or("class not found")?,
-                ));
-            }
-        }
-        Ok(None)
-    }
-}
-
 fn write_value(
     path: Option<&Path>,
     value: &linkml_runtime::LinkMLValue,
@@ -98,7 +72,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
     resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
     let conv = sv.converter();
-    let class_view = choose_class(&sv, &schema, &args.class, &conv)?;
+    let class_view = sv.get_tree_root_or(args.class.as_deref());
 
     let src = load_value(&args.source, &sv, class_view.as_ref(), &conv)?;
     let delta_text = std::fs::read_to_string(&args.delta)?;

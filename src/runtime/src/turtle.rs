@@ -84,6 +84,11 @@ fn serialize_map<W: Write>(
             };
             formatter.format(&triple)?;
         }
+    } else {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "Class view is required for serialization",
+        ));
     }
     for (k, v) in map {
         let pred_iri = format!("{}:{}", state.default_prefix, k);

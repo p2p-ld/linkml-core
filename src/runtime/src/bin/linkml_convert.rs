@@ -35,15 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
     resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
     let conv = sv.converter();
-    let class_view = if let Some(cls_name) = &args.class {
-        Some(
-            sv.get_class(&Identifier::new(cls_name), &conv)
-                .map_err(|e| format!("{e:?}"))?
-                .ok_or("class not found")?,
-        )
-    } else {
-        None
-    };
+    let class_view = sv.get_tree_root_or(args.class.as_deref());
     let data_path = &args.data;
     let value = if let Some(ext) = data_path.extension() {
         if ext == "json" {
