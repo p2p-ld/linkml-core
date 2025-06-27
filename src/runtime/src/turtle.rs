@@ -1,6 +1,7 @@
 use curies::Converter;
 use linkml_meta::SchemaDefinition;
 
+use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::schemaview::{ClassView, SchemaView};
 use serde_json::Value as JsonValue;
 use std::io::{Result as IoResult, Write};
@@ -63,6 +64,25 @@ fn literal_value(v: &JsonValue) -> String {
     }
 }
 
+fn identifier_node(
+    map: &std::collections::HashMap<String, LinkMLValue>,
+    class: &ClassView,
+    conv: &Converter,
+    state: &mut State,
+) -> (Node, Option<String>) {
+    if let Some(id_slot) = class.identifier_slot() {
+        if let Some(LinkMLValue::Scalar { value, .. }) = map.get(&id_slot.name) {
+            let lit = literal_value(value);
+            if let Ok(iri) = Identifier::new(&lit).to_uri(conv) {
+                return (Node::Named(iri.0), Some(id_slot.name.clone()));
+            } else {
+                return (Node::Named(lit), Some(id_slot.name.clone()));
+            }
+        }
+    }
+    (state.next_subject(), None)
+}
+
 fn serialize_map<W: Write>(
     subject: &Node,
     map: &std::collections::HashMap<String, LinkMLValue>,
@@ -71,6 +91,7 @@ fn serialize_map<W: Write>(
     sv: &SchemaView,
     conv: &Converter,
     state: &mut State,
+    id_slot: Option<&str>,
 ) -> IoResult<()> {
     if let Some(cv) = class {
         if let Ok(id) = cv.get_uri(conv, false, true) {
@@ -91,6 +112,9 @@ fn serialize_map<W: Write>(
         ));
     }
     for (k, v) in map {
+        if id_slot.map(|s| s == k.as_str()).unwrap_or(false) {
+            continue;
+        }
         let pred_iri = format!("{}:{}", state.default_prefix, k);
         let predicate = NamedNode { iri: &pred_iri };
         match v {
@@ -105,15 +129,24 @@ fn serialize_map<W: Write>(
                 formatter.format(&triple)?;
             }
             LinkMLValue::Map { values, class, .. } => {
-                let class = Some(class);
-                let obj = state.next_subject();
+                let class_ref = &class;
+                let (obj, child_id) = identifier_node(values, class_ref, conv, state);
                 let triple = Triple {
                     subject: subject.as_subject(),
                     predicate,
                     object: obj.as_term(),
                 };
                 formatter.format(&triple)?;
-                serialize_map(&obj, values, class, formatter, sv, conv, state)?;
+                serialize_map(
+                    &obj,
+                    values,
+                    Some(class_ref),
+                    formatter,
+                    sv,
+                    conv,
+                    state,
+                    child_id.as_deref(),
+                )?;
             }
             LinkMLValue::List { values, .. } => {
                 for item in values {
@@ -129,19 +162,26 @@ fn serialize_map<W: Write>(
                             formatter.format(&triple)?;
                         }
                         LinkMLValue::Map {
-                            values: mv,
-                            class,
-                            ..
+                            values: mv, class, ..
                         } => {
-                            let class = Some(class);
-                            let obj = state.next_subject();
+                            let class_ref = &class;
+                            let (obj, child_id) = identifier_node(mv, class_ref, conv, state);
                             let triple = Triple {
                                 subject: subject.as_subject(),
                                 predicate,
                                 object: obj.as_term(),
                             };
                             formatter.format(&triple)?;
-                            serialize_map(&obj, mv, class, formatter, sv, conv, state)?;
+                            serialize_map(
+                                &obj,
+                                mv,
+                                Some(class_ref),
+                                formatter,
+                                sv,
+                                conv,
+                                state,
+                                child_id.as_deref(),
+                            )?;
                         }
                         LinkMLValue::List { .. } => {}
                     }
@@ -186,9 +226,33 @@ pub fn write_turtle<W: Write>(
     let mut formatter = TurtleFormatter::new(w);
     match value {
         LinkMLValue::Map { values, class, .. } => {
-            let class = Some(class);
-            let subj = Node::Named(format!("{}root", state.base));
-            serialize_map(&subj, values, class, &mut formatter, sv, conv, &mut state)?;
+            let cv = &class;
+            let mut id_slot_name = None;
+            let subj = if let Some(id_slot) = cv.identifier_slot() {
+                if let Some(LinkMLValue::Scalar { value, .. }) = values.get(&id_slot.name) {
+                    let lit = literal_value(value);
+                    let iri = Identifier::new(&lit)
+                        .to_uri(conv)
+                        .map(|u| u.0)
+                        .unwrap_or(lit);
+                    id_slot_name = Some(id_slot.name.clone());
+                    Node::Named(iri)
+                } else {
+                    Node::Named(format!("{}root", state.base))
+                }
+            } else {
+                Node::Named(format!("{}root", state.base))
+            };
+            serialize_map(
+                &subj,
+                values,
+                Some(cv),
+                &mut formatter,
+                sv,
+                conv,
+                &mut state,
+                id_slot_name.as_deref(),
+            )?;
         }
         LinkMLValue::List { values, .. } => {
             for item in values {
@@ -198,7 +262,16 @@ pub fn write_turtle<W: Write>(
                         values: mv, class, ..
                     } => {
                         let class = Some(class);
-                        serialize_map(&subj, mv, class, &mut formatter, sv, conv, &mut state)?;
+                        serialize_map(
+                            &subj,
+                            mv,
+                            class,
+                            &mut formatter,
+                            sv,
+                            conv,
+                            &mut state,
+                            None,
+                        )?;
                     }
                     LinkMLValue::Scalar { value, .. } => {
                         let lit = literal_value(value);
