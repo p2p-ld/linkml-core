@@ -1,6 +1,6 @@
 use linkml_schemaview::io::from_yaml;
-use linkml_schemaview::schemaview::SchemaView;
 use linkml_schemaview::resolve::resolve_schemas;
+use linkml_schemaview::schemaview::SchemaView;
 use std::path::{Path, PathBuf};
 
 fn data_path(name: &str) -> PathBuf {

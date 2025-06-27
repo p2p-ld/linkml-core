@@ -262,7 +262,11 @@ impl LinkMLValueOwned {
     }
 
     fn to_linkml<'a>(&self, sv: &'a SchemaView) -> LinkMLValue<'a> {
-        fn inner<'a>(v: &LinkMLValueOwned, sv: &'a SchemaView, conv: &Converter) -> LinkMLValue<'a> {
+        fn inner<'a>(
+            v: &LinkMLValueOwned,
+            sv: &'a SchemaView,
+            conv: &Converter,
+        ) -> LinkMLValue<'a> {
             match v {
                 LinkMLValueOwned::Scalar { value, slot } => {
                     let slot_view = slot
@@ -303,7 +307,6 @@ impl LinkMLValueOwned {
         inner(self, sv, &conv)
     }
 }
-
 
 #[pyclass(name = "LinkMLValue")]
 pub struct PyLinkMLValue {

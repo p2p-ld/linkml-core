@@ -42,7 +42,6 @@ fn load_value<'a>(
     }
 }
 
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let schema = from_yaml(&args.schema)?;

@@ -147,7 +147,9 @@ impl<'a> ClassView<'a> {
             match Identifier::new(&base) {
                 Identifier::Curie(c) => Ok(Identifier::Curie(c)),
                 Identifier::Uri(_) => Ok(Identifier::Curie(Identifier::new(&base).to_curie(conv)?)),
-                Identifier::Name(_) => Ok(Identifier::Curie(Identifier::new(&base).to_curie(conv)?)),
+                Identifier::Name(_) => {
+                    Ok(Identifier::Curie(Identifier::new(&base).to_curie(conv)?))
+                }
             }
         }
     }
@@ -207,9 +209,7 @@ impl<'a> ClassView<'a> {
         for schema in self.sv.schema_definitions.values() {
             for (cls_name, cls_def) in &schema.classes {
                 if let Some(parent) = &cls_def.is_a {
-                    if let Some(parent_cv) =
-                        self.sv.get_class(&Identifier::new(parent), conv)?
-                    {
+                    if let Some(parent_cv) = self.sv.get_class(&Identifier::new(parent), conv)? {
                         if parent_cv.class.name == self.class.name
                             && parent_cv.schema_uri == self.schema_uri
                         {
@@ -242,7 +242,7 @@ impl<'a> ClassView<'a> {
 
     pub fn key_or_identifier_slot(&'a self) -> Option<&'a SlotView<'a>> {
         self.slots.iter().find(|s| {
-            let d = s.merged_definition();
+            let d = s.definition();
             d.identifier.unwrap_or(false) || d.key.unwrap_or(false)
         })
     }
@@ -250,7 +250,6 @@ impl<'a> ClassView<'a> {
     pub fn identifier_slot(&'a self) -> Option<&'a SlotView<'a>> {
         self.slots
             .iter()
-            .find(|s| s.merged_definition().identifier.unwrap_or(false))
+            .find(|s| s.definition().identifier.unwrap_or(false))
     }
 }
-

@@ -179,7 +179,7 @@ impl From<Identifier> for String {
     }
 }
 
-fn add_missing_prefix(prefix: &str, uri: &str, conv: &mut Converter)  {
+fn add_missing_prefix(prefix: &str, uri: &str, conv: &mut Converter) {
     if conv.find_by_prefix(prefix).is_err() {
         conv.add_prefix(prefix, uri).unwrap();
     }
@@ -213,7 +213,11 @@ where
         let _ = conv.add_record(record);
     }
     add_missing_prefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#", &mut conv);
-    add_missing_prefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#", &mut conv);
+    add_missing_prefix(
+        "rdf",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        &mut conv,
+    );
     add_missing_prefix("dcterms", "http://purl.org/dc/terms/", &mut conv);
 
     conv

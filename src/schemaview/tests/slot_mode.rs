@@ -54,11 +54,7 @@ fn test_slot_modes() {
         .get_class(&Identifier::new("Person"), &conv)
         .unwrap()
         .unwrap();
-    let name_slot = person
-        .slots()
-        .iter()
-        .find(|s| s.name == "name")
-        .unwrap();
+    let name_slot = person.slots().iter().find(|s| s.name == "name").unwrap();
     assert_eq!(
         name_slot.determine_slot_container_mode(&sv, &conv),
         SlotContainerMode::SingleValue
@@ -72,11 +68,7 @@ fn test_slot_modes() {
         .get_class(&Identifier::new("Holder"), &conv)
         .unwrap()
         .unwrap();
-    let exts_slot = holder
-        .slots()
-        .iter()
-        .find(|s| s.name == "exts")
-        .unwrap();
+    let exts_slot = holder.slots().iter().find(|s| s.name == "exts").unwrap();
     assert_eq!(
         exts_slot.determine_slot_container_mode(&sv, &conv),
         SlotContainerMode::Mapping
@@ -86,4 +78,3 @@ fn test_slot_modes() {
         SlotInlineMode::Inline
     );
 }
-

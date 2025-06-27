@@ -41,7 +41,8 @@ impl SchemaView {
                 if let Some(schema) = self.schema_definitions.get(primary) {
                     for (name, class_def) in &schema.classes {
                         if class_def.tree_root.is_some_and(|x| x == true) {
-                            if let Ok(Some(cv)) = self.get_class(&Identifier::new(name), &converter) {
+                            if let Ok(Some(cv)) = self.get_class(&Identifier::new(name), &converter)
+                            {
                                 return Some(cv);
                             }
                         }

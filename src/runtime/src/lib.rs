@@ -48,12 +48,11 @@ impl<'a> LinkMLValue<'a> {
         }
 
         let mut preferred: Option<&ClassView<'a>> = None;
-        if let Some(ts) = base.slots().iter().find(|s| {
-            s.definitions
-                .iter()
-                .rev()
-                .any(|d| d.designates_type.unwrap_or(false))
-        }) {
+        if let Some(ts) = base
+            .slots()
+            .iter()
+            .find(|s| s.definition().designates_type.unwrap_or(false))
+        {
             if let Some(JsonValue::String(tv)) = map.get(&ts.name) {
                 if let Some(def) = ts
                     .definitions

@@ -36,10 +36,7 @@ fn cross_schema_is_a() {
 
     let parent = era_geom_curie.parent_class().unwrap().unwrap();
     assert_eq!(
-        parent
-            .get_uri(&conv, false, false)
-            .unwrap()
-            .to_string(),
+        parent.get_uri(&conv, false, false).unwrap().to_string(),
         "geo:Geometry"
     );
 
@@ -49,11 +46,7 @@ fn cross_schema_is_a() {
         .unwrap();
     let parent_uri = era_geom_uri.parent_class().unwrap().unwrap();
     assert_eq!(
-        parent_uri
-            .get_uri(&conv, false, false)
-            .unwrap()
-            .to_string(),
+        parent_uri.get_uri(&conv, false, false).unwrap().to_string(),
         "geo:Geometry"
     );
 }
-

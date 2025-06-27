@@ -34,7 +34,9 @@ fn lookup_classes() {
     assert!(p1.is_some());
     let p2 = sv.get_class(&Identifier::new("alt:Person"), &conv).unwrap();
     assert!(p2.is_some());
-    let p_linkml = sv.get_class(&Identifier::new("linkml:Person"), &conv).unwrap();
+    let p_linkml = sv
+        .get_class(&Identifier::new("linkml:Person"), &conv)
+        .unwrap();
     assert!(p_linkml.is_some());
     let p3 = sv
         .get_class(

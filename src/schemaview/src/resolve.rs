@@ -1,4 +1,7 @@
-use crate::{io::{from_uri, from_yaml}, schemaview::SchemaView};
+use crate::{
+    io::{from_uri, from_yaml},
+    schemaview::SchemaView,
+};
 use std::path::Path;
 
 fn get_uri_for_id(id: &str) -> Option<&'static str> {
@@ -9,7 +12,7 @@ fn get_uri_for_id(id: &str) -> Option<&'static str> {
         "https://w3id.org/linkml/annotations" => Some("https://raw.githubusercontent.com/linkml/linkml-model/refs/heads/main/linkml_model/model/schema/annotations.yaml"),
         "https://w3id.org/linkml/units" => Some("https://raw.githubusercontent.com/linkml/linkml-model/refs/heads/main/linkml_model/model/schema/units.yaml"),
         _ => None,
-    }    
+    }
 }
 
 pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
@@ -23,7 +26,12 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
             // Load the schema from the resolved URI
             let schema = match from_uri(resolved_uri) {
                 Ok(s) => s,
-                Err(e) => return Err(format!("Failed to load schema from {}: {}", resolved_uri, e)),
+                Err(e) => {
+                    return Err(format!(
+                        "Failed to load schema from {}: {}",
+                        resolved_uri, e
+                    ))
+                }
             };
             sv.add_schema(schema)?;
         } else {
@@ -32,7 +40,13 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
             if path.exists() {
                 let schema = match from_yaml(path) {
                     Ok(s) => s,
-                    Err(e) => return Err(format!("Failed to load schema from {}: {}", path.display(), e)),
+                    Err(e) => {
+                        return Err(format!(
+                            "Failed to load schema from {}: {}",
+                            path.display(),
+                            e
+                        ))
+                    }
                 };
                 sv.add_schema(schema.clone())?;
                 // also track the loaded schema by the original import path so

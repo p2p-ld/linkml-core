@@ -1,11 +1,8 @@
 use clap::{Parser, ValueEnum};
-use serde_json;
 use linkml_schemaview::{
-    io::from_yaml,
-    schemaview::SchemaView,
-    identifier::{Identifier},
-    resolve::resolve_schemas,
+    identifier::Identifier, io::from_yaml, resolve::resolve_schemas, schemaview::SchemaView,
 };
+use serde_json;
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -79,8 +76,11 @@ fn enum_exists(
                             return Ok(true);
                         }
                     } else {
-                        let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
-                        let default_uri = Identifier::new(&format!("{}:{}", default_prefix, name)).to_uri(conv)?.0;
+                        let default_prefix =
+                            schema.default_prefix.as_deref().unwrap_or(&schema.name);
+                        let default_uri = Identifier::new(&format!("{}:{}", default_prefix, name))
+                            .to_uri(conv)?
+                            .0;
                         if default_uri == target_uri.0 {
                             return Ok(true);
                         }

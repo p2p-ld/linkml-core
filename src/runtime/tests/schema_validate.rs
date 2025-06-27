@@ -26,6 +26,5 @@ fn person_schema_missing_slot() {
     let schema = data_path("personinfo.yaml");
     let mut cmd = Command::cargo_bin("linkml-schema-validate").unwrap();
     cmd.arg(&schema);
-    cmd.assert()
-        .success();
+    cmd.assert().success();
 }

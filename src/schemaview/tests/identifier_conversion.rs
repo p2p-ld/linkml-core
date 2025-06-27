@@ -1,5 +1,5 @@
-use linkml_schemaview::identifier::{Identifier, IdentifierError, Curie, Uri};
 use curies::{Converter, Record};
+use linkml_schemaview::identifier::{Curie, Identifier, IdentifierError, Uri};
 
 #[test]
 fn newtype_into_and_try_from() {
@@ -28,19 +28,31 @@ fn workflow_curie_uri_roundtrip() {
     conv.add_record(record).unwrap();
 
     let id = Identifier::new("ex:1");
-    assert_eq!(id.to_uri(&conv).unwrap(), Uri("http://example.org/1".to_string()));
+    assert_eq!(
+        id.to_uri(&conv).unwrap(),
+        Uri("http://example.org/1".to_string())
+    );
 
     let id2 = Identifier::new("http://example.org/1");
     assert_eq!(id2.to_curie(&conv).unwrap(), Curie("ex:1".to_string()));
 
     let id3 = Identifier::new("example:2");
-    assert_eq!(id3.to_uri(&conv).unwrap(), Uri("http://example.org/2".to_string()));
+    assert_eq!(
+        id3.to_uri(&conv).unwrap(),
+        Uri("http://example.org/2".to_string())
+    );
 }
 
 #[test]
 fn workflow_name_fails() {
     let conv = Converter::default();
     let id = Identifier::new("SomeClass");
-    assert!(matches!(id.to_uri(&conv), Err(IdentifierError::NameNotResolvable)));
-    assert!(matches!(id.to_curie(&conv), Err(IdentifierError::NameNotResolvable)));
+    assert!(matches!(
+        id.to_uri(&conv),
+        Err(IdentifierError::NameNotResolvable)
+    ));
+    assert!(matches!(
+        id.to_curie(&conv),
+        Err(IdentifierError::NameNotResolvable)
+    ));
 }

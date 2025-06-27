@@ -1,8 +1,8 @@
 #![cfg(feature = "python")]
 
+use linkml_runtime::runtime_module;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use linkml_runtime::runtime_module;
 use std::path::PathBuf;
 
 fn data_path(name: &str) -> PathBuf {
@@ -50,4 +50,3 @@ assert value['name'].as_python() == 'Alice'
         );
     });
 }
-

@@ -9,7 +9,7 @@ fn slot_is_ignored(slot: &SlotView) -> bool {
     if slot.definitions.is_empty() {
         return false;
     }
-    slot.merged_definition()
+    slot.definition()
         .annotations
         .contains_key(IGNORE_ANNOTATION)
 }

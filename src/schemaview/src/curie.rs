@@ -1,7 +1,9 @@
 use linkml_meta::{poly_containers::MapRef, uri, uriorcurie, Prefix};
 
-
-pub fn curie2uri<'a>(curie_or_uri: impl Into<uriorcurie>, prefixes: impl MapRef<'a, String, Prefix>) -> Option<uri> {
+pub fn curie2uri<'a>(
+    curie_or_uri: impl Into<uriorcurie>,
+    prefixes: impl MapRef<'a, String, Prefix>,
+) -> Option<uri> {
     let curie_or_uri: String = curie_or_uri.into();
     // check if its already an uri
     if curie_or_uri.contains("://") {
@@ -17,5 +19,4 @@ pub fn curie2uri<'a>(curie_or_uri: impl Into<uriorcurie>, prefixes: impl MapRef<
     } else {
         return None;
     }
-
 }

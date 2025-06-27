@@ -1,14 +1,14 @@
 objects:
   - id: T
-    type: https://w3id.org/linkml/examples/personinfo/Organization
+    objecttype: https://w3id.org/linkml/examples/personinfo/Organization
     name: club
   - id: P:001
     name: fred bloggs
-    type: https://w3id.org/linkml/examples/personinfo/Person
+    objecttype: https://w3id.org/linkml/examples/personinfo/Person
     primary_email: fred.bloggs@example.com
     age_in_years: 33
   - id: P:002
-    type: https://w3id.org/linkml/examples/personinfo/Person
+    objecttype: https://w3id.org/linkml/examples/personinfo/Person
     name: joe schmoe
     primary_email: joe.schmoe@example.com
     has_employment_history:
@@ -32,7 +32,7 @@ objects:
           id: CODE:P0001
           name: trepanation
   - id: P:003
-    type: https://w3id.org/linkml/examples/personinfo/Person
+    objecttype: https://w3id.org/linkml/examples/personinfo/Person
     name: alice smith
     primary_email: alice.smith@example.com
     age_in_years: 34

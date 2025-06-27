@@ -39,7 +39,7 @@ classes:
     slots:
       - id
       - name
-      - type
+      - objecttype
       - description
       - image
     close_mappings:
@@ -171,7 +171,7 @@ slots:
   things:
     range: NamedThing
     inlined_as_list: true
-  type:
+  objecttype:
     range: uri
     designates_type: true
   id:

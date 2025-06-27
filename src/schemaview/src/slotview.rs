@@ -35,7 +35,7 @@ impl<'a> SlotView<'a> {
         }
     }
 
-    pub fn merged_definition(&self) -> SlotDefinition {
+    pub fn definition(&self) -> SlotDefinition {
         let mut base = self.definitions[0].clone();
         for d in self.definitions.iter().skip(1) {
             if let Some(v) = &d.range {
@@ -56,6 +56,9 @@ impl<'a> SlotView<'a> {
             if let Some(v) = d.identifier {
                 base.identifier = Some(v);
             }
+            if let Some(v) = d.designates_type {
+                base.designates_type = Some(v);
+            }
         }
         base
     }
@@ -65,7 +68,7 @@ impl<'a> SlotView<'a> {
         sv: &'a SchemaView,
         conv: &Converter,
     ) -> SlotContainerMode {
-        let s = self.merged_definition();
+        let s = self.definition();
         let multivalued = s.multivalued.unwrap_or(false);
         let class_range = match &s.range {
             Some(r) => sv
@@ -120,7 +123,7 @@ impl<'a> SlotView<'a> {
         sv: &'a SchemaView,
         conv: &Converter,
     ) -> SlotInlineMode {
-        let s = self.merged_definition();
+        let s = self.definition();
         let multivalued = s.multivalued.unwrap_or(false);
         let class_range = match &s.range {
             Some(r) => sv
@@ -182,7 +185,7 @@ impl<'a> SlotView<'a> {
         sv: &'a SchemaView,
         conv: &Converter,
     ) -> bool {
-        let mut classes_to_check = match self.merged_definition().range {
+        let mut classes_to_check = match self.definition().range {
             Some(r) => vec![r],
             None => return false,
         };
@@ -198,7 +201,7 @@ impl<'a> SlotView<'a> {
                     return true;
                 }
                 for slot in cv.slots() {
-                    if let Some(r) = &slot.merged_definition().range {
+                    if let Some(r) = &slot.definition().range {
                         if !seen.contains(r) {
                             classes_to_check.push(r.clone());
                         }
@@ -209,4 +212,3 @@ impl<'a> SlotView<'a> {
         false
     }
 }
-

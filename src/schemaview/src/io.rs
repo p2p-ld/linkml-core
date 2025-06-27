@@ -1,13 +1,11 @@
-
 use linkml_meta::SchemaDefinition;
 use serde_yml;
-use std::path::Path;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
+use std::path::Path;
 
 pub fn from_yaml(path: &Path) -> Result<SchemaDefinition, Box<dyn Error>> {
-
     let file = File::open(path)?;
     let reader = BufReader::new(file);
 
@@ -27,13 +25,10 @@ pub fn from_uri(uri: &str) -> Result<SchemaDefinition, Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
-    use linkml_meta::poly_containers::MapRef;
-    use std::path::{PathBuf, absolute};
     use crate::schemaview::SchemaView;
     use linkml_meta::poly::SchemaDefinition as _;
-
-
-
+    use linkml_meta::poly_containers::MapRef;
+    use std::path::{absolute, PathBuf};
 
     pub fn meta_path() -> PathBuf {
         let mut this_file = PathBuf::from("src/io.rs");
@@ -50,14 +45,14 @@ mod tests {
 
     use super::*;
     #[test]
-    fn test_load_schema(){
+    fn test_load_schema() {
         let path = &meta_path();
 
         let schema = match from_yaml(path) {
             Ok(v) => v,
             Err(why) => panic!("{why:?}"),
         };
-        
+
         let classes = schema.classes();
         for (name, class) in classes.iter() {
             let is_a = &class.is_a;
@@ -69,7 +64,6 @@ mod tests {
             }
         }
     }
-
 
     #[test]
     fn test_resolve_schemas() {
@@ -87,8 +81,5 @@ mod tests {
         resolve_schemas(&mut schema_view).unwrap();
         let unresolved = schema_view.get_unresolved_schemas();
         assert!(unresolved.is_empty());
-
-
     }
-
 }

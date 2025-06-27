@@ -18,7 +18,9 @@ fn lookup_prefixed_names() {
     sv.add_schema(schema.clone()).unwrap();
     let conv = converter_from_schemas([&schema]);
 
-    let class = sv.get_class(&Identifier::new("geo:Geometry"), &conv).unwrap();
+    let class = sv
+        .get_class(&Identifier::new("geo:Geometry"), &conv)
+        .unwrap();
     assert!(class.is_some());
 
     let slot = sv.get_slot(&Identifier::new("geo:point"), &conv).unwrap();
