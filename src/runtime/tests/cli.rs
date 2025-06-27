@@ -45,5 +45,5 @@ fn convert_meta_self_hosting() {
     cmd.arg(&schema).arg(&schema);
     cmd.assert()
         .failure()
-        .stderr(predicates::str::contains("slots.abstract.description"));
+        .stderr(predicates::str::contains("slots.abstract.domain"));
 }
