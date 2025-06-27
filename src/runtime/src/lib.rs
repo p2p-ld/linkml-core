@@ -174,50 +174,10 @@ impl<'a> LinkMLValue<'a> {
                             let m = match v {
                                 JsonValue::Object(m) => m,
                                 other => {
-                                    // Support simple inlined dict form where the value is a scalar
-                                    let chosen = sv
-                                        .get_class(&Identifier::new(range_cv.name()), conv)
-                                        .ok()
-                                        .flatten()
-                                        .unwrap_or_else(|| range_cv.clone());
-                                    let value_slot = chosen
-                                        .slots()
-                                        .iter()
-                                        .find(|s| s.name != key_slot_name)
-                                        .ok_or_else(|| {
-                                            LinkMLError(
-                                                "no slot available for simple inlined dict value"
-                                                    .to_string(),
-                                            )
-                                        })?
-                                        .clone();
-                                    let mut child_values = HashMap::new();
-                                    child_values.insert(
-                                        key_slot.name.clone(),
-                                        LinkMLValue::Scalar {
-                                            value: JsonValue::String(k.clone()),
-                                            slot: key_slot.clone(),
-                                            class: None,
-                                            sv,
-                                        },
-                                    );
-                                    child_values.insert(
-                                        value_slot.name.clone(),
-                                        LinkMLValue::from_json(
-                                            other,
-                                            None,
-                                            Some(value_slot.clone()),
-                                            sv,
-                                            conv,
-                                            true,
-                                        )?,
-                                    );
-                                    values.push(LinkMLValue::Map {
-                                        values: child_values,
-                                        class: chosen.clone(),
-                                        sv,
-                                    });
-                                    continue;
+                                    return Err(LinkMLError(format!(
+                                        "mapping values for slot `{}` must be objects, found {:?}",
+                                        sl.name, other
+                                    )));
                                 }
                             };
                             let chosen = sv
