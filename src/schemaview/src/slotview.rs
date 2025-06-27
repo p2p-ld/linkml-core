@@ -77,10 +77,7 @@ impl<'a> SlotView<'a> {
             .and_then(|r| sv.get_class(&Identifier::new(r), &conv).ok().flatten())
     }
 
-    pub fn determine_slot_container_mode(
-        &self,
-        sv: &'a SchemaView,
-    ) -> SlotContainerMode {
+    pub fn determine_slot_container_mode(&self, sv: &'a SchemaView) -> SlotContainerMode {
         let conv = sv.converter_for_schema(self.schema_uri).unwrap();
         let s = self.definition();
         let multivalued = s.multivalued.unwrap_or(false);
@@ -132,10 +129,7 @@ impl<'a> SlotView<'a> {
         }
     }
 
-    pub fn determine_slot_inline_mode(
-        &self,
-        sv: &'a SchemaView,
-    ) -> SlotInlineMode {
+    pub fn determine_slot_inline_mode(&self, sv: &'a SchemaView) -> SlotInlineMode {
         let conv = sv.converter_for_schema(self.schema_uri).unwrap();
         let s = self.definition();
         let multivalued = s.multivalued.unwrap_or(false);

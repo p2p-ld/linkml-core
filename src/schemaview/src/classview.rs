@@ -44,7 +44,7 @@ impl<'a> ClassView<'a> {
             }
             for mixin in &class_def.mixins {
                 if let Some(cv) = sv.get_class(&Identifier::new(mixin), conv)? {
-                    gather(cv.class, schema_uri,  sv, conv, visited, acc)?;
+                    gather(cv.class, schema_uri, sv, conv, visited, acc)?;
                 }
             }
 
