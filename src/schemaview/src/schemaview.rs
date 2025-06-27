@@ -77,7 +77,12 @@ impl SchemaView {
     ) -> Result<(), IdentifierError> {
         let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
         for (class_name, class_def) in &schema.classes {
-            let default_uri = Identifier::new(&format!("{}:{}", default_prefix, class_name))
+            let default_id = if class_name.contains(':') && class_def.class_uri.is_none() {
+                Identifier::new(class_name)
+            } else {
+                Identifier::new(&format!("{}:{}", default_prefix, class_name))
+            };
+            let default_uri = default_id
                 .to_uri(conv)
                 .map(|u| u.0)
                 .unwrap_or_else(|_| format!("{}/{}", schema.id.trim_end_matches('/'), class_name));
@@ -109,7 +114,12 @@ impl SchemaView {
     ) -> Result<(), IdentifierError> {
         let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
         for (slot_name, slot_def) in &schema.slot_definitions {
-            let default_uri = Identifier::new(&format!("{}:{}", default_prefix, slot_name))
+            let default_id = if slot_name.contains(':') && slot_def.slot_uri.is_none() {
+                Identifier::new(slot_name)
+            } else {
+                Identifier::new(&format!("{}:{}", default_prefix, slot_name))
+            };
+            let default_uri = default_id
                 .to_uri(conv)
                 .map(|u| u.0)
                 .unwrap_or_else(|_| format!("{}/{}", schema.id.trim_end_matches('/'), slot_name));
