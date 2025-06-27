@@ -295,7 +295,16 @@ impl<'a> LinkMLValue<'a> {
                             .unwrap_or_else(|| ck.clone());
                         child_values.insert(
                             key_name,
-                            Self::from_json_internal(cv, None, slot_tmp, sv, conv, true, false, p)?,
+                            Self::from_json_internal(
+                                cv,
+                                Some(chosen.clone()),
+                                slot_tmp,
+                                sv,
+                                conv,
+                                true,
+                                false,
+                                p,
+                            )?,
                         );
                     }
                     values.push(LinkMLValue::Map {
@@ -372,7 +381,16 @@ impl<'a> LinkMLValue<'a> {
                         .unwrap_or_else(|| k.clone());
                     values.insert(
                         key_name,
-                        Self::from_json_internal(v, None, slot_ref, sv, conv, true, false, p)?,
+                        Self::from_json_internal(
+                            v,
+                            Some(cls.clone()),
+                            slot_ref,
+                            sv,
+                            conv,
+                            true,
+                            false,
+                            p,
+                        )?,
                     );
                 }
                 return Ok(LinkMLValue::Map {
@@ -416,7 +434,16 @@ impl<'a> LinkMLValue<'a> {
                 .unwrap_or_else(|| k.clone());
             values.insert(
                 key_name,
-                Self::from_json_internal(v, None, slot_tmp, sv, conv, true, false, p)?,
+                Self::from_json_internal(
+                    v,
+                    chosen.clone(),
+                    slot_tmp,
+                    sv,
+                    conv,
+                    true,
+                    false,
+                    p,
+                )?,
             );
         }
         Ok(LinkMLValue::Map {
@@ -428,20 +455,20 @@ impl<'a> LinkMLValue<'a> {
 
     fn parse_scalar_value(
         value: JsonValue,
-        class: Option<ClassView<'a>>,
+        class: &ClassView<'a>,
         slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
         path: Vec<String>,
     ) -> LResult<Self> {
         let sl = slot.ok_or_else(|| LinkMLError(format!(
-            "scalar requires slot {} at {}",
-            class.clone().map(|c| c.name().to_owned()).unwrap_or("null".to_owned()),
+            "scalar requires slot for class {} at {}",
+            class.name(),
             path_to_string(&path)
         )))?;
         Ok(LinkMLValue::Scalar {
             value,
             slot: sl,
-            class: class.clone(),
+            class: Some(class.clone()),
             sv,
         })
     }
@@ -471,9 +498,18 @@ impl<'a> LinkMLValue<'a> {
         match value {
             JsonValue::Array(arr) => Self::parse_array_value(arr, class, slot, sv, conv, path),
             JsonValue::Object(map) => {
-                Self::parse_object_value(map, class, slot, sv, conv, polymorphic, path)
+                let cls_arg = if slot.is_some() { None } else { class.clone() };
+                Self::parse_object_value(map, cls_arg, slot, sv, conv, polymorphic, path)
             }
-            other => Self::parse_scalar_value(other, class, slot, sv, path),
+            other => {
+                let cls = class.as_ref().ok_or_else(|| {
+                    LinkMLError(format!(
+                        "class not determined for scalar at {}",
+                        path_to_string(&path)
+                    ))
+                })?;
+                Self::parse_scalar_value(other, cls, slot, sv, path)
+            }
         }
     }
 
