@@ -36,3 +36,24 @@ fn convert_person_to_ttl() {
     assert!(ttl.contains("@prefix test: <https://example.com/test/> ."));
     assert!(ttl.contains("<test:name> \"Alice\""));
 }
+
+#[test]
+fn suppress_objecttype_triple() {
+    let schema = from_yaml(Path::new(&data_path("personinfo.yaml"))).unwrap();
+    let mut sv = SchemaView::new();
+    sv.add_schema(schema.clone()).unwrap();
+    let conv = converter_from_schema(&schema);
+    let container = sv
+        .get_class(&Identifier::new("Container"), &conv)
+        .unwrap()
+        .expect("class not found");
+    let v = load_yaml_file(
+        Path::new(&data_path("example_personinfo_data.yaml")),
+        &sv,
+        Some(&container),
+        &conv,
+    )
+    .unwrap();
+    let ttl = turtle_to_string(&v, &sv, &schema, &conv, TurtleOptions { skolem: false }).unwrap();
+    assert!(!ttl.contains("<personinfo:objecttype>"));
+}

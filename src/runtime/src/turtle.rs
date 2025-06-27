@@ -127,6 +127,14 @@ fn serialize_map<W: Write>(
         if id_slot.map(|s| s == k.as_str()).unwrap_or(false) {
             continue;
         }
+        let skip = match v {
+            LinkMLValue::Scalar { slot, .. } => slot.definition().designates_type.unwrap_or(false),
+            LinkMLValue::List { slot, .. } => slot.definition().designates_type.unwrap_or(false),
+            _ => false,
+        };
+        if skip {
+            continue;
+        }
         let pred_iri = format!("{}:{}", state.default_prefix, k);
         let predicate = NamedNode { iri: &pred_iri };
         match v {
