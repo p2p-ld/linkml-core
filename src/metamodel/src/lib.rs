@@ -927,7 +927,7 @@ impl<'py> FromPyObject<'py> for Box<Annotation> {
 impl serde_utils::InlinedPair for Annotation {
     type Key   = uriorcurie;
         
-    type Value = Annotation;
+    type Value = AnyValue;
     type Error = String;
 
     fn extract_key(&self) -> &Self::Key {
@@ -952,7 +952,7 @@ impl serde_utils::InlinedPair for Annotation {
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("extension_tag".into()), Value::String(k));
-        map.insert(Value::String("annotations".into()), v);
+        map.insert(Value::String("extension_value".into()), v);
         let de          = Value::Map(map).into_deserializer();
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
@@ -1451,7 +1451,7 @@ impl<'py> FromPyObject<'py> for Box<Element> {
 impl serde_utils::InlinedPair for Element {
     type Key   = String;
         
-    type Value = ncname;
+    type Value = bool;
     type Error = String;
 
     fn extract_key(&self) -> &Self::Key {
@@ -1476,7 +1476,7 @@ impl serde_utils::InlinedPair for Element {
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
-        map.insert(Value::String("id_prefixes".into()), v);
+        map.insert(Value::String("id_prefixes_are_closed".into()), v);
         let de          = Value::Map(map).into_deserializer();
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
@@ -2262,7 +2262,7 @@ impl<'py> FromPyObject<'py> for Box<SubsetDefinition> {
 impl serde_utils::InlinedPair for SubsetDefinition {
     type Key   = String;
         
-    type Value = ncname;
+    type Value = bool;
     type Error = String;
 
     fn extract_key(&self) -> &Self::Key {
@@ -2287,7 +2287,7 @@ impl serde_utils::InlinedPair for SubsetDefinition {
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
-        map.insert(Value::String("id_prefixes".into()), v);
+        map.insert(Value::String("id_prefixes_are_closed".into()), v);
         let de          = Value::Map(map).into_deserializer();
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
@@ -5066,7 +5066,7 @@ impl<'py> FromPyObject<'py> for Box<ClassDefinition> {
 impl serde_utils::InlinedPair for ClassDefinition {
     type Key   = String;
         
-    type Value = SlotDefinition;
+    type Value = uriorcurie;
     type Error = String;
 
     fn extract_key(&self) -> &Self::Key {
@@ -5091,7 +5091,7 @@ impl serde_utils::InlinedPair for ClassDefinition {
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
-        map.insert(Value::String("slots".into()), v);
+        map.insert(Value::String("class_uri".into()), v);
         let de          = Value::Map(map).into_deserializer();
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
@@ -6481,7 +6481,7 @@ impl<'py> FromPyObject<'py> for Box<UniqueKey> {
 impl serde_utils::InlinedPair for UniqueKey {
     type Key   = String;
         
-    type Value = SlotDefinition;
+    type Value = bool;
     type Error = String;
 
     fn extract_key(&self) -> &Self::Key {
@@ -6506,7 +6506,7 @@ impl serde_utils::InlinedPair for UniqueKey {
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("unique_key_name".into()), Value::String(k));
-        map.insert(Value::String("unique_key_slots".into()), v);
+        map.insert(Value::String("consider_nulls_inequal".into()), v);
         let de          = Value::Map(map).into_deserializer();
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
