@@ -196,13 +196,29 @@ impl<'a> LinkMLValue<'a> {
             (false, JsonValue::Array(arr)) => {
                 let mut values = Vec::new();
                 let class_range = sl.get_range_class();
+                let slot_for_item = if class_range.is_some() {
+                    None
+                } else {
+                    Some(sl.clone())
+                };
                 for (i, v) in arr.into_iter().enumerate() {
                     let mut p = path.clone();
                     p.push(format!("{}[{}]", sl.name, i));
+                    let v_transformed = if let (Some(cr), JsonValue::String(s)) = (&class_range, &v) {
+                        if let Some(id_slot) = cr.identifier_slot() {
+                            let mut m = serde_json::Map::new();
+                            m.insert(id_slot.name.clone(), JsonValue::String(s.clone()));
+                            JsonValue::Object(m)
+                        } else {
+                            v
+                        }
+                    } else {
+                        v
+                    };
                     values.push(Self::from_json_internal(
-                        v,
+                        v_transformed,
                         class_range.clone(),
-                        Some(sl.clone()),
+                        slot_for_item.clone(),
                         sv,
                         conv,
                         true,
@@ -421,7 +437,7 @@ impl<'a> LinkMLValue<'a> {
 
     fn parse_scalar_value(
         value: JsonValue,
-        class: &ClassView<'a>,
+        class: Option<&ClassView<'a>>,
         slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
         path: Vec<String>,
@@ -436,7 +452,7 @@ impl<'a> LinkMLValue<'a> {
         Ok(LinkMLValue::Scalar {
             value,
             slot: sl,
-            class: Some(class.clone()),
+            class: class.cloned(),
             sv,
         })
     }
@@ -477,13 +493,12 @@ impl<'a> LinkMLValue<'a> {
                 Self::parse_object_value(map, cls_arg, slot, sv, conv, path)
             }
             other => {
-                let cls = class.as_ref().ok_or_else(|| {
-                    LinkMLError(format!(
-                        "class not determined for scalar at {}",
-                        path_to_string(&path)
-                    ))
-                })?;
-                Self::parse_scalar_value(other, cls, slot, sv, path)
+                if class.is_none() {
+                    Self::parse_scalar_value(other, None, slot, sv, path)
+                } else {
+                    let cls = class.as_ref().unwrap();
+                    Self::parse_scalar_value(other, Some(cls), slot, sv, path)
+                }
             }
         }
     }
