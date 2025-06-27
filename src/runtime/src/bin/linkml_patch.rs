@@ -1,6 +1,5 @@
 use clap::Parser;
 use linkml_runtime::{load_json_file, load_yaml_file, patch, Delta};
-use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::resolve::resolve_schemas;
 use linkml_schemaview::schemaview::{ClassView, SchemaView};

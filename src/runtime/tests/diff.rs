@@ -1,4 +1,4 @@
-use linkml_runtime::{diff, load_yaml_file, patch, validate};
+use linkml_runtime::{diff, load_yaml_file, patch};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;

@@ -6,4 +6,3 @@ members=[
     "src/runtime",
 ]
 resolver = "2"
-version="0.1.0"

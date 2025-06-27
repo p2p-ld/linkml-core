@@ -58,7 +58,7 @@ pub struct PyClassView {
 #[pyclass(name = "SlotView")]
 pub struct PySlotView {
     slot_name: String,
-    sv: Arc<SchemaView>,
+    _sv: Arc<SchemaView>,
 }
 
 #[pymethods]
@@ -141,7 +141,7 @@ impl PySchemaView {
             .map_err(|e| PyException::new_err(format!("{:?}", e)))?
             .map(|svw| PySlotView {
                 slot_name: svw.name,
-                sv: self.inner.clone(),
+                _sv: self.inner.clone(),
             }))
     }
 }
@@ -165,7 +165,7 @@ impl PyClassView {
                 .iter()
                 .map(|s| PySlotView {
                     slot_name: s.name.clone(),
-                    sv: self.sv.clone(),
+                    _sv: self.sv.clone(),
                 })
                 .collect()),
             None => Ok(Vec::new()),

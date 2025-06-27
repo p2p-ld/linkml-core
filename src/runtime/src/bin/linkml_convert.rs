@@ -4,7 +4,6 @@ use linkml_runtime::{
     turtle::{write_turtle, TurtleOptions},
     validate,
 };
-use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::resolve::resolve_schemas;
 use linkml_schemaview::schemaview::SchemaView;

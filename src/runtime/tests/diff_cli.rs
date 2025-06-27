@@ -10,7 +10,6 @@ fn info_path(name: &str) -> PathBuf {
 }
 
 #[test]
-#[ignore]
 fn cli_diff_and_patch_personinfo() {
     let schema = info_path("personinfo.yaml");
     let src = info_path("example_personinfo_data.yaml");
