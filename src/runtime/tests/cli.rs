@@ -26,3 +26,14 @@ fn skolem_flag_creates_named_nodes() {
     let ttl = std::fs::read_to_string(&out_path).unwrap();
     assert!(ttl.contains("<https://example.com/poly/gen1>"));
 }
+
+#[test]
+fn convert_personinfo_cli() {
+    let schema = data_path("personinfo.yaml");
+    let data = data_path("example_personinfo_data.yaml");
+    let mut cmd = Command::cargo_bin("linkml-convert").unwrap();
+    cmd.arg(&schema).arg(&data);
+    cmd.assert()
+        .success()
+        .stdout(predicates::str::contains("@prefix P:"));
+}
