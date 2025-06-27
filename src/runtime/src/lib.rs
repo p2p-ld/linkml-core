@@ -34,6 +34,17 @@ fn path_to_string(path: &[String]) -> String {
     }
 }
 
+fn alt_names(name: &str) -> Vec<String> {
+    let mut v = Vec::new();
+    if name.contains('_') {
+        v.push(name.replace('_', " "));
+    }
+    if name.contains(' ') {
+        v.push(name.replace(' ', "_"));
+    }
+    v
+}
+
 pub enum LinkMLValue<'a> {
     Scalar {
         value: JsonValue,
@@ -259,7 +270,11 @@ impl<'a> LinkMLValue<'a> {
                         .unwrap_or_else(|| range_cv.clone());
                     let mut child_values = HashMap::new();
                     for (ck, cv) in m.into_iter() {
-                        let slot_tmp = chosen.slots().iter().find(|s| s.name == ck).cloned();
+                        let slot_tmp = chosen
+                            .slots()
+                            .iter()
+                            .find(|s| s.name == ck || alt_names(&ck).iter().any(|a| s.name == *a))
+                            .cloned();
                         let mut p = path.clone();
                         p.push(format!("{}:{}", k, ck));
                         child_values.insert(
@@ -328,7 +343,11 @@ impl<'a> LinkMLValue<'a> {
             if let Some(cls) = &class {
                 let mut values = HashMap::new();
                 for (k, v) in map.clone().into_iter() {
-                    let slot_ref = cls.slots().iter().find(|s| s.name == k).cloned();
+                    let slot_ref = cls
+                        .slots()
+                        .iter()
+                        .find(|s| s.name == k || alt_names(&k).iter().any(|a| s.name == *a))
+                        .cloned();
                     let mut p = path.clone();
                     p.push(k.clone());
                     values.insert(
@@ -363,7 +382,11 @@ impl<'a> LinkMLValue<'a> {
         for (k, v) in map.into_iter() {
             let slot_tmp: Option<SlotView<'a>> = chosen
                 .as_ref()
-                .and_then(|cv| cv.slots().iter().find(|s| s.name == k))
+                .and_then(|cv| {
+                    cv.slots()
+                        .iter()
+                        .find(|s| s.name == k || alt_names(&k).iter().any(|a| s.name == *a))
+                })
                 .cloned();
             let mut p = path.clone();
             p.push(k.clone());
@@ -384,10 +407,12 @@ impl<'a> LinkMLValue<'a> {
         class: Option<ClassView<'a>>,
         slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
+        path: Vec<String>,
     ) -> LResult<Self> {
         let sl = slot.ok_or_else(|| LinkMLError(format!(
-            "scalar requires slot {}",
-            class.clone().map(|c| c.name().to_owned()).unwrap_or("null".to_owned())
+            "scalar requires slot {} at {}",
+            class.clone().map(|c| c.name().to_owned()).unwrap_or("null".to_owned()),
+            path_to_string(&path)
         )))?;
         Ok(LinkMLValue::Scalar {
             value,
@@ -424,7 +449,7 @@ impl<'a> LinkMLValue<'a> {
             JsonValue::Object(map) => {
                 Self::parse_object_value(map, class, slot, sv, conv, polymorphic, path)
             }
-            other => Self::parse_scalar_value(other, class, slot, sv),
+            other => Self::parse_scalar_value(other, class, slot, sv, path),
         }
     }
 
