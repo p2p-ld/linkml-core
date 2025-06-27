@@ -15,20 +15,35 @@ pub mod turtle;
 pub use diff::{diff, patch, Delta};
 #[cfg(feature = "python")]
 pub use python::*;
+#[derive(Debug)]
+pub struct LinkMLError(pub String);
+
+impl std::fmt::Display for LinkMLError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl std::error::Error for LinkMLError {}
+
+pub type LResult<T> = std::result::Result<T, LinkMLError>;
+
 pub enum LinkMLValue<'a> {
     Scalar {
         value: JsonValue,
-        slot: Option<SlotView<'a>>,
+        slot: SlotView<'a>,
+        class: Option<ClassView<'a>>,
         sv: &'a SchemaView,
     },
     List {
         values: Vec<LinkMLValue<'a>>,
-        slot: Option<SlotView<'a>>,
+        slot: SlotView<'a>,
+        class: Option<ClassView<'a>>,
         sv: &'a SchemaView,
     },
     Map {
         values: HashMap<String, LinkMLValue<'a>>,
-        class: Option<ClassView<'a>>,
+        class: ClassView<'a>,
         sv: &'a SchemaView,
     },
 }
@@ -78,16 +93,17 @@ impl<'a> LinkMLValue<'a> {
         }
 
         for c in &cand_refs {
-            let tmp = LinkMLValue::from_json(
+            if let Ok(tmp) = LinkMLValue::from_json(
                 JsonValue::Object(map.clone()),
                 Some(*c),
                 None,
                 sv,
                 conv,
                 false,
-            );
-            if validate(&tmp).is_ok() {
-                return (*c).clone();
+            ) {
+                if validate(&tmp).is_ok() {
+                    return (*c).clone();
+                }
             }
         }
 
@@ -100,91 +116,95 @@ impl<'a> LinkMLValue<'a> {
         sv: &'a SchemaView,
         conv: &Converter,
         polymorphic: bool,
-    ) -> Self {
+    ) -> LResult<Self> {
         if let Some(ref sl) = slot {
             let container_mode = sl.determine_slot_container_mode(sv);
             match container_mode {
                 SlotContainerMode::List => match value {
                     JsonValue::Array(arr) => {
-                        let values = arr
-                            .into_iter()
-                            .map(|v| LinkMLValue::from_json(v, None, None, sv, conv, true))
-                            .collect();
-                        return LinkMLValue::List { values, slot, sv };
+                        let mut values = Vec::new();
+                        for v in arr.into_iter() {
+                            values.push(LinkMLValue::from_json(v, None, Some(sl.clone()), sv, conv, true)?);
+                        }
+                        return Ok(LinkMLValue::List { values, slot: sl.clone(), class: class.cloned(), sv });
                     }
-                    _ => panic!(
-                        "expected list for slot `{}`, found {:?}",
-                        sl.name, value
-                    ),
+                    other => {
+                        return Err(LinkMLError(format!(
+                            "expected list for slot `{}`, found {:?}",
+                            sl.name, other
+                        )));
+                    }
                 },
                 SlotContainerMode::Mapping => match value {
                     JsonValue::Object(map) => {
-                        let result = {
-                            let range_cv = sl
-                                .definition()
-                                .range
-                                .as_ref()
-                                .and_then(|r| sv.get_class(&Identifier::new(r), conv).ok().flatten())
-                                .expect("mapping slot must have class range");
-                            let key_slot_name = range_cv
-                                .key_or_identifier_slot()
-                                .expect("mapping slot must have key or identifier")
-                                .name
-                                .clone();
-                            let key_slot = sv
-                                .get_slot(&Identifier::new(&key_slot_name), conv)
+                        let range_cv = sl
+                            .definition()
+                            .range
+                            .as_ref()
+                            .and_then(|r| sv.get_class(&Identifier::new(r), conv).ok().flatten())
+                            .ok_or_else(|| LinkMLError("mapping slot must have class range".to_string()))?;
+                        let key_slot_name = range_cv
+                            .key_or_identifier_slot()
+                            .ok_or_else(|| LinkMLError("mapping slot must have key or identifier".to_string()))?
+                            .name
+                            .clone();
+                        let key_slot = sv
+                            .get_slot(&Identifier::new(&key_slot_name), conv)
+                            .ok()
+                            .flatten()
+                            .ok_or_else(|| LinkMLError("key slot not found".to_string()))?
+                            .clone();
+                        let mut values = Vec::new();
+                        for (k, v) in map.into_iter() {
+                            let m = match v {
+                                JsonValue::Object(m) => m,
+                                other => {
+                                    return Err(LinkMLError(format!(
+                                        "mapping values for slot `{}` must be objects, found {:?}",
+                                        sl.name, other
+                                    )));
+                                }
+                            };
+                            let chosen = sv
+                                .get_class(&Identifier::new(range_cv.name()), conv)
                                 .ok()
                                 .flatten()
-                                .expect("key slot not found")
-                                .clone();
-                            let mut values = Vec::new();
-                            for (k, v) in map.into_iter() {
-                                let m = match v {
-                                    JsonValue::Object(m) => m,
-                                    _ => panic!(
-                                        "mapping values for slot `{}` must be objects",
-                                        sl.name
-                                    ),
-                                };
-                                let chosen = sv
-                                    .get_class(&Identifier::new(range_cv.name()), conv)
-                                    .ok()
-                                    .flatten()
-                                    .unwrap_or_else(|| range_cv.clone());
-                                let mut child_values = HashMap::new();
-                                for (ck, cv) in m.into_iter() {
-                                    let slot_tmp = chosen
-                                        .slots()
-                                        .iter()
-                                        .find(|s| s.name == ck)
-                                        .cloned();
-                                    child_values.insert(
-                                        ck,
-                                        LinkMLValue::from_json(cv, None, slot_tmp, sv, conv, true),
-                                    );
-                                }
+                                .unwrap_or_else(|| range_cv.clone());
+                            let mut child_values = HashMap::new();
+                            for (ck, cv) in m.into_iter() {
+                                let slot_tmp = chosen
+                                    .slots()
+                                    .iter()
+                                    .find(|s| s.name == ck)
+                                    .cloned();
                                 child_values.insert(
-                                    key_slot.name.clone(),
-                                    LinkMLValue::Scalar {
-                                        value: JsonValue::String(k),
-                                        slot: Some(key_slot.clone()),
-                                        sv,
-                                    },
+                                    ck,
+                                    LinkMLValue::from_json(cv, None, slot_tmp, sv, conv, true)?,
                                 );
-                                values.push(LinkMLValue::Map {
-                                    values: child_values,
-                                    class: Some(chosen.clone()),
-                                    sv,
-                                });
                             }
-                            LinkMLValue::List { values, slot, sv }
-                        };
-                        return result;
+                            child_values.insert(
+                                key_slot.name.clone(),
+                                LinkMLValue::Scalar {
+                                    value: JsonValue::String(k),
+                                    slot: key_slot.clone(),
+                                    class: None,
+                                    sv,
+                                },
+                            );
+                            values.push(LinkMLValue::Map {
+                                values: child_values,
+                                class: chosen.clone(),
+                                sv,
+                            });
+                        }
+                        return Ok(LinkMLValue::List { values, slot: sl.clone(), class: class.cloned(), sv });
                     }
-                    _ => panic!(
-                        "expected mapping for slot `{}`, found {:?}",
-                        sl.name, value
-                    ),
+                    other => {
+                        return Err(LinkMLError(format!(
+                            "expected mapping for slot `{}`, found {:?}",
+                            sl.name, other
+                        )));
+                    }
                 },
                 SlotContainerMode::SingleValue => {}
             }
@@ -192,11 +212,12 @@ impl<'a> LinkMLValue<'a> {
 
         match value {
             JsonValue::Array(arr) => {
-                let values = arr
-                    .into_iter()
-                    .map(|v| LinkMLValue::from_json(v, None, slot.clone(), sv, conv, true))
-                    .collect();
-                LinkMLValue::List { values, slot, sv }
+                let sl = slot.ok_or_else(|| LinkMLError("list requires slot".to_string()))?;
+                let mut values = Vec::new();
+                for v in arr.into_iter() {
+                    values.push(LinkMLValue::from_json(v, None, None, sv, conv, true)?);
+                }
+                return Ok(LinkMLValue::List { values, slot: sl, class: class.cloned(), sv });
             }
             JsonValue::Object(map) => {
                 if !polymorphic && slot.is_none() {
@@ -206,14 +227,14 @@ impl<'a> LinkMLValue<'a> {
                             let slot_ref = cls.slots().iter().find(|s| s.name == k).cloned();
                             values.insert(
                                 k,
-                                LinkMLValue::from_json(v, None, slot_ref, sv, conv, true),
+                                LinkMLValue::from_json(v, None, slot_ref, sv, conv, true)?,
                             );
                         }
-                        return LinkMLValue::Map {
+                        return Ok(LinkMLValue::Map {
                             values,
-                            class: Some(cls.clone()),
+                            class: cls.clone(),
                             sv,
-                        };
+                        });
                     }
                 }
 
@@ -239,19 +260,23 @@ impl<'a> LinkMLValue<'a> {
                         .as_ref()
                         .and_then(|cv| cv.slots().iter().find(|s| s.name == k))
                         .cloned();
-                    values.insert(k, LinkMLValue::from_json(v, None, slot_tmp, sv, conv, true));
+                    values.insert(k, LinkMLValue::from_json(v, None, slot_tmp, sv, conv, true)?);
                 }
-                LinkMLValue::Map {
+                return Ok(LinkMLValue::Map {
                     values,
-                    class: chosen,
+                    class: chosen.ok_or_else(|| LinkMLError("class not determined".to_string()))?,
                     sv,
-                }
+                });
             }
-            other => LinkMLValue::Scalar {
-                value: other,
-                slot,
-                sv,
-            },
+            other => {
+                let sl = slot.ok_or_else(|| LinkMLError("scalar requires slot".to_string()))?;
+                return Ok(LinkMLValue::Scalar {
+                    value: other,
+                    slot: sl,
+                    class: class.cloned(),
+                    sv,
+                });
+            }
         }
     }
 }
@@ -261,7 +286,7 @@ pub fn load_yaml_file<'a>(
     sv: &'a SchemaView,
     class: Option<&'a ClassView<'a>>,
     conv: &Converter,
-) -> Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let text = fs::read_to_string(path)?;
     load_yaml_str(&text, sv, class, conv)
 }
@@ -271,10 +296,10 @@ pub fn load_yaml_str<'a>(
     sv: &'a SchemaView,
     class: Option<&'a ClassView<'a>>,
     conv: &Converter,
-) -> Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let value: serde_yaml::Value = serde_yaml::from_str(data)?;
     let json = serde_json::to_value(value)?;
-    Ok(LinkMLValue::from_json(json, class, None, sv, conv, true))
+    LinkMLValue::from_json(json, class, None, sv, conv, true).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
 pub fn load_json_file<'a>(
@@ -282,7 +307,7 @@ pub fn load_json_file<'a>(
     sv: &'a SchemaView,
     class: Option<&'a ClassView<'a>>,
     conv: &Converter,
-) -> Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let text = fs::read_to_string(path)?;
     load_json_str(&text, sv, class, conv)
 }
@@ -292,12 +317,12 @@ pub fn load_json_str<'a>(
     sv: &'a SchemaView,
     class: Option<&'a ClassView<'a>>,
     conv: &Converter,
-) -> Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let value: JsonValue = serde_json::from_str(data)?;
-    Ok(LinkMLValue::from_json(value, class, None, sv, conv, true))
+    LinkMLValue::from_json(value, class, None, sv, conv, true).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
-fn validate_inner<'a>(value: &LinkMLValue<'a>) -> Result<(), String> {
+fn validate_inner<'a>(value: &LinkMLValue<'a>) -> std::result::Result<(), String> {
     match value {
         LinkMLValue::Scalar { .. } => Ok(()),
         LinkMLValue::List { values, .. } => {
@@ -307,24 +332,18 @@ fn validate_inner<'a>(value: &LinkMLValue<'a>) -> Result<(), String> {
             Ok(())
         }
         LinkMLValue::Map { values, class, .. } => {
-            if let Some(cv) = class.as_ref() {
-                for (k, v) in values {
-                    if cv.slots().iter().all(|s| s.name != *k) {
-                        return Err(format!("unknown slot `{}` for class `{}`", k, cv.name()));
-                    }
-                    validate_inner(v)?;
+            for (k, v) in values {
+                if class.slots().iter().all(|s| s.name != *k) {
+                    return Err(format!("unknown slot `{}` for class `{}`", k, class.name()));
                 }
-            } else {
-                for v in values.values() {
-                    validate_inner(v)?;
-                }
+                validate_inner(v)?;
             }
             Ok(())
         }
     }
 }
 
-pub fn validate<'a>(value: &LinkMLValue<'a>) -> Result<(), String> {
+pub fn validate<'a>(value: &LinkMLValue<'a>) -> std::result::Result<(), String> {
     validate_inner(value)
 }
 
@@ -337,17 +356,11 @@ fn validate_collect<'a>(value: &LinkMLValue<'a>, errors: &mut Vec<String>) {
             }
         }
         LinkMLValue::Map { values, class, .. } => {
-            if let Some(cv) = class.as_ref() {
-                for (k, v) in values {
-                    if cv.slots().iter().all(|s| s.name != *k) {
-                        errors.push(format!("unknown slot `{}` for class `{}`", k, cv.name()));
-                    }
-                    validate_collect(v, errors);
+            for (k, v) in values {
+                if class.slots().iter().all(|s| s.name != *k) {
+                    errors.push(format!("unknown slot `{}` for class `{}`", k, class.name()));
                 }
-            } else {
-                for v in values.values() {
-                    validate_collect(v, errors);
-                }
+                validate_collect(v, errors);
             }
         }
     }
