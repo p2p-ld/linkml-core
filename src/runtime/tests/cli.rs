@@ -44,6 +44,5 @@ fn convert_meta_self_hosting() {
     let mut cmd = Command::cargo_bin("linkml-convert").unwrap();
     cmd.arg(&schema).arg(&schema);
     cmd.assert()
-        .failure()
-        .stderr(predicates::str::contains("slots.abstract.description"));
+        .success();
 }
