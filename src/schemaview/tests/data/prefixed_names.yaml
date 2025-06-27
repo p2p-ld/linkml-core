@@ -1,0 +1,17 @@
+id: http://example.com/prefixed
+name: prefixed
+prefixes:
+  pref: http://example.com/prefixed/
+  geo: http://example.com/geo/
+  linkml: https://w3id.org/linkml/
+imports:
+  - linkml:types
+default_prefix: pref
+slots:
+  "geo:point":
+    range: string
+classes:
+  "geo:Geometry":
+    description: Geometry class with prefixed name
+    slots:
+      - "geo:point"
