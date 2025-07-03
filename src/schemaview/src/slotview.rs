@@ -1,9 +1,9 @@
+use std::cell::{OnceCell, Ref, RefCell};
 use std::collections::HashSet;
 
 
 use curies::Converter;
-use linkml_meta::{EnumDefinition, SlotDefinition};
-
+use linkml_meta::{EnumDefinition, SchemaDefinition, SlotDefinition, SlotExpressionOrSubtype};
 use crate::classview::ClassView;
 use crate::identifier::Identifier;
 use crate::schemaview::SchemaView;
@@ -23,30 +23,67 @@ pub enum SlotInlineMode {
 }
 
 #[derive(Clone)]
+pub struct RangeInfo<'a>{
+    pub e: SlotExpressionOrSubtype,
+    pub slotview: &'a SlotView<'a>,
+}
+
+
+
+#[derive(Clone)]
 pub struct SlotView<'a> {
     pub name: String,
     pub(crate) schema_uri: &'a str,
     pub definitions: Vec<&'a SlotDefinition>,
     pub(crate) sv: &'a SchemaView,
+    pub(crate) schema_definition: &'a SchemaDefinition,
+    cached_definition: OnceCell<SlotDefinition>,
 }
 
+
+
 impl<'a> SlotView<'a> {
-    pub fn new(name: String, slot: &'a SlotDefinition, schema_uri: &'a str, schemaview: &'a SchemaView) -> Self {
+    pub fn new(name: String, definitions: Vec<&'a SlotDefinition>, schema_uri: &'a str, schemaview: &'a SchemaView, sdefinition: &'a SchemaDefinition) -> Self {
         Self {
             name,
             schema_uri,
-            definitions: vec![slot],
+            definitions: definitions,
             sv: schemaview,
+            schema_definition: sdefinition,
+            cached_definition: OnceCell::new(),
         }
     }
 
-    pub fn definition(&self) -> SlotDefinition {
-        let mut b = self.definitions[0].clone();
-        for d in self.definitions.iter().skip(1) {
-            b.merge_with(*d);
-        }
-        return b;
+    pub fn definition(&self) -> &SlotDefinition {
+        self.cached_definition.get_or_init(|| {
+            let mut b = self.definitions[0].clone();
+            for d in self.definitions.iter().skip(1) {
+                b.merge_with(*d);
+            }
+            return b;
+        })
     }
+
+
+    pub fn get_range_info(&'a self) -> Box<dyn Iterator<Item = RangeInfo<'a>> + 'a> {
+        let def = self.definition();
+
+        if !def.any_of.is_empty() {
+            Box::new(
+                def.any_of.iter().map(move |expr| RangeInfo {
+                    e: SlotExpressionOrSubtype::from(expr.as_ref().clone()),
+                    slotview: self,
+                })
+            )
+        } else {
+            Box::new(std::iter::once(RangeInfo {
+                e: SlotExpressionOrSubtype::from(def.clone()),
+                slotview: self,
+            }))
+        }
+    }
+
+
 
     pub fn get_range_class(&self) -> Option<ClassView<'a>> {
         let conv = self.sv.converter_for_schema(self.schema_uri)?;
@@ -181,7 +218,7 @@ impl<'a> SlotView<'a> {
         sv: &'a SchemaView,
         conv: &Converter,
     ) -> bool {
-        let mut classes_to_check = match self.definition().range {
+        let mut classes_to_check = match self.definition().range.to_owned() {
             Some(r) => vec![r],
             None => return false,
         };
@@ -189,7 +226,7 @@ impl<'a> SlotView<'a> {
         let target = &cls.class.name;
 
         while let Some(c) = classes_to_check.pop() {
-            if !seen.insert(c.clone()) {
+            if !seen.insert(c.to_owned()) {
                 continue;
             }
             if let Ok(Some(cv)) = sv.get_class(&Identifier::new(&c), conv) {
@@ -199,7 +236,7 @@ impl<'a> SlotView<'a> {
                 for slot in cv.slots() {
                     if let Some(r) = &slot.definition().range {
                         if !seen.contains(r) {
-                            classes_to_check.push(r.clone());
+                            classes_to_check.push(r.to_owned());
                         }
                     }
                 }

@@ -228,7 +228,7 @@ impl SchemaView {
                     None => return Ok(None),
                 };
                 if let Some(class_def) = schema.classes.get(name) {
-                    return Ok(Some(ClassView::new(class_def, self, primary, conv)?));
+                    return Ok(Some(ClassView::new(class_def, self, primary, schema, conv)?));
                 }
                 // search other schemas if not found in primary
                 for (uri, schema) in &self.schema_definitions {
@@ -236,7 +236,7 @@ impl SchemaView {
                         continue;
                     }
                     if let Some(class_def) = schema.classes.get(name) {
-                        return Ok(Some(ClassView::new(class_def, self, uri, conv)?));
+                        return Ok(Some(ClassView::new(class_def, self, uri, schema,conv)?));
                     }
                 }
                 Ok(None)
@@ -246,7 +246,7 @@ impl SchemaView {
                 if let Some((schema_uri, class_name)) = index.get(&target_uri.0) {
                     if let Some(schema) = self.schema_definitions.get(schema_uri) {
                         if let Some(class) = schema.classes.get(class_name) {
-                            return Ok(Some(ClassView::new(class, self, schema_uri, conv)?));
+                            return Ok(Some(ClassView::new(class, self, schema_uri, schema,conv)?));
                         }
                     }
                 }
@@ -282,11 +282,11 @@ impl SchemaView {
                     None => return Ok(None),
                 };
                 if let Some(slot_def) = schema.slot_definitions.get(name) {
-                    return Ok(Some(SlotView::new(name.clone(), slot_def, &schema.id, self)));
+                    return Ok(Some(SlotView::new(name.clone(), vec![slot_def], &schema.id, self, schema)));
                 }
                 for alt in alt_names(name) {
                     if let Some(slot_def) = schema.slot_definitions.get(&alt) {
-                        return Ok(Some(SlotView::new(alt, slot_def, &schema.id, self)));
+                        return Ok(Some(SlotView::new(alt, vec![slot_def], &schema.id, self, schema)));
                     }
                 }
                 for (uri, schema) in &self.schema_definitions {
@@ -294,11 +294,11 @@ impl SchemaView {
                         continue;
                     }
                     if let Some(slot_def) = schema.slot_definitions.get(name) {
-                        return Ok(Some(SlotView::new(name.clone(), slot_def, &schema.id, self)));
+                        return Ok(Some(SlotView::new(name.clone(), vec![slot_def], &schema.id, self, schema)));
                     }
                     for alt in alt_names(name) {
                         if let Some(slot_def) = schema.slot_definitions.get(&alt) {
-                            return Ok(Some(SlotView::new(alt, slot_def, &schema.id, self)));
+                            return Ok(Some(SlotView::new(alt, vec![slot_def], &schema.id, self, schema)));
                         }
                     }
                 }
@@ -309,7 +309,7 @@ impl SchemaView {
                 if let Some((schema_uri, slot_name)) = index.get(&target_uri.0) {
                     if let Some(schema) = self.schema_definitions.get(schema_uri) {
                         if let Some(slot) = schema.slot_definitions.get(slot_name) {
-                            return Ok(Some(SlotView::new(slot_name.clone(), slot, &schema.id, self)));
+                            return Ok(Some(SlotView::new(slot_name.clone(), vec![slot], &schema.id, self, schema)));
                         }
                     }
                 }

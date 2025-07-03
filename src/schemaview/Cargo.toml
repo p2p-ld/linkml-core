@@ -11,6 +11,7 @@ crate-type = ["rlib"]
 [dependencies]
 linkml_meta = { path = "../metamodel" }
 serde_yml = "0.0.12"
+itertools = "0.14.0"
 serde_path_to_error = "0.1.17"
 reqwest = { version = "0.12.16" , features = ["blocking"] }
 curies = "0.1.3"

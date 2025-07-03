@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use curies::Converter;
-use linkml_meta::{ClassDefinition, SlotDefinition};
+use linkml_meta::{ClassDefinition, SchemaDefinition, SlotDefinition};
 
 use crate::identifier::{Identifier, IdentifierError};
 use crate::schemaview::{SchemaView, SchemaViewError};
@@ -13,6 +13,7 @@ pub struct ClassView<'a> {
     pub(crate) slots: Vec<SlotView<'a>>,
     pub(crate) schema_uri: &'a str,
     pub(crate) sv: &'a SchemaView,
+    pub(crate) schema_definition: &'a SchemaDefinition,
 }
 
 impl<'a> ClassView<'a> {
@@ -23,6 +24,7 @@ impl<'a> ClassView<'a> {
         class: &'a ClassDefinition,
         sv: &'a SchemaView,
         schema_uri: &'a str,
+        schema_definition: &'a SchemaDefinition,
         conv: &Converter,
     ) -> Result<Self, SchemaViewError> {
         fn gather<'b>(
@@ -31,6 +33,7 @@ impl<'a> ClassView<'a> {
             sv: &'b SchemaView,
             conv: &Converter,
             visited: &mut HashSet<String>,
+            schema_definition: &'b SchemaDefinition,
             acc: &mut HashMap<String, SlotView<'b>>,
         ) -> Result<(), SchemaViewError> {
             if !visited.insert(class_def.name.clone()) {
@@ -39,12 +42,12 @@ impl<'a> ClassView<'a> {
 
             if let Some(parent) = &class_def.is_a {
                 if let Some(cv) = sv.get_class(&Identifier::new(parent), conv)? {
-                    gather(cv.class, schema_uri, sv, conv, visited, acc)?;
+                    gather(cv.class, schema_uri, sv, conv, visited,  schema_definition, acc)?;
                 }
             }
             for mixin in &class_def.mixins {
                 if let Some(cv) = sv.get_class(&Identifier::new(mixin), conv)? {
-                    gather(cv.class, schema_uri, sv, conv, visited, acc)?;
+                    gather(cv.class, schema_uri, sv, conv, visited, schema_definition, acc)?;
                 }
             }
 
@@ -60,12 +63,7 @@ impl<'a> ClassView<'a> {
                 }
                 acc.insert(
                     slot_ref.clone(),
-                    SlotView {
-                        name: slot_ref.clone(),
-                        schema_uri: slot_schema_uri,
-                        definitions: defs,
-                        sv: sv,
-                    },
+                    SlotView::new(slot_ref.clone(), defs, slot_schema_uri, sv, schema_definition)
                 );
             }
 
@@ -76,12 +74,7 @@ impl<'a> ClassView<'a> {
                 }
                 acc.insert(
                     attr_name.clone(),
-                    SlotView {
-                        name: attr_name.clone(),
-                        schema_uri,
-                        definitions: defs,
-                        sv: sv,
-                    },
+                    SlotView::new(attr_name.clone(), defs, schema_uri, sv, schema_definition),
                 );
             }
 
@@ -96,22 +89,12 @@ impl<'a> ClassView<'a> {
                         defs.push(usage_def);
                         acc.insert(
                             usage_name.clone(),
-                            SlotView {
-                                name: usage_name.clone(),
-                                schema_uri: base.schema_uri,
-                                definitions: defs,
-                                sv: sv,
-                            },
+                            SlotView::new(usage_name.clone(), defs, base.schema_uri, sv, schema_definition),
                         );
                     } else {
                         acc.insert(
                             usage_name.clone(),
-                            SlotView {
-                                name: usage_name.clone(),
-                                schema_uri,
-                                definitions: vec![usage_def],
-                                sv: sv,
-                            },
+                            SlotView::new(usage_name.clone(), vec![usage_def], schema_uri, sv, schema_definition),
                         );
                     }
                 }
@@ -121,12 +104,13 @@ impl<'a> ClassView<'a> {
 
         let mut visited = HashSet::new();
         let mut acc: HashMap<String, SlotView<'a>> = HashMap::new();
-        gather(class, schema_uri, sv, conv, &mut visited, &mut acc)?;
+        gather(class, schema_uri, sv, conv, &mut visited, schema_definition, &mut acc)?;
         Ok(Self {
             class,
             slots: acc.into_values().collect(),
             schema_uri,
             sv,
+            schema_definition,
         })
     }
 
