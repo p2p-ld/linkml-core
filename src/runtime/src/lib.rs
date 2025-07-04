@@ -103,7 +103,7 @@ impl<'a> LinkMLValue<'a> {
         sv: &'a SchemaView,
         conv: &Converter,
     ) -> ClassView<'a> {
-        let descendants = match base.get_descendants(conv, true) {
+        let descendants = match base.get_descendants( true, false) {
             Ok(d) => d,
             Err(_) => Vec::new(),
         };

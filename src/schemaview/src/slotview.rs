@@ -31,7 +31,7 @@ pub struct RangeInfo<'a>{
 
 impl<'a> RangeInfo<'a> {
     pub fn get_range_class(&self) -> Option<ClassView<'a>> {
-        let conv = self.slotview.sv.converter_for_schema(self.slotview.schema_uri)?;
+        let conv = self.slotview.sv.converter_for_schema(&self.slotview.schema_uri)?;
         self.e
             .range()
             .and_then(|r| self.slotview.sv.get_class(&Identifier::new(r), &conv).ok().flatten())
@@ -128,7 +128,7 @@ impl<'a> RangeInfo<'a> {
 #[derive(Clone)]
 pub struct SlotView<'a> {
     pub name: String,
-    pub(crate) schema_uri: &'a str,
+    pub(crate) schema_uri: String,
     pub definitions: Vec<&'a SlotDefinition>,
     pub(crate) sv: &'a SchemaView,
     pub(crate) schema_definition: &'a SchemaDefinition,
@@ -138,10 +138,10 @@ pub struct SlotView<'a> {
 
 
 impl<'a> SlotView<'a> {
-    pub fn new(name: String, definitions: Vec<&'a SlotDefinition>, schema_uri: &'a str, schemaview: &'a SchemaView, sdefinition: &'a SchemaDefinition) -> Self {
+    pub fn new(name: String, definitions: Vec<&'a SlotDefinition>, schema_uri: &str, schemaview: &'a SchemaView, sdefinition: &'a SchemaDefinition) -> Self {
         Self {
             name,
-            schema_uri,
+            schema_uri: schema_uri.to_owned(),
             definitions: definitions,
             sv: schemaview,
             schema_definition: sdefinition,
