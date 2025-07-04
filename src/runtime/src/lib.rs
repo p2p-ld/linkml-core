@@ -186,7 +186,7 @@ impl<'a> LinkMLValue<'a> {
     fn parse_list_slot(
         value: JsonValue,
         class: Option<ClassView<'a>>,
-        sl: &SlotView<'a>,
+        sl: SlotView<'a>,
         sv: &'a SchemaView,
         conv: &Converter,
         inside_list: bool,
@@ -195,7 +195,7 @@ impl<'a> LinkMLValue<'a> {
         match (inside_list, value) {
             (false, JsonValue::Array(arr)) => {
                 let mut values = Vec::new();
-                let class_range = sl.get_range_class();
+                let class_range: Option<ClassView<'a>> = sl.get_range_class();
                 let slot_for_item = if class_range.is_some() {
                     None
                 } else {
@@ -455,6 +455,7 @@ impl<'a> LinkMLValue<'a> {
             sv,
         })
     }
+
     fn from_json_internal(
         value: JsonValue,
         class: Option<ClassView<'a>>,
@@ -471,7 +472,7 @@ impl<'a> LinkMLValue<'a> {
                     return Self::parse_list_slot(
                         value,
                         class.clone(),
-                        sl,
+                        sl.clone(),
                         sv,
                         conv,
                         inside_list,

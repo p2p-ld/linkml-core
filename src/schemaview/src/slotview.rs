@@ -26,7 +26,7 @@ pub enum SlotInlineMode {
 #[derive(Clone)]
 pub struct RangeInfo<'a>{
     pub e: SlotExpressionOrSubtype,
-    pub slotview: &'a SlotView<'a>,
+    pub slotview: SlotView<'a>,
 }
 
 impl<'a> RangeInfo<'a> {
@@ -160,28 +160,28 @@ impl<'a> SlotView<'a> {
     }
 
 
-    pub fn get_range_info(&'a self) -> Box<dyn Iterator<Item = RangeInfo<'a>> + 'a> {
+    pub fn get_range_info(&self) -> Box<dyn Iterator<Item = RangeInfo<'a>> + 'a> {
         let def = self.definition();
-        if let Some(any_of) = &def.any_of {
+        if let Some(any_of) = def.any_of.clone() {
             if !any_of.is_empty() {
-                return Box::new(
-                    any_of.iter().map(move |expr| RangeInfo {
+                let sv = self.clone();
+                let iter = any_of.clone().into_iter().map(move |expr| -> RangeInfo<'a> {RangeInfo {
                         e: SlotExpressionOrSubtype::from(expr.as_ref().clone()),
-                        slotview: self,
-                    })
-                );
+                        slotview: sv.clone(),
+                    }});
+                return Box::new(iter);
             }
         }
         return Box::new(std::iter::once(RangeInfo {
             e: SlotExpressionOrSubtype::from(def.clone()),
-            slotview: self,
+            slotview: self.clone(),
         }));
 
     }
 
 
 
-    pub fn get_range_class(&'a self) -> Option<ClassView<'a>> {
+    pub fn get_range_class(&self) -> Option<ClassView<'a>> {
         return self.get_range_info().next().and_then(|ri| ri.get_range_class());
     }
 
