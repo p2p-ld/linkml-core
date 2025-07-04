@@ -120,7 +120,7 @@ impl PySchemaView {
             .get_class(&Identifier::new(id), &conv)
             .map_err(|e| PyException::new_err(format!("{:?}", e)))?
             .map(|cv| PyClassView {
-                class_name: cv.class.name.clone(),
+                class_name: cv.def().name.clone(),
                 sv: self.inner.clone(),
             }))
     }
@@ -233,7 +233,7 @@ impl LinkMLValueOwned {
                     .iter()
                     .map(|(k, v)| (k.clone(), Self::from_linkml(v)))
                     .collect(),
-                class: Some(class.class.name.clone()),
+                class: Some(class.def().name.clone()),
             },
         }
     }

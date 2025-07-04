@@ -165,6 +165,10 @@ impl ClassView {
         &self.data.slots
     }
 
+    pub fn def(&self) -> &ClassDefinition {
+        &self.data.class
+    }
+
     pub fn get_uri(
         &self,
         conv: &Converter,
