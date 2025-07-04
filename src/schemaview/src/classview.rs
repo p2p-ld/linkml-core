@@ -45,26 +45,32 @@ impl<'a> ClassView<'a> {
                     gather(cv.class, schema_uri, sv, conv, visited,  schema_definition, acc)?;
                 }
             }
-            for mixin in &class_def.mixins {
-                if let Some(cv) = sv.get_class(&Identifier::new(mixin), conv)? {
-                    gather(cv.class, schema_uri, sv, conv, visited, schema_definition, acc)?;
+            if let Some(mixins) = &class_def.mixins {
+                for mixin in mixins {
+                    if let Some(cv) = sv.get_class(&Identifier::new(mixin), conv)? {
+                        gather(cv.class, schema_uri, sv, conv, visited, schema_definition, acc)?;
+                    }
                 }
             }
 
-            for slot_ref in &class_def.slots {
-                let mut slot_schema_uri = schema_uri;
-                let mut defs: Vec<&'b SlotDefinition> = Vec::new();
-                if let Some(base) = sv.get_slot(&Identifier::new(slot_ref), conv)? {
-                    slot_schema_uri = base.schema_uri;
-                    defs.extend(base.definitions);
+            if let Some(slots) = &class_def.slots {
+                for slot_ref in slots {
+                    let mut slot_schema_uri = schema_uri;
+                    let mut defs: Vec<&'b SlotDefinition> = Vec::new();
+                    if let Some(base) = sv.get_slot(&Identifier::new(slot_ref), conv)? {
+                        slot_schema_uri = base.schema_uri;
+                        defs.extend(base.definitions);
+                    }
+                    if let Some(cu) = &class_def.slot_usage {
+                        if let Some(usage) = cu.get(slot_ref) {
+                            defs.push(usage);
+                        }
+                    }
+                    acc.insert(
+                        slot_ref.clone(),
+                        SlotView::new(slot_ref.clone(), defs, slot_schema_uri, sv, schema_definition)
+                    );
                 }
-                if let Some(usage) = class_def.slot_usage.get(slot_ref) {
-                    defs.push(usage);
-                }
-                acc.insert(
-                    slot_ref.clone(),
-                    SlotView::new(slot_ref.clone(), defs, slot_schema_uri, sv, schema_definition)
-                );
             }
 
             for (attr_name, attr_def) in &class_def.attributes {
