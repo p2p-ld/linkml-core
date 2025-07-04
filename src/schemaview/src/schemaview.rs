@@ -32,6 +32,7 @@ impl From<IdentifierError> for SchemaViewError {
 struct SchemaViewData {
     pub(crate) schema_definitions: HashMap<String, SchemaDefinition>,
     pub(crate) primary_schema: Option<String>,
+    pub(crate) converters: HashMap<String, Converter>,
 }
 
 struct SchemaViewCache {
@@ -59,6 +60,7 @@ impl SchemaViewData {
         SchemaViewData {
             schema_definitions: HashMap::new(),
             primary_schema: None,
+            converters: HashMap::new(),
         }
     }
 }
@@ -137,6 +139,7 @@ impl SchemaView {
         self.index_schema_slots(&schema_uri, &schema, &conv)
             .map_err(|e| format!("{:?}", e))?;
         let d = Arc::make_mut(&mut self.data);      // &mut SchemaViewData
+        d.converters.insert(schema_uri.to_string(), conv.clone());
         d.schema_definitions
             .insert(schema_uri.to_string(), schema);
         if d.primary_schema.is_none() {
@@ -157,13 +160,11 @@ impl SchemaView {
         converter_from_schemas(self.data.schema_definitions.values())
     }
 
-    pub fn converter_for_schema(&self, schema_uri: &str) -> Option<Converter> {
-        self.data.schema_definitions
-            .get(schema_uri)
-            .map(|s| converter_from_schema(s))
+    pub fn converter_for_schema(&self, schema_uri: &str) -> Option<&Converter> {
+        return self.data.converters.get(schema_uri);
     }
 
-    pub fn converter_for_primary_schema(&self) -> Option<Converter> {
+    pub fn converter_for_primary_schema(&self) -> Option<&Converter> {
         self.data.primary_schema
             .as_ref()
             .and_then(|uri| self.converter_for_schema(uri))
@@ -315,7 +316,7 @@ impl SchemaView {
                     // create a new ClassView and cache it
                     let class_view = ClassView::new(
                         class_def, self, schema_uri, schema_def,
-                        &self.converter_for_schema(schema_uri).ok_or_else(|| {
+                        self.converter_for_schema(schema_uri).ok_or_else(|| {
                             println!("No converter for schema {}", schema_uri);
                             SchemaViewError::NoConverterForSchema(schema_uri.to_string())
                         })?,
