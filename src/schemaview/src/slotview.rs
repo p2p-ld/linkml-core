@@ -181,131 +181,25 @@ impl<'a> SlotView<'a> {
 
 
 
-    pub fn get_range_class(&self) -> Option<ClassView<'a>> {
-        let conv = self.sv.converter_for_schema(self.schema_uri)?;
-        self.definition()
-            .range
-            .as_ref()
-            .and_then(|r| self.sv.get_class(&Identifier::new(r), &conv).ok().flatten())
+    pub fn get_range_class(&'a self) -> Option<ClassView<'a>> {
+        return self.get_range_info().next().and_then(|ri| ri.get_range_class());
     }
 
     pub fn get_range_enum(&self) -> Option<EnumDefinition> {
-        self.definition()
-            .range
-            .as_ref()
-            .and_then(|r| self.sv.get_enum_definition(&Identifier::new(r)))
+        return self.get_range_info().next().and_then(|ri| ri.get_range_enum());
     }
 
     pub fn is_range_scalar(&self) -> bool {
-        // its scalar if its not a class range
-        let cr = self.get_range_class();
-        if let Some(cr) = cr {
-            if cr.name() == "Anything" || cr.name() == "AnyValue" {
-                return true;
-            }
-            return false;
-        }
-        true
+        return self.get_range_info().next().map_or(true, |ri| ri.is_range_scalar());
     }
 
 
     pub fn determine_slot_container_mode(&self) -> SlotContainerMode {
-        let conv = self.sv.converter_for_schema(self.schema_uri).unwrap();
-        let s = self.definition();
-        let multivalued = s.multivalued.unwrap_or(false);
-        let class_range = match &s.range {
-            Some(r) => self.sv
-                .get_class(&Identifier::new(r), &conv)
-                .ok()
-                .flatten()
-                .is_some(),
-            None => false,
-        };
-
-        if !class_range {
-            return if multivalued {
-                SlotContainerMode::List
-            } else {
-                SlotContainerMode::SingleValue
-            };
-        }
-
-        if multivalued && s.inlined_as_list.unwrap_or(false) {
-            return SlotContainerMode::List;
-        }
-
-        let range_cv = s
-            .range
-            .as_ref()
-            .and_then(|r| self.sv.get_class(&Identifier::new(r), &conv).ok().flatten());
-        let key_slot = range_cv.as_ref().and_then(|cv| cv.key_or_identifier_slot());
-        let identifier_slot = range_cv.as_ref().and_then(|cv| cv.identifier_slot());
-
-        let mut inlined = s.inlined.unwrap_or(false);
-        if identifier_slot.is_none() {
-            inlined = true;
-        }
-
-        if !multivalued {
-            return SlotContainerMode::SingleValue;
-        }
-
-        if !inlined {
-            return SlotContainerMode::List;
-        }
-
-        if key_slot.is_some() {
-            SlotContainerMode::Mapping
-        } else {
-            SlotContainerMode::List
-        }
+        return self.get_range_info().next().map_or(SlotContainerMode::SingleValue, |ri| ri.determine_slot_container_mode());
     }
 
     pub fn determine_slot_inline_mode(&self) -> SlotInlineMode {
-        let conv = self.sv.converter_for_schema(self.schema_uri).unwrap();
-        let s = self.definition();
-        let multivalued = s.multivalued.unwrap_or(false);
-        let class_range = match &s.range {
-            Some(r) => self.sv
-                .get_class(&Identifier::new(r), &conv)
-                .ok()
-                .flatten()
-                .is_some(),
-            None => false,
-        };
-
-        if !class_range {
-            return SlotInlineMode::Primitive;
-        }
-
-        if multivalued && s.inlined_as_list.unwrap_or(false) {
-            return SlotInlineMode::Inline;
-        }
-
-        let range_cv = s
-            .range
-            .as_ref()
-            .and_then(|r| self.sv.get_class(&Identifier::new(r), &conv).ok().flatten());
-        let identifier_slot = range_cv.as_ref().and_then(|cv| cv.identifier_slot());
-
-        let mut inlined = s.inlined.unwrap_or(false);
-        if identifier_slot.is_none() {
-            inlined = true;
-        }
-
-        if !multivalued {
-            return if inlined {
-                SlotInlineMode::Inline
-            } else {
-                SlotInlineMode::Reference
-            };
-        }
-
-        if !inlined {
-            SlotInlineMode::Reference
-        } else {
-            SlotInlineMode::Inline
-        }
+        return self.get_range_info().next().map_or(SlotInlineMode::Primitive, |ri| ri.determine_slot_inline_mode());
     }
 
 }
