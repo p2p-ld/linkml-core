@@ -73,38 +73,21 @@ impl<'a> ClassView<'a> {
                 }
             }
 
-            for (attr_name, attr_def) in &class_def.attributes {
-                let mut defs = vec![attr_def.as_ref()];
-                if let Some(usage) = class_def.slot_usage.get(attr_name) {
-                    defs.push(usage);
+            if let Some(attribs ) = &class_def.attributes {
+                for (attr_name, attr_def) in attribs {
+                    let mut defs = vec![attr_def.as_ref()];
+                    if let Some(cu) = &class_def.slot_usage {
+                        if let Some(usage) = cu.get(attr_name) {
+                            defs.push(usage);
+                        }
+                    }
+                    acc.insert(
+                        attr_name.clone(),
+                        SlotView::new(attr_name.clone(), defs, schema_uri, sv, schema_definition),
+                    );
                 }
-                acc.insert(
-                    attr_name.clone(),
-                    SlotView::new(attr_name.clone(), defs, schema_uri, sv, schema_definition),
-                );
             }
 
-            for (usage_name, usage_def) in &class_def.slot_usage {
-                if !class_def.slots.contains(usage_name)
-                    && !class_def.attributes.contains_key(usage_name)
-                {
-                    if let Some(existing) = acc.get_mut(usage_name) {
-                        existing.definitions.push(usage_def);
-                    } else if let Some(base) = sv.get_slot(&Identifier::new(usage_name), conv)? {
-                        let mut defs: Vec<&'b SlotDefinition> = base.definitions.to_vec();
-                        defs.push(usage_def);
-                        acc.insert(
-                            usage_name.clone(),
-                            SlotView::new(usage_name.clone(), defs, base.schema_uri, sv, schema_definition),
-                        );
-                    } else {
-                        acc.insert(
-                            usage_name.clone(),
-                            SlotView::new(usage_name.clone(), vec![usage_def], schema_uri, sv, schema_definition),
-                        );
-                    }
-                }
-            }
             Ok(())
         }
 
@@ -208,35 +191,39 @@ impl<'a> ClassView<'a> {
     ) -> Result<Vec<ClassView<'a>>, SchemaViewError> {
         let mut out = Vec::new();
         for schema in self.sv.schema_definitions.values() {
-            for (cls_name, cls_def) in &schema.classes {
-                let mut is_descendant = false;
-                if let Some(parent) = &cls_def.is_a {
-                    if let Some(parent_cv) = self.sv.get_class(&Identifier::new(parent), conv)? {
-                        if parent_cv.class.name == self.class.name
-                            && parent_cv.schema_uri == self.schema_uri
-                        {
-                            is_descendant = true;
-                        }
-                    }
-                }
-                if !is_descendant {
-                    for mixin in &cls_def.mixins {
-                        if let Some(mixin_cv) = self.sv.get_class(&Identifier::new(mixin), conv)? {
-                            if mixin_cv.class.name == self.class.name
-                                && mixin_cv.schema_uri == self.schema_uri
+            if let Some(classes) = &schema.classes {
+                for (cls_name, cls_def) in classes {
+                    let mut is_descendant = false;
+                    if let Some(parent) = &cls_def.is_a {
+                        if let Some(parent_cv) = self.sv.get_class(&Identifier::new(parent), conv)? {
+                            if parent_cv.class.name == self.class.name
+                                && parent_cv.schema_uri == self.schema_uri
                             {
                                 is_descendant = true;
-                                break;
                             }
                         }
                     }
-                }
-                if is_descendant {
-                    if let Some(child_cv) = self.sv.get_class(&Identifier::new(cls_name), conv)? {
-                        if recurse {
-                            out.extend(child_cv.get_descendants(conv, true)?);
+                    if !is_descendant {
+                        if let Some(mixins) = &cls_def.mixins {
+                            for mixin in mixins {
+                                if let Some(mixin_cv) = self.sv.get_class(&Identifier::new(mixin), conv)? {
+                                    if mixin_cv.class.name == self.class.name
+                                        && mixin_cv.schema_uri == self.schema_uri
+                                    {
+                                        is_descendant = true;
+                                        break;
+                                    }
+                                }
+                            }
                         }
-                        out.push(child_cv);
+                    }
+                    if is_descendant {
+                        if let Some(child_cv) = self.sv.get_class(&Identifier::new(cls_name), conv)? {
+                            if recurse {
+                                out.extend(child_cv.get_descendants(conv, true)?);
+                            }
+                            out.push(child_cv);
+                        }
                     }
                 }
             }

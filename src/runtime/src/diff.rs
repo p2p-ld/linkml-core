@@ -10,8 +10,7 @@ fn slot_is_ignored(slot: &SlotView) -> bool {
         return false;
     }
     slot.definition()
-        .annotations
-        .contains_key(IGNORE_ANNOTATION)
+        .annotations.as_ref().map(|a| a.contains_key(IGNORE_ANNOTATION)).unwrap_or(false)
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

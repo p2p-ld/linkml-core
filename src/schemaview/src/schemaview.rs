@@ -15,7 +15,7 @@ pub use crate::slotview::{SlotContainerMode, SlotInlineMode, SlotView};
 pub enum SchemaViewError {
     IdentifierError(IdentifierError),
     NoPrimarySchema(String),
-    NotFound
+    NotFound,
 }
 
 impl From<IdentifierError> for SchemaViewError {
@@ -52,11 +52,14 @@ impl SchemaView {
             // find a class with tree_root set to true in the primary schema
             if let Some(primary) = &self.primary_schema {
                 if let Some(schema) = self.schema_definitions.get(primary) {
-                    for (name, class_def) in &schema.classes {
-                        if class_def.tree_root.is_some_and(|x| x == true) {
-                            if let Ok(Some(cv)) = self.get_class(&Identifier::new(name), &converter)
-                            {
-                                return Some(cv);
+                    if let Some(classes) = &schema.classes {
+                        for (name, class_def) in classes {
+                            if class_def.tree_root.is_some_and(|x| x == true) {
+                                if let Ok(Some(cv)) =
+                                    self.get_class(&Identifier::new(name), &converter)
+                                {
+                                    return Some(cv);
+                                }
                             }
                         }
                     }
@@ -106,7 +109,10 @@ impl SchemaView {
             .and_then(|uri| self.converter_for_schema(uri))
     }
 
-    pub fn get_enum_definition(&self, _identifier: &Identifier) -> Option<linkml_meta::EnumDefinition> {
+    pub fn get_enum_definition(
+        &self,
+        _identifier: &Identifier,
+    ) -> Option<linkml_meta::EnumDefinition> {
         // TODO implement this
         None
     }
@@ -118,31 +124,32 @@ impl SchemaView {
         conv: &Converter,
     ) -> Result<(), IdentifierError> {
         let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
-        for (class_name, class_def) in &schema.classes {
-            let default_id = if class_name.contains(':') && class_def.class_uri.is_none() {
-                Identifier::new(class_name)
-            } else {
-                Identifier::new(&format!("{}:{}", default_prefix, class_name))
-            };
-            let default_uri = default_id
-                .to_uri(conv)
-                .map(|u| u.0)
-                .unwrap_or_else(|_| format!("{}/{}", schema.id.trim_end_matches('/'), class_name));
+        if let Some(classes) = &schema.classes {
+            for (class_name, class_def) in classes {
+                let default_id = if class_name.contains(':') && class_def.class_uri.is_none() {
+                    Identifier::new(class_name)
+                } else {
+                    Identifier::new(&format!("{}:{}", default_prefix, class_name))
+                };
+                let default_uri = default_id.to_uri(conv).map(|u| u.0).unwrap_or_else(|_| {
+                    format!("{}/{}", schema.id.trim_end_matches('/'), class_name)
+                });
 
-            if let Some(curi) = &class_def.class_uri {
-                let explicit_uri = Identifier::new(curi).to_uri(conv)?.0;
-                self.class_uri_index
-                    .entry(explicit_uri.clone())
-                    .or_insert_with(|| (schema_uri.to_string(), class_name.clone()));
-                if explicit_uri != default_uri {
+                if let Some(curi) = &class_def.class_uri {
+                    let explicit_uri = Identifier::new(curi).to_uri(conv)?.0;
                     self.class_uri_index
-                        .entry(default_uri.clone())
+                        .entry(explicit_uri.clone())
+                        .or_insert_with(|| (schema_uri.to_string(), class_name.clone()));
+                    if explicit_uri != default_uri {
+                        self.class_uri_index
+                            .entry(default_uri.clone())
+                            .or_insert_with(|| (schema_uri.to_string(), class_name.clone()));
+                    }
+                } else {
+                    self.class_uri_index
+                        .entry(default_uri)
                         .or_insert_with(|| (schema_uri.to_string(), class_name.clone()));
                 }
-            } else {
-                self.class_uri_index
-                    .entry(default_uri)
-                    .or_insert_with(|| (schema_uri.to_string(), class_name.clone()));
             }
         }
         Ok(())
@@ -155,31 +162,32 @@ impl SchemaView {
         conv: &Converter,
     ) -> Result<(), IdentifierError> {
         let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
-        for (slot_name, slot_def) in &schema.slot_definitions {
-            let default_id = if slot_name.contains(':') && slot_def.slot_uri.is_none() {
-                Identifier::new(slot_name)
-            } else {
-                Identifier::new(&format!("{}:{}", default_prefix, slot_name))
-            };
-            let default_uri = default_id
-                .to_uri(conv)
-                .map(|u| u.0)
-                .unwrap_or_else(|_| format!("{}/{}", schema.id.trim_end_matches('/'), slot_name));
+        if let Some(definitions) = &schema.slot_definitions {
+            for (slot_name, slot_def) in definitions {
+                let default_id = if slot_name.contains(':') && slot_def.slot_uri.is_none() {
+                    Identifier::new(slot_name)
+                } else {
+                    Identifier::new(&format!("{}:{}", default_prefix, slot_name))
+                };
+                let default_uri = default_id.to_uri(conv).map(|u| u.0).unwrap_or_else(|_| {
+                    format!("{}/{}", schema.id.trim_end_matches('/'), slot_name)
+                });
 
-            if let Some(suri) = &slot_def.slot_uri {
-                let explicit_uri = Identifier::new(suri).to_uri(conv)?.0;
-                self.slot_uri_index
-                    .entry(explicit_uri.clone())
-                    .or_insert_with(|| (schema_uri.to_string(), slot_name.clone()));
-                if explicit_uri != default_uri {
+                if let Some(suri) = &slot_def.slot_uri {
+                    let explicit_uri = Identifier::new(suri).to_uri(conv)?.0;
                     self.slot_uri_index
-                        .entry(default_uri.clone())
+                        .entry(explicit_uri.clone())
+                        .or_insert_with(|| (schema_uri.to_string(), slot_name.clone()));
+                    if explicit_uri != default_uri {
+                        self.slot_uri_index
+                            .entry(default_uri.clone())
+                            .or_insert_with(|| (schema_uri.to_string(), slot_name.clone()));
+                    }
+                } else {
+                    self.slot_uri_index
+                        .entry(default_uri)
                         .or_insert_with(|| (schema_uri.to_string(), slot_name.clone()));
                 }
-            } else {
-                self.slot_uri_index
-                    .entry(default_uri)
-                    .or_insert_with(|| (schema_uri.to_string(), slot_name.clone()));
             }
         }
         Ok(())
@@ -189,20 +197,22 @@ impl SchemaView {
         // every schemadefinition has imports. check if an import is not in our list
         let mut unresolved = Vec::new();
         for (_name, schema) in &self.schema_definitions {
-            for import in &schema.imports {
-                let import_uri = curie2uri(import, &schema.prefixes);
-                match import_uri {
-                    Some(uri) => {
-                        if !self.schema_definitions.contains_key(&uri) {
-                            unresolved.push(uri);
+            if let Some(imports) = &schema.imports {
+                for import in imports {
+                    let import_uri = curie2uri(import, schema.prefixes.as_ref());
+                    match import_uri {
+                        Some(uri) => {
+                            if !self.schema_definitions.contains_key(&uri) {
+                                unresolved.push(uri);
+                            }
                         }
-                    }
-                    None => {
-                        // if the import cannot be expanded to a URI, treat it as a
-                        // potential local file path and attempt to resolve later
-                        let path = import.to_string();
-                        if !self.schema_definitions.contains_key(&path) {
-                            unresolved.push(path);
+                        None => {
+                            // if the import cannot be expanded to a URI, treat it as a
+                            // potential local file path and attempt to resolve later
+                            let path = import.to_string();
+                            if !self.schema_definitions.contains_key(&path) {
+                                unresolved.push(path);
+                            }
                         }
                     }
                 }
@@ -227,26 +237,38 @@ impl SchemaView {
                     Some(s) => s,
                     None => return Ok(None),
                 };
-                if let Some(class_def) = schema.classes.get(name) {
-                    return Ok(Some(ClassView::new(class_def, self, primary, schema, conv)?));
+                if let Some(classes) = &schema.classes {
+                    if let Some(class_def) = classes.get(name) {
+                        return Ok(Some(ClassView::new(
+                            class_def, self, primary, schema, conv,
+                        )?));
+                    }
                 }
                 // search other schemas if not found in primary
                 for (uri, schema) in &self.schema_definitions {
                     if uri == primary {
                         continue;
                     }
-                    if let Some(class_def) = schema.classes.get(name) {
-                        return Ok(Some(ClassView::new(class_def, self, uri, schema,conv)?));
+                    if let Some(classes) = &schema.classes {
+                        if let Some(class_def) = classes.get(name) {
+                            return Ok(Some(ClassView::new(class_def, self, uri, schema, conv)?));
+                        }
                     }
                 }
                 Ok(None)
             }
             Identifier::Curie(_) | Identifier::Uri(_) => {
-                let target_uri = id.to_uri(conv).map_err(|e| SchemaViewError::IdentifierError(e))?;
+                let target_uri = id
+                    .to_uri(conv)
+                    .map_err(|e| SchemaViewError::IdentifierError(e))?;
                 if let Some((schema_uri, class_name)) = index.get(&target_uri.0) {
                     if let Some(schema) = self.schema_definitions.get(schema_uri) {
-                        if let Some(class) = schema.classes.get(class_name) {
-                            return Ok(Some(ClassView::new(class, self, schema_uri, schema,conv)?));
+                        if let Some(classes) = &schema.classes {
+                            if let Some(class) = classes.get(class_name) {
+                                return Ok(Some(ClassView::new(
+                                    class, self, schema_uri, schema, conv,
+                                )?));
+                            }
                         }
                     }
                 }
@@ -281,24 +303,52 @@ impl SchemaView {
                     Some(s) => s,
                     None => return Ok(None),
                 };
-                if let Some(slot_def) = schema.slot_definitions.get(name) {
-                    return Ok(Some(SlotView::new(name.clone(), vec![slot_def], &schema.id, self, schema)));
-                }
-                for alt in alt_names(name) {
-                    if let Some(slot_def) = schema.slot_definitions.get(&alt) {
-                        return Ok(Some(SlotView::new(alt, vec![slot_def], &schema.id, self, schema)));
+                if let Some(maindefs) = &schema.slot_definitions {
+                    if let Some(slot_def) = maindefs.get(name) {
+                        return Ok(Some(SlotView::new(
+                            name.clone(),
+                            vec![slot_def],
+                            &schema.id,
+                            self,
+                            schema,
+                        )));
+                    }
+                    for alt in alt_names(name) {
+                        if let Some(slot_def) = maindefs.get(&alt) {
+                            return Ok(Some(SlotView::new(
+                                alt,
+                                vec![slot_def],
+                                &schema.id,
+                                self,
+                                schema,
+                            )));
+                        }
                     }
                 }
                 for (uri, schema) in &self.schema_definitions {
                     if uri == primary {
                         continue;
                     }
-                    if let Some(slot_def) = schema.slot_definitions.get(name) {
-                        return Ok(Some(SlotView::new(name.clone(), vec![slot_def], &schema.id, self, schema)));
-                    }
-                    for alt in alt_names(name) {
-                        if let Some(slot_def) = schema.slot_definitions.get(&alt) {
-                            return Ok(Some(SlotView::new(alt, vec![slot_def], &schema.id, self, schema)));
+                    if let Some(defs) = &schema.slot_definitions {
+                        if let Some(slot_def) = defs.get(name) {
+                            return Ok(Some(SlotView::new(
+                                name.clone(),
+                                vec![slot_def],
+                                &schema.id,
+                                self,
+                                schema,
+                            )));
+                        }
+                        for alt in alt_names(name) {
+                            if let Some(slot_def) = defs.get(&alt) {
+                                return Ok(Some(SlotView::new(
+                                    alt,
+                                    vec![slot_def],
+                                    &schema.id,
+                                    self,
+                                    schema,
+                                )));
+                            }
                         }
                     }
                 }
@@ -308,8 +358,16 @@ impl SchemaView {
                 let target_uri = id.to_uri(conv)?;
                 if let Some((schema_uri, slot_name)) = index.get(&target_uri.0) {
                     if let Some(schema) = self.schema_definitions.get(schema_uri) {
-                        if let Some(slot) = schema.slot_definitions.get(slot_name) {
-                            return Ok(Some(SlotView::new(slot_name.clone(), vec![slot], &schema.id, self, schema)));
+                        if let Some(defs) = &schema.slot_definitions {
+                            if let Some(slot) = defs.get(slot_name) {
+                                return Ok(Some(SlotView::new(
+                                    slot_name.clone(),
+                                    vec![slot],
+                                    &schema.id,
+                                    self,
+                                    schema,
+                                )));
+                            }
                         }
                     }
                 }
@@ -331,8 +389,10 @@ impl SchemaView {
             match id {
                 Identifier::Name(n) => {
                     for schema in sv.schema_definitions.values() {
-                        if let Some(t) = schema.types.get(n) {
-                            return Ok(Some(t));
+                        if let Some(types) = &schema.types {
+                            if let Some(t) = types.get(n) {
+                                return Ok(Some(t));
+                            }
                         }
                     }
                     Ok(None)
@@ -340,10 +400,12 @@ impl SchemaView {
                 Identifier::Curie(_) | Identifier::Uri(_) => {
                     let target_uri = id.to_uri(conv)?;
                     for schema in sv.schema_definitions.values() {
-                        for t in schema.types.values() {
-                            if let Some(turi) = &t.type_uri {
-                                if Identifier::new(turi).to_uri(conv)?.0 == target_uri.0 {
-                                    return Ok(Some(t));
+                        if let Some(types) = &schema.types {
+                            for t in types.values() {
+                                if let Some(turi) = &t.type_uri {
+                                    if Identifier::new(turi).to_uri(conv)?.0 == target_uri.0 {
+                                        return Ok(Some(t));
+                                    }
                                 }
                             }
                         }

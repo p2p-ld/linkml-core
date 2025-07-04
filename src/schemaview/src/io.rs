@@ -53,16 +53,19 @@ mod tests {
             Err(why) => panic!("{why:?}"),
         };
 
-        let classes = schema.classes();
-        for (name, class) in classes.iter() {
-            let is_a = &class.is_a;
-            match is_a {
-                None => println!("class: {name} has no superclass"),
-                Some(is_a) => {
-                    println!("class: {name} is a subclass of {is_a:?}")
+        if let Some(classes) = schema.classes() {
+            for (name, class) in classes.iter() {
+                let is_a = &class.is_a;
+                match is_a {
+                    None => println!("class: {name} has no superclass"),
+                    Some(is_a) => {
+                        println!("class: {name} is a subclass of {is_a:?}")
+                    }
                 }
             }
-        }
+        } else {
+            println!("No classes found");
+        };
     }
 
     #[test]

@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 
 use curies::Converter;
-use linkml_meta::{EnumDefinition, SchemaDefinition, SlotDefinition, SlotExpressionOrSubtype};
+use linkml_meta::{any_of, EnumDefinition, SchemaDefinition, SlotDefinition, SlotExpressionOrSubtype};
 use crate::classview::ClassView;
 use crate::identifier::Identifier;
 use crate::schemaview::SchemaView;
@@ -67,20 +67,21 @@ impl<'a> SlotView<'a> {
 
     pub fn get_range_info(&'a self) -> Box<dyn Iterator<Item = RangeInfo<'a>> + 'a> {
         let def = self.definition();
-
-        if !def.any_of.is_empty() {
-            Box::new(
-                def.any_of.iter().map(move |expr| RangeInfo {
-                    e: SlotExpressionOrSubtype::from(expr.as_ref().clone()),
-                    slotview: self,
-                })
-            )
-        } else {
-            Box::new(std::iter::once(RangeInfo {
-                e: SlotExpressionOrSubtype::from(def.clone()),
-                slotview: self,
-            }))
+        if let Some(any_of) = &def.any_of {
+            if !any_of.is_empty() {
+                return Box::new(
+                    any_of.iter().map(move |expr| RangeInfo {
+                        e: SlotExpressionOrSubtype::from(expr.as_ref().clone()),
+                        slotview: self,
+                    })
+                );
+            }
         }
+        return Box::new(std::iter::once(RangeInfo {
+            e: SlotExpressionOrSubtype::from(def.clone()),
+            slotview: self,
+        }));
+
     }
 
 

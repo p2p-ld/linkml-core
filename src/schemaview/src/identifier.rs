@@ -198,14 +198,16 @@ where
     use std::collections::HashMap;
     let mut map: HashMap<String, Record> = HashMap::new();
     for schema in schemas {
-        for (pfx, pref) in &schema.prefixes {
-            match map.get_mut(&pref.prefix_reference) {
-                Some(rec) => {
-                    rec.prefix_synonyms.insert(pfx.clone());
-                }
-                None => {
-                    let r = Record::new(pfx, &pref.prefix_reference);
-                    map.insert(pref.prefix_reference.clone(), r);
+        if let Some(prefixes) = &schema.prefixes {
+            for (pfx, pref) in prefixes {
+                match map.get_mut(&pref.prefix_reference) {
+                    Some(rec) => {
+                        rec.prefix_synonyms.insert(pfx.clone());
+                    }
+                    None => {
+                        let r = Record::new(pfx, &pref.prefix_reference);
+                        map.insert(pref.prefix_reference.clone(), r);
+                    }
                 }
             }
         }

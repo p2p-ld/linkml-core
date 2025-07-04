@@ -335,11 +335,13 @@ pub fn write_turtle<W: Write>(
     options: TurtleOptions,
 ) -> IoResult<()> {
     let mut header = String::new();
-    for (pfx, pref) in &schema.prefixes {
+    if let Some(prefixes) = &schema.prefixes {
+    for (pfx, pref) in prefixes {
         header.push_str(&format!("@prefix {}: <{}> .\n", pfx, pref.prefix_reference));
     }
+    }
     header.push_str("@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n");
-    if !schema.prefixes.contains_key("xsd") {
+    if !schema.prefixes.as_ref().map(|x| x.contains_key("xsd")).unwrap_or(false) {
         header.push_str("@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n");
     }
     header.push_str("\n");
