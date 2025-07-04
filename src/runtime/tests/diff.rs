@@ -33,14 +33,14 @@ fn diff_and_patch_person() {
     let src = load_yaml_file(
         Path::new(&data_path("person_valid.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     )
     .unwrap();
     let tgt = load_yaml_file(
         Path::new(&data_path("person_older.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     )
     .unwrap();
@@ -70,14 +70,14 @@ fn diff_ignore_missing_target() {
     let src = load_yaml_file(
         Path::new(&data_path("person_valid.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     )
     .unwrap();
     let tgt = load_yaml_file(
         Path::new(&data_path("person_partial.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     )
     .unwrap();
@@ -103,14 +103,14 @@ fn diff_and_patch_personinfo() {
     let src = load_yaml_file(
         Path::new(&info_path("example_personinfo_data.yaml")),
         &sv,
-        Some(&container),
+        &container,
         &conv,
     )
     .unwrap();
     let tgt = load_yaml_file(
         Path::new(&info_path("example_personinfo_data_2.yaml")),
         &sv,
-        Some(&container),
+        &container,
         &conv,
     )
     .unwrap();
@@ -134,7 +134,7 @@ fn personinfo_invalid_fails() {
     let v = load_yaml_file(
         Path::new(&info_path("example_personinfo_data_invalid.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     );
     assert!(v.is_err());

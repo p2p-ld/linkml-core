@@ -25,7 +25,7 @@ fn polymorphism_with_type() {
     let v = load_yaml_file(
         Path::new(&data_path("poly_with_type.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     )
     .unwrap();
@@ -45,7 +45,7 @@ fn polymorphism_without_type() {
     let v = load_yaml_file(
         Path::new(&data_path("poly_without_type.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     )
     .unwrap();
@@ -65,7 +65,7 @@ fn root_polymorphism_with_type() {
     let v = load_yaml_file(
         Path::new(&data_path("root_with_type.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     )
     .unwrap();
@@ -85,7 +85,7 @@ fn root_polymorphism_without_type() {
     let v = load_yaml_file(
         Path::new(&data_path("root_without_type.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     )
     .unwrap();

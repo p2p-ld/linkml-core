@@ -28,7 +28,7 @@ fn convert_person_to_ttl() {
     let v = load_yaml_file(
         Path::new(&data_path("person_valid.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     )
     .unwrap();
@@ -50,7 +50,7 @@ fn suppress_objecttype_triple() {
     let v = load_yaml_file(
         Path::new(&data_path("example_personinfo_data.yaml")),
         &sv,
-        Some(&container),
+        &container,
         &conv,
     )
     .unwrap();

@@ -449,7 +449,10 @@ fn load_yaml(
         None => None,
     };
     let text = py_filelike_or_string_to_string(source)?;
-    let v = load_yaml_str(&text, rust_sv, class_view.as_ref(), &conv)
+    let cv = class_view.ok_or_else(|| {
+        PyException::new_err("class not found, please provide a valid class")
+    })?;
+    let v = load_yaml_str(&text, rust_sv, &cv, &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
     Ok(PyLinkMLValue::new(LinkMLValueOwned::from_linkml(&v), sv))
 }
@@ -473,8 +476,11 @@ fn load_json(
         }
         None => None,
     };
+    let cv = class_view.ok_or_else(|| {
+        PyException::new_err("class not found, please provide a valid class")
+    })?;
     let text = py_filelike_or_string_to_string(source)?;
-    let v = load_json_str(&text, rust_sv, class_view.as_ref(), &conv)
+    let v = load_json_str(&text, rust_sv, &cv, &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
     Ok(PyLinkMLValue::new(LinkMLValueOwned::from_linkml(&v), sv))
 }

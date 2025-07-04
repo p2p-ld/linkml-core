@@ -25,7 +25,7 @@ fn parse_alias_fields() {
     let v = load_yaml_file(
         Path::new(&data_path("alias_data.yaml")),
         &sv,
-        Some(&container),
+        &container,
         &conv,
     )
     .unwrap();

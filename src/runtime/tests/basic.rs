@@ -25,7 +25,7 @@ fn validate_person_ok() {
     let v = load_yaml_file(
         Path::new(&data_path("person_valid.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     )
     .unwrap();
@@ -45,7 +45,7 @@ fn validate_person_fail() {
     let v = load_yaml_file(
         Path::new(&data_path("person_invalid.yaml")),
         &sv,
-        Some(&class),
+        &class,
         &conv,
     );
     assert!(v.is_err());

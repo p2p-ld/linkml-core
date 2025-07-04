@@ -27,7 +27,7 @@ struct Args {
 fn load_value<'a>(
     path: &Path,
     sv: &'a SchemaView,
-    class: Option<&'a ClassView<'a>>,
+    class: &'a ClassView<'a>,
     conv: &curies::Converter,
 ) -> Result<linkml_runtime::LinkMLValue<'a>, Box<dyn std::error::Error>> {
     if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
@@ -48,10 +48,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
     resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
     let conv = sv.converter();
-    let class_view = sv.get_tree_root_or(args.class.as_deref());
+    let class_view = sv.get_tree_root_or(args.class.as_deref()).ok_or_else(|| {
+        format!(
+            "Class '{}' not found in schema '{}'",
+            args.class.as_deref().unwrap_or("root"),
+            args.schema.display()
+        )
+    })?;
 
-    let src = load_value(&args.source, &sv, class_view.as_ref(), &conv)?;
-    let tgt = load_value(&args.target, &sv, class_view.as_ref(), &conv)?;
+    let src = load_value(&args.source, &sv, &class_view, &conv)?;
+    let tgt = load_value(&args.target, &sv, &class_view, &conv)?;
     let deltas = diff(&src, &tgt, false);
 
     let mut writer: Box<dyn Write> = if let Some(out) = &args.output {

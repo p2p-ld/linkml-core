@@ -25,7 +25,7 @@ fn validate_personinfo_example1() {
     let v = load_yaml_file(
         Path::new(&info_path("example_personinfo_data.yaml")),
         &sv,
-        Some(&container),
+        &container,
         &conv,
     )
     .unwrap();
@@ -45,7 +45,7 @@ fn validate_personinfo_example2() {
     let v = load_yaml_file(
         Path::new(&info_path("example_personinfo_data_2.yaml")),
         &sv,
-        Some(&container),
+        &container,
         &conv,
     )
     .unwrap();

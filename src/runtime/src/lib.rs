@@ -173,7 +173,7 @@ impl<'a> LinkMLValue<'a> {
                 .unwrap_or_else(|| k.clone());
             values.insert(
                 key_name,
-                Self::from_json_internal(v, Some(class.clone()), slot_ref, sv, conv, false, p)?,
+                Self::from_json_internal(v, class.clone(), slot_ref, sv, conv, false, p)?,
             );
         }
         Ok(LinkMLValue::Map {
@@ -217,7 +217,7 @@ impl<'a> LinkMLValue<'a> {
                     };
                     values.push(Self::from_json_internal(
                         v_transformed,
-                        class_range.clone(),
+                        class_range.clone().unwrap(),
                         slot_for_item.clone(),
                         sv,
                         conv,
@@ -332,7 +332,7 @@ impl<'a> LinkMLValue<'a> {
                             key_name,
                             Self::from_json_internal(
                                 cv,
-                                Some(chosen.clone()),
+                                chosen.clone(),
                                 slot_tmp,
                                 sv,
                                 conv,
@@ -365,7 +365,7 @@ impl<'a> LinkMLValue<'a> {
 
     fn parse_array_value(
         arr: Vec<JsonValue>,
-        class: Option<ClassView<'a>>,
+        class: ClassView<'a>,
         slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
         conv: &Converter,
@@ -378,44 +378,38 @@ impl<'a> LinkMLValue<'a> {
         for (i, v) in arr.into_iter().enumerate() {
             let mut p = path.clone();
             p.push(format!("[{}]", i));
-            values.push(Self::from_json_internal(v, None, None, sv, conv, false, p)?);
+            values.push(Self::from_json_internal(v, class.clone(), None, sv, conv, false, p)?);
         }
         Ok(LinkMLValue::List {
             values,
             slot: sl,
-            class: class.clone(),
+            class: Some(class),
             sv,
         })
     }
 
     fn parse_object_value(
         map: serde_json::Map<String, JsonValue>,
-        class: Option<ClassView<'a>>,
+        class: ClassView<'a>,
         slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
         conv: &Converter,
         path: Vec<String>,
     ) -> LResult<Self> {
-        let base_class: Option<ClassView<'a>> = match class {
-            Some(c) => Some(c.clone()),
-            None => slot.as_ref().and_then(|s| {
-                s.definitions
-                    .iter()
-                    .rev()
-                    .find_map(|d| d.range.as_deref())
-                    .and_then(|r| sv.get_class(&Identifier::new(r), conv).ok().flatten())
-            }),
-        };
-
-        let chosen: Option<ClassView<'a>> = base_class
-            .as_ref()
-            .map(|b| Self::select_class(&map, b, sv, conv));
+        let base_class = match slot {
+            Some(sl) => sl.get_range_class(),
+            None => Some(class.clone()),
+        }.ok_or_else(|| {
+            LinkMLError(format!(
+                "object requires class or slot at {}",
+                path_to_string(&path)
+            ))
+        })?;
+        let chosen = Self::select_class(&map, &base_class, sv, conv);
 
         let mut values = HashMap::new();
         for (k, v) in map.into_iter() {
-            let slot_tmp: Option<SlotView<'a>> = chosen
-                .as_ref()
-                .and_then(|cv| cv.slots().iter().find(|s| slot_matches_key(s, &k)))
+            let slot_tmp: Option<SlotView<'a>> = chosen.slots().iter().find(|s| slot_matches_key(s, &k))
                 .cloned();
             let mut p = path.clone();
             p.push(k.clone());
@@ -430,35 +424,36 @@ impl<'a> LinkMLValue<'a> {
         }
         Ok(LinkMLValue::Map {
             values,
-            class: chosen.ok_or_else(|| LinkMLError("class not determined".to_string()))?,
+            class: chosen,
             sv,
         })
     }
 
     fn parse_scalar_value(
         value: JsonValue,
-        class: Option<&ClassView<'a>>,
+        class: ClassView<'a>,
         slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
         path: Vec<String>,
     ) -> LResult<Self> {
         let sl = slot.ok_or_else(|| {
+            let classview_name = class.name().to_string();
             LinkMLError(format!(
-                "scalar requires slot for at {}",
-                path_to_string(&path)
+                "scalar requires slot for at {} {}",
+                path_to_string(&path), classview_name
             ))
         })?;
         Ok(LinkMLValue::Scalar {
             value,
             slot: sl,
-            class: class.cloned(),
+            class: Some(class.clone()),
             sv,
         })
     }
 
     fn from_json_internal(
         value: JsonValue,
-        class: Option<ClassView<'a>>,
+        classview: ClassView<'a>,
         slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
         conv: &Converter,
@@ -471,7 +466,7 @@ impl<'a> LinkMLValue<'a> {
                 SlotContainerMode::List => {
                     return Self::parse_list_slot(
                         value,
-                        class.clone(),
+                        Some(classview),
                         sl.clone(),
                         sv,
                         conv,
@@ -480,32 +475,26 @@ impl<'a> LinkMLValue<'a> {
                     );
                 }
                 SlotContainerMode::Mapping => {
-                    return Self::parse_mapping_slot(value, class.clone(), sl, sv, conv, path);
+                    return Self::parse_mapping_slot(value, Some(classview), sl, sv, conv, path);
                 }
                 SlotContainerMode::SingleValue => {}
             }
         }
 
         match value {
-            JsonValue::Array(arr) => Self::parse_array_value(arr, class, slot, sv, conv, path),
+            JsonValue::Array(arr) => Self::parse_array_value(arr, classview, slot, sv, conv, path),
             JsonValue::Object(map) => {
-                let cls_arg = if slot.is_some() { None } else { class.clone() };
-                Self::parse_object_value(map, cls_arg, slot, sv, conv, path)
+                Self::parse_object_value(map, classview, slot, sv, conv, path)
             }
             other => {
-                if class.is_none() {
-                    Self::parse_scalar_value(other, None, slot, sv, path)
-                } else {
-                    let cls = class.as_ref().unwrap();
-                    Self::parse_scalar_value(other, Some(cls), slot, sv, path)
-                }
+                Self::parse_scalar_value(other, classview, slot, sv, path)
             }
         }
     }
 
     fn from_json(
         value: JsonValue,
-        class: Option<ClassView<'a>>,
+        class: ClassView<'a>,
         slot: Option<SlotView<'a>>,
         sv: &'a SchemaView,
         conv: &Converter,
@@ -518,7 +507,7 @@ impl<'a> LinkMLValue<'a> {
 pub fn load_yaml_file<'a>(
     path: &Path,
     sv: &'a SchemaView,
-    class: Option<&'a ClassView<'a>>,
+    class: &'a ClassView<'a>,
     conv: &Converter,
 ) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let text = fs::read_to_string(path)?;
@@ -528,19 +517,19 @@ pub fn load_yaml_file<'a>(
 pub fn load_yaml_str<'a>(
     data: &str,
     sv: &'a SchemaView,
-    class: Option<&'a ClassView<'a>>,
+    class: &'a ClassView<'a>,
     conv: &Converter,
 ) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let value: serde_yaml::Value = serde_yaml::from_str(data)?;
     let json = serde_json::to_value(value)?;
-    LinkMLValue::from_json(json, class.cloned(), None, sv, conv, false)
+    LinkMLValue::from_json(json, class.clone(), None, sv, conv, false)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
 pub fn load_json_file<'a>(
     path: &Path,
     sv: &'a SchemaView,
-    class: Option<&'a ClassView<'a>>,
+    class: &'a ClassView<'a>,
     conv: &Converter,
 ) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let text = fs::read_to_string(path)?;
@@ -550,11 +539,11 @@ pub fn load_json_file<'a>(
 pub fn load_json_str<'a>(
     data: &str,
     sv: &'a SchemaView,
-    class: Option<&'a ClassView<'a>>,
+    class: &'a ClassView<'a>,
     conv: &Converter,
 ) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
     let value: JsonValue = serde_json::from_str(data)?;
-    LinkMLValue::from_json(value, class.cloned(), None, sv, conv, false)
+    LinkMLValue::from_json(value, class.clone(), None, sv, conv, false)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 

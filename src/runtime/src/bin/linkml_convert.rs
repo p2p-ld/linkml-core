@@ -34,16 +34,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
     resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
     let conv = sv.converter();
-    let class_view = sv.get_tree_root_or(args.class.as_deref());
+    let class_view = sv.get_tree_root_or(args.class.as_deref()).ok_or_else(|| {
+        format!(
+            "Class '{}' not found in schema '{}'",
+            args.class.as_deref().unwrap_or("root"),
+            args.schema.display()
+        )
+    })?;
+    
     let data_path = &args.data;
     let value = if let Some(ext) = data_path.extension() {
         if ext == "json" {
-            load_json_file(data_path, &sv, class_view.as_ref(), &conv)?
+            load_json_file(data_path, &sv, &class_view, &conv)?
         } else {
-            load_yaml_file(data_path, &sv, class_view.as_ref(), &conv)?
+            load_yaml_file(data_path, &sv, &class_view, &conv)?
         }
     } else {
-        load_yaml_file(data_path, &sv, class_view.as_ref(), &conv)?
+        load_yaml_file(data_path, &sv, &class_view, &conv)?
     };
     if let Err(e) = validate(&value) {
         eprintln!("invalid: {e}");

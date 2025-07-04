@@ -261,9 +261,9 @@ pub fn patch<'a>(
     let conv = sv.converter();
     match source {
         LinkMLValue::Map { class: ref c, .. } => {
-            load_json_str(&json_str, sv, Some(c), &conv).unwrap()
+            load_json_str(&json_str, sv, c, &conv).unwrap()
         }
-        _ => load_json_str(&json_str, sv, None, &conv).unwrap(),
+        _ => load_json_str(&json_str, sv, None.unwrap(), &conv).unwrap(),
     }
 }
 
