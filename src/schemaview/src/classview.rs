@@ -1,5 +1,5 @@
-use std::cell::OnceCell;
 use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, OnceLock};
 
 use curies::Converter;
 use linkml_meta::{ClassDefinition, SchemaDefinition, SlotDefinition};
@@ -8,45 +8,64 @@ use crate::identifier::{Identifier, IdentifierError};
 use crate::schemaview::{SchemaView, SchemaViewError};
 use crate::slotview::SlotView;
 
-#[derive(Clone)]
-pub struct ClassView<'a> {
-    pub class: &'a ClassDefinition,
-    pub(crate) slots: Vec<SlotView<'a>>,
-    pub(crate) schema_uri: String,
-    pub(crate) sv: &'a SchemaView,
-    pub(crate) schema_definition: &'a SchemaDefinition,
-
-    descendants_index: HashMap<(bool, bool), OnceCell<Vec<(String, String)>>>,
+pub struct ClassViewData {
+    pub class: ClassDefinition,
+    pub slots: Vec<SlotView>,
+    pub schema_uri: String,
+    pub sv: SchemaView,
+    descendants_index: HashMap<(bool, bool), OnceLock<Vec<(String, String)>>>,
 }
 
-impl<'a> ClassView<'a> {
+impl ClassViewData {
+    pub fn new(
+        class: &ClassDefinition,
+        slots: Vec<SlotView>,
+        sv: &SchemaView,
+        schema_uri: &str,
+    ) -> Self {
+        ClassViewData {
+            class: class.clone(),
+            slots: slots,
+            sv: sv.clone(),
+            schema_uri: schema_uri.to_string(),
+            descendants_index: HashMap::new(),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct ClassView {
+    data: Arc<ClassViewData>,
+}
+
+impl ClassView {
     pub fn name(&self) -> &str {
-        &self.class.name
+        &self.data.class.name
     }
     pub fn new(
-        class: &'a ClassDefinition,
-        sv: &'a SchemaView,
+        class: &ClassDefinition,
+        sv: &SchemaView,
         schema_uri: &str,
-        schema_definition: &'a SchemaDefinition,
+        schema_definition: &SchemaDefinition,
         conv: &Converter,
     ) -> Result<Self, SchemaViewError> {
         fn gather<'b>(
-            class_def: &'b ClassDefinition,
+            class_def: &ClassDefinition,
             schema_uri: &str,
             sv: &'b SchemaView,
             conv: &Converter,
             visited: &mut HashSet<String>,
-            schema_definition: &'b SchemaDefinition,
-            acc: &mut HashMap<String, SlotView<'b>>,
+            schema_definition: &SchemaDefinition,
+            acc: &mut HashMap<String, SlotView>,
         ) -> Result<(), SchemaViewError> {
             if !visited.insert(class_def.name.clone()) {
                 return Ok(());
             }
 
             if let Some(parent) = &class_def.is_a {
-                if let Some(cv) = sv.get_class(&Identifier::new(parent), conv)? {
+                if let Some(cv) = sv.get_classdefinition(&Identifier::new(parent), conv)? {
                     gather(
-                        cv.class,
+                        &cv,
                         schema_uri,
                         sv,
                         conv,
@@ -58,9 +77,9 @@ impl<'a> ClassView<'a> {
             }
             if let Some(mixins) = &class_def.mixins {
                 for mixin in mixins {
-                    if let Some(cv) = sv.get_class(&Identifier::new(mixin), conv)? {
+                    if let Some(cv) = sv.get_classdefinition(&Identifier::new(mixin), conv)? {
                         gather(
-                            cv.class,
+                            &cv,
                             schema_uri,
                             sv,
                             conv,
@@ -75,14 +94,14 @@ impl<'a> ClassView<'a> {
             if let Some(slots) = &class_def.slots {
                 for slot_ref in slots {
                     let mut slot_schema_uri = schema_uri.to_owned();
-                    let mut defs: Vec<&'b SlotDefinition> = Vec::new();
+                    let mut defs: Vec<SlotDefinition> = Vec::new();
                     if let Some(base) = sv.get_slot(&Identifier::new(slot_ref), conv)? {
                         slot_schema_uri = base.schema_uri.to_owned();
                         defs.extend(base.definitions);
                     }
                     if let Some(cu) = &class_def.slot_usage {
                         if let Some(usage) = cu.get(slot_ref) {
-                            defs.push(usage);
+                            defs.push(*usage.clone());
                         }
                     }
                     acc.insert(
@@ -92,7 +111,6 @@ impl<'a> ClassView<'a> {
                             defs,
                             &slot_schema_uri,
                             sv,
-                            schema_definition,
                         ),
                     );
                 }
@@ -100,28 +118,27 @@ impl<'a> ClassView<'a> {
 
             if let Some(attribs) = &class_def.attributes {
                 for (attr_name, attr_def) in attribs {
-                    let mut defs = vec![attr_def.as_ref()];
+                    let mut defs = vec![*attr_def.clone()];
                     if let Some(cu) = &class_def.slot_usage {
                         if let Some(usage) = cu.get(attr_name) {
-                            defs.push(usage);
+                            defs.push(*usage.clone());
                         }
                     }
                     acc.insert(
                         attr_name.clone(),
-                        SlotView::new(attr_name.clone(), defs, &schema_uri, sv, schema_definition),
+                        SlotView::new(attr_name.clone(), defs, &schema_uri, sv),
                     );
                 }
             }
-
             Ok(())
         }
 
         let mut visited = HashSet::new();
-        let mut acc: HashMap<String, SlotView<'a>> = HashMap::new();
+        let mut acc: HashMap<String, SlotView> = HashMap::new();
         gather(
             class,
             schema_uri,
-            sv,
+            &sv,
             conv,
             &mut visited,
             schema_definition,
@@ -130,22 +147,22 @@ impl<'a> ClassView<'a> {
         let mut hm = HashMap::new();
         for a in vec![false, true] {
             for b in vec![false, true] {
-                hm.insert((a, b), OnceCell::new());
+                hm.insert((a, b), OnceLock::new());
             }
         }
-
         Ok(Self {
-            class,
-            slots: acc.into_values().collect(),
-            schema_uri: schema_uri.to_owned(),
-            sv,
-            schema_definition,
-            descendants_index: hm,
+            data: Arc::new(ClassViewData {
+                class: class.clone(),
+                slots: acc.into_values().collect(),
+                schema_uri: schema_uri.to_owned(),
+                sv: sv.clone(),
+                descendants_index: hm,
+            }),
         })
     }
 
-    pub fn slots(&self) -> &[SlotView<'a>] {
-        &self.slots
+    pub fn slots(&self) -> &[SlotView] {
+        &self.data.slots
     }
 
     pub fn get_uri(
@@ -155,15 +172,18 @@ impl<'a> ClassView<'a> {
         expand: bool,
     ) -> Result<Identifier, IdentifierError> {
         let schema = self
-            .sv
-            .schema_definitions
-            .get(&self.schema_uri)
-            .ok_or_else(|| IdentifierError::NameNotResolvable)?;
+            .data.sv
+            .get_schema(&self.data.schema_uri)
+            .ok_or_else(|| IdentifierError::NameNotResolvable(format!("cannot find schema for {}", self.data.schema_uri)))?;
         let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
-        let base = if native || self.class.class_uri.is_none() {
-            format!("{}:{}", default_prefix, self.class.name)
+        let base = if native || self.data.class.class_uri.is_none() {
+            if self.data.class.name.contains(":") {
+                self.data.class.name.clone()
+            } else {
+                format!("{}:{}", default_prefix, self.data.class.name)
+            }
         } else {
-            self.class.class_uri.as_ref().unwrap().clone()
+            self.data.class.class_uri.as_ref().unwrap().clone()
         };
 
         if expand {
@@ -185,13 +205,13 @@ impl<'a> ClassView<'a> {
         conv: &Converter,
     ) -> Result<Identifier, IdentifierError> {
         if let Some(range) = &type_slot.range {
-            let slot_types = self.sv.type_ancestors(&Identifier::new(range), conv)?;
+            let slot_types = self.data.sv.type_ancestors(&Identifier::new(range), conv)?;
             if slot_types.iter().any(|t| t.to_string() == "uri") {
                 return self.get_uri(conv, false, true);
             } else if slot_types.iter().any(|t| t.to_string() == "uriorcurie") {
                 return self.get_uri(conv, false, false);
             } else if slot_types.iter().any(|t| t.to_string() == "string") {
-                return Ok(Identifier::Name(self.class.name.clone()));
+                return Ok(Identifier::Name(self.data.class.name.clone()));
             }
         }
         self.get_uri(conv, false, false)
@@ -212,115 +232,119 @@ impl<'a> ClassView<'a> {
         vals.retain(|v| seen.insert(v.to_string()));
 
         if let Some(range) = &type_slot.range {
-            let slot_types = self.sv.type_ancestors(&Identifier::new(range), conv)?;
+            let slot_types = self.data.sv.type_ancestors(&Identifier::new(range), conv)?;
             if slot_types
                 .iter()
                 .any(|t| t.to_string() == "uri" || t.to_string() == "uriorcurie")
             {
                 return Ok(vals);
             } else if range == "string" {
-                return Ok(vec![Identifier::Name(self.class.name.clone())]);
+                return Ok(vec![Identifier::Name(self.data.class.name.clone())]);
             }
         }
         Ok(vals)
+    }
+
+    pub fn canonical_uri(
+        &self,
+    ) -> Identifier {
+        return self.data.sv.get_uri(
+               &self.data.schema_uri,
+            &self.data.class.name,
+        );
     }
 
     fn compute_descendant_identifiers(
         &self,
         recurse: bool,
         include_mixins: bool,
-    ) -> Result<Vec<(String, String)>, SchemaViewError> {
+        schema_uri: &str,
+        class_uri: &Identifier,
+        result: &mut Vec<(String, String)>,
+    ) -> Result<(), SchemaViewError> {
         let conv = self
-            .sv
-            .converter_for_schema(&self.schema_uri)
+            .data.sv
+            .converter_for_schema(schema_uri)
             .ok_or_else(|| SchemaViewError::NotFound)?;
-        let mut result: Vec<(String, String)> = vec![];
-        for schema in self.sv.schema_definitions.values() {
+        for (_, schema) in self.data.sv.all_schema_definitions() {
             if let Some(classes) = &schema.classes {
                 for (cls_name, cls_def) in classes {
                     let mut is_descendant = false;
                     if let Some(parent) = &cls_def.is_a {
-                        if let Some(parent_cv) =
-                            self.sv.get_class(&Identifier::new(parent), &conv)?
-                        {
-                            if parent_cv.class.name == self.class.name
-                                && parent_cv.schema_uri == self.schema_uri
-                            {
-                                is_descendant = true;
-                            }
+                        if self.data.sv.identifier_equals(&self.data.sv.get_uri(&schema.id, parent), class_uri, &conv)? {
+                            is_descendant = true;
                         }
                     }
                     if !is_descendant && include_mixins {
                         if let Some(mixins) = &cls_def.mixins {
                             for mixin in mixins {
-                                if let Some(mixin_cv) =
-                                    self.sv.get_class(&Identifier::new(mixin), &conv)?
+                                if self.data.sv.identifier_equals(&self.data.sv.get_uri(&schema.id, mixin), class_uri, &conv)?
                                 {
-                                    if mixin_cv.class.name == self.class.name
-                                        && mixin_cv.schema_uri == self.schema_uri
-                                    {
                                         is_descendant = true;
                                         break;
-                                    }
                                 }
                             }
                         }
                     }
                     if is_descendant {
-                        if let Some(child_cv) = self.sv.get_class_by_schema(&schema.id, cls_name)? {
+                        let tpl = (schema.id.clone(), cls_name.clone());
+                        if !result.contains(&tpl) {
+                            result.push(tpl);
                             if recurse {
-                                result.extend(child_cv.compute_descendant_identifiers(true, include_mixins)?);
+                                let _ = self.compute_descendant_identifiers(recurse, include_mixins, &schema.id, &self.data.sv.get_uri(&schema.id, cls_name), result)?;
                             }
-                            result.push(( schema.id.clone(), cls_name.clone()));
+
                         }
                     }
                 }
             }
         }
-        Ok(result)
+        Ok(())
     }
 
     pub fn get_descendants(
         &self,
         recurse: bool,
         include_mixins: bool,
-    ) -> Result<Vec<ClassView<'a>>, SchemaViewError> {
+    ) -> Result<Vec<ClassView>, SchemaViewError> {
         let idx = self
-            .descendants_index
+            .data.descendants_index
             .get(&(recurse, include_mixins))
             .unwrap()
             .get_or_init(|| {
-                self.compute_descendant_identifiers(recurse, include_mixins).unwrap() // fix this with try_get_or_init once stable!
+                let mut  res = Vec::new();
+                self.compute_descendant_identifiers(recurse, include_mixins, &self.data.schema_uri, &self.canonical_uri(), &mut res).unwrap(); // fix this with try_get_or_init once stable!
+                res
             });
         idx.iter()
             .map(|(schema_uri, class_name)| {
-                self.sv
+                self.data.sv
                     .get_class_by_schema(schema_uri, class_name)
                     .and_then(|opt| opt.ok_or(SchemaViewError::NotFound))
             })
             .collect()
     }
 
-    pub fn parent_class(&self) -> Result<Option<ClassView<'a>>, SchemaViewError> {
-        let conv = match self.sv.converter_for_schema(&self.schema_uri) {
+    pub fn parent_class(&self) -> Result<Option<ClassView>, SchemaViewError> {
+        let conv = match self.data.sv.converter_for_schema(&self.data.schema_uri) {
             Some(c) => c,
             None => return Err(SchemaViewError::NotFound),
         };
-        match &self.class.is_a {
-            Some(parent) => self.sv.get_class(&Identifier::new(parent), &conv),
+        match &self.data.class.is_a {
+            Some(parent) => self.data.sv.get_class(&Identifier::new(parent), &conv),
             None => Ok(None),
         }
     }
 
-    pub fn key_or_identifier_slot(&'a self) -> Option<&'a SlotView<'a>> {
-        self.slots.iter().find(|s| {
+    pub fn key_or_identifier_slot(&self) -> Option<&SlotView> {
+        self.data.slots.iter().find(|s| {
             let d = s.definition();
             d.identifier.unwrap_or(false) || d.key.unwrap_or(false)
         })
     }
 
-    pub fn identifier_slot(&'a self) -> Option<&'a SlotView<'a>> {
-        self.slots
+    pub fn identifier_slot(&self) -> Option<&SlotView> {
+        self.data.slots
             .iter()
             .find(|s| s.definition().identifier.unwrap_or(false))
     }

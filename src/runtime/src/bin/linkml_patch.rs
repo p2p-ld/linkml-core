@@ -24,12 +24,12 @@ struct Args {
     output: Option<PathBuf>,
 }
 
-fn load_value<'a>(
+fn load_value(
     path: &Path,
-    sv: &'a SchemaView,
-    class: &'a ClassView<'a>,
+    sv: &SchemaView,
+    class: &ClassView,
     conv: &curies::Converter,
-) -> Result<linkml_runtime::LinkMLValue<'a>, Box<dyn std::error::Error>> {
+) -> Result<linkml_runtime::LinkMLValue, Box<dyn std::error::Error>> {
     if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
         if ext == "json" {
             load_json_file(path, sv, class, conv)

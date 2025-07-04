@@ -1,5 +1,6 @@
-use std::cell::{OnceCell};
+use std::collections::btree_map::Range;
 use std::collections::HashSet;
+use std::sync::OnceLock;
 
 
 use curies::Converter;
@@ -24,13 +25,13 @@ pub enum SlotInlineMode {
 }
 
 #[derive(Clone)]
-pub struct RangeInfo<'a>{
+pub struct RangeInfo{
     pub e: SlotExpressionOrSubtype,
-    pub slotview: SlotView<'a>,
+    pub slotview: SlotView,
 }
 
-impl<'a> RangeInfo<'a> {
-    pub fn get_range_class(&self) -> Option<ClassView<'a>> {
+impl RangeInfo {
+    pub fn get_range_class(&self) -> Option<ClassView> {
         let conv = self.slotview.sv.converter_for_schema(&self.slotview.schema_uri)?;
         self.e
             .range()
@@ -126,26 +127,26 @@ impl<'a> RangeInfo<'a> {
 
 
 #[derive(Clone)]
-pub struct SlotView<'a> {
+pub struct SlotView {
     pub name: String,
     pub(crate) schema_uri: String,
-    pub definitions: Vec<&'a SlotDefinition>,
-    pub(crate) sv: &'a SchemaView,
-    pub(crate) schema_definition: &'a SchemaDefinition,
-    cached_definition: OnceCell<SlotDefinition>,
+    pub definitions: Vec<SlotDefinition>,
+    pub(crate) sv: SchemaView,
+    cached_definition: OnceLock<SlotDefinition>,
+    cached_range_info: OnceLock<Vec<RangeInfo>>,
 }
 
 
 
-impl<'a> SlotView<'a> {
-    pub fn new(name: String, definitions: Vec<&'a SlotDefinition>, schema_uri: &str, schemaview: &'a SchemaView, sdefinition: &'a SchemaDefinition) -> Self {
+impl SlotView {
+    pub fn new(name: String, definitions: Vec<SlotDefinition>, schema_uri: &str, schemaview: &SchemaView) -> Self {
         Self {
             name,
             schema_uri: schema_uri.to_owned(),
             definitions: definitions,
-            sv: schemaview,
-            schema_definition: sdefinition,
-            cached_definition: OnceCell::new(),
+            sv: schemaview.clone(),
+            cached_definition: OnceLock::new(),
+            cached_range_info: OnceLock::new(),
         }
     }
 
@@ -153,53 +154,56 @@ impl<'a> SlotView<'a> {
         self.cached_definition.get_or_init(|| {
             let mut b = self.definitions[0].clone();
             for d in self.definitions.iter().skip(1) {
-                b.merge_with(*d);
+                b.merge_with(d);
             }
             return b;
         })
     }
 
 
-    pub fn get_range_info(&self) -> Box<dyn Iterator<Item = RangeInfo<'a>> + 'a> {
-        let def = self.definition();
-        if let Some(any_of) = def.any_of.clone() {
-            if !any_of.is_empty() {
-                let sv = self.clone();
-                let iter = any_of.clone().into_iter().map(move |expr| -> RangeInfo<'a> {RangeInfo {
-                        e: SlotExpressionOrSubtype::from(expr.as_ref().clone()),
-                        slotview: sv.clone(),
-                    }});
-                return Box::new(iter);
+    pub fn get_range_info(&self) -> &Vec<RangeInfo> {
+        self.cached_range_info.get_or_init(|| {
+            let def = self.definition();
+            if let Some(any_of) = def.any_of.clone() {
+                if !any_of.is_empty() {
+                    let sv = self.clone();
+                    let iter = any_of.clone().into_iter().map(move |expr| -> RangeInfo {RangeInfo {
+                            e: SlotExpressionOrSubtype::from(expr.as_ref().clone()),
+                            slotview: sv.clone(),
+                        }});
+                    return iter.collect();
+                }
             }
-        }
-        return Box::new(std::iter::once(RangeInfo {
-            e: SlotExpressionOrSubtype::from(def.clone()),
-            slotview: self.clone(),
-        }));
+            return std::iter::once(RangeInfo {
+                e: SlotExpressionOrSubtype::from(def.clone()),
+                slotview: self.clone(),
+            }).collect();
+
+        })
 
     }
 
 
 
-    pub fn get_range_class(&self) -> Option<ClassView<'a>> {
-        return self.get_range_info().next().and_then(|ri| ri.get_range_class());
+    pub fn get_range_class(&self) -> Option<ClassView> {
+        return self.get_range_info().first().and_then(|ri| ri.get_range_class());
     }
 
     pub fn get_range_enum(&self) -> Option<EnumDefinition> {
-        return self.get_range_info().next().and_then(|ri| ri.get_range_enum());
+        return self.get_range_info().first().and_then(|ri| ri.get_range_enum());
     }
 
     pub fn is_range_scalar(&self) -> bool {
-        return self.get_range_info().next().map_or(true, |ri| ri.is_range_scalar());
+        return self.get_range_info().first().map_or(true, |ri| ri.is_range_scalar());
     }
 
 
     pub fn determine_slot_container_mode(&self) -> SlotContainerMode {
-        return self.get_range_info().next().map_or(SlotContainerMode::SingleValue, |ri| ri.determine_slot_container_mode());
+        return self.get_range_info().first().map_or(SlotContainerMode::SingleValue, |ri| ri.determine_slot_container_mode());
     }
 
     pub fn determine_slot_inline_mode(&self) -> SlotInlineMode {
-        return self.get_range_info().next().map_or(SlotInlineMode::Primitive, |ri| ri.determine_slot_inline_mode());
+        return self.get_range_info().first().map_or(SlotInlineMode::Primitive, |ri| ri.determine_slot_inline_mode());
     }
 
 }

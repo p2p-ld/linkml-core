@@ -38,7 +38,7 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
             // Attempt to treat the unresolved entry as a local file path
             let path = Path::new(&uri);
             if path.exists() {
-                let schema = match from_yaml(path) {
+                let mut schema = match from_yaml(path) {
                     Ok(s) => s,
                     Err(e) => {
                         return Err(format!(
@@ -49,9 +49,10 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
                     }
                 };
                 sv.add_schema(schema.clone())?;
-                // also track the loaded schema by the original import path so
-                // subsequent unresolved checks consider this resolved
-                sv.schema_definitions.insert(uri.clone(), schema);
+                if schema.id != uri.to_string() {
+                    panic!("Schema ID '{}' does not match URI '{}'.", schema.id, uri);
+                }
+
             } else {
                 return Err(format!("No resolution found for URI: {}", uri));
             }

@@ -57,31 +57,31 @@ fn slot_matches_key(slot: &SlotView, key: &str) -> bool {
     false
 }
 
-pub enum LinkMLValue<'a> {
+pub enum LinkMLValue {
     Scalar {
         value: JsonValue,
-        slot: SlotView<'a>,
-        class: Option<ClassView<'a>>,
-        sv: &'a SchemaView,
+        slot: SlotView,
+        class: Option<ClassView>,
+        sv: SchemaView,
     },
     List {
-        values: Vec<LinkMLValue<'a>>,
-        slot: SlotView<'a>,
-        class: Option<ClassView<'a>>,
-        sv: &'a SchemaView,
+        values: Vec<LinkMLValue>,
+        slot: SlotView,
+        class: Option<ClassView>,
+        sv: SchemaView,
     },
     Map {
-        values: HashMap<String, LinkMLValue<'a>>,
-        class: ClassView<'a>,
-        sv: &'a SchemaView,
+        values: HashMap<String, LinkMLValue>,
+        class: ClassView,
+        sv: SchemaView,
     },
 }
 
-impl<'a> LinkMLValue<'a> {
+impl LinkMLValue {
     fn find_scalar_slot_for_inlined_map(
-        class: &ClassView<'a>,
+        class: &ClassView,
         key_slot_name: &str,
-    ) -> Option<SlotView<'a>> {
+    ) -> Option<SlotView> {
         for s in class.slots() {
             if s.name == key_slot_name {
                 continue;
@@ -99,20 +99,20 @@ impl<'a> LinkMLValue<'a> {
     }
     fn select_class(
         map: &serde_json::Map<String, JsonValue>,
-        base: &ClassView<'a>,
-        sv: &'a SchemaView,
+        base: &ClassView,
+        sv: &SchemaView,
         conv: &Converter,
-    ) -> ClassView<'a> {
+    ) -> ClassView {
         let descendants = match base.get_descendants( true, false) {
             Ok(d) => d,
             Err(_) => Vec::new(),
         };
-        let mut cand_refs: Vec<&ClassView<'a>> = vec![base];
+        let mut cand_refs: Vec<&ClassView> = vec![base];
         for d in &descendants {
             cand_refs.push(d);
         }
 
-        let mut preferred: Option<&ClassView<'a>> = None;
+        let mut preferred: Option<&ClassView> = None;
         if let Some(ts) = base
             .slots()
             .iter()
@@ -153,8 +153,8 @@ impl<'a> LinkMLValue<'a> {
 
     fn parse_object_fixed_class(
         map: serde_json::Map<String, JsonValue>,
-        class: &ClassView<'a>,
-        sv: &'a SchemaView,
+        class: &ClassView,
+        sv: &SchemaView,
         conv: &Converter,
         path: Vec<String>,
     ) -> LResult<Self> {
@@ -179,15 +179,15 @@ impl<'a> LinkMLValue<'a> {
         Ok(LinkMLValue::Map {
             values,
             class: class.clone(),
-            sv,
+            sv: sv.clone(),
         })
     }
 
     fn parse_list_slot(
         value: JsonValue,
-        class: ClassView<'a>,
-        sl: SlotView<'a>,
-        sv: &'a SchemaView,
+        class: ClassView,
+        sl: SlotView,
+        sv: &SchemaView,
         conv: &Converter,
         inside_list: bool,
         path: Vec<String>,
@@ -195,7 +195,7 @@ impl<'a> LinkMLValue<'a> {
         match (inside_list, value) {
             (false, JsonValue::Array(arr)) => {
                 let mut values = Vec::new();
-                let class_range: Option<ClassView<'a>> = sl.get_range_class();
+                let class_range: Option<ClassView> = sl.get_range_class();
                 let slot_for_item = if class_range.is_some() {
                     None
                 } else {
@@ -229,7 +229,7 @@ impl<'a> LinkMLValue<'a> {
                     values,
                     slot: sl.clone(),
                     class: Some(class.clone()),
-                    sv,
+                    sv: sv.clone(),
                 })
             }
             (false, other) => Err(LinkMLError(format!(
@@ -242,16 +242,16 @@ impl<'a> LinkMLValue<'a> {
                 value: other,
                 slot: sl.clone(),
                 class: Some(class.clone()),
-                sv,
+                sv: sv.clone(),
             }),
         }
     }
 
     fn parse_mapping_slot(
         value: JsonValue,
-        class: Option<ClassView<'a>>,
-        sl: &SlotView<'a>,
-        sv: &'a SchemaView,
+        class: Option<ClassView>,
+        sl: &SlotView,
+        sv: &SchemaView,
         conv: &Converter,
         path: Vec<String>,
     ) -> LResult<Self> {
@@ -344,14 +344,14 @@ impl<'a> LinkMLValue<'a> {
                     values.push(LinkMLValue::Map {
                         values: child_values,
                         class: chosen.clone(),
-                        sv,
+                        sv: sv.clone(),
                     });
                 }
                 Ok(LinkMLValue::List {
                     values,
                     slot: sl.clone(),
                     class: class.clone(),
-                    sv,
+                    sv: sv.clone(),
                 })
             }
             other => Err(LinkMLError(format!(
@@ -365,9 +365,9 @@ impl<'a> LinkMLValue<'a> {
 
     fn parse_array_value(
         arr: Vec<JsonValue>,
-        class: ClassView<'a>,
-        slot: Option<SlotView<'a>>,
-        sv: &'a SchemaView,
+        class: ClassView,
+        slot: Option<SlotView>,
+        sv: &SchemaView,
         conv: &Converter,
         path: Vec<String>,
     ) -> LResult<Self> {
@@ -384,15 +384,15 @@ impl<'a> LinkMLValue<'a> {
             values,
             slot: sl,
             class: Some(class),
-            sv,
+            sv: sv.clone(),
         })
     }
 
     fn parse_object_value(
         map: serde_json::Map<String, JsonValue>,
-        class: ClassView<'a>,
-        slot: Option<SlotView<'a>>,
-        sv: &'a SchemaView,
+        class: ClassView,
+        slot: Option<SlotView>,
+        sv: &SchemaView,
         conv: &Converter,
         path: Vec<String>,
     ) -> LResult<Self> {
@@ -409,7 +409,7 @@ impl<'a> LinkMLValue<'a> {
 
         let mut values = HashMap::new();
         for (k, v) in map.into_iter() {
-            let slot_tmp: Option<SlotView<'a>> = chosen.slots().iter().find(|s| slot_matches_key(s, &k))
+            let slot_tmp: Option<SlotView> = chosen.slots().iter().find(|s| slot_matches_key(s, &k))
                 .cloned();
             let mut p = path.clone();
             p.push(k.clone());
@@ -425,15 +425,15 @@ impl<'a> LinkMLValue<'a> {
         Ok(LinkMLValue::Map {
             values,
             class: chosen,
-            sv,
+            sv: sv.clone(),
         })
     }
 
     fn parse_scalar_value(
         value: JsonValue,
-        class: ClassView<'a>,
-        slot: Option<SlotView<'a>>,
-        sv: &'a SchemaView,
+        class: ClassView,
+        slot: Option<SlotView>,
+        sv: &SchemaView,
         path: Vec<String>,
     ) -> LResult<Self> {
         let sl = slot.ok_or_else(|| {
@@ -447,15 +447,15 @@ impl<'a> LinkMLValue<'a> {
             value,
             slot: sl,
             class: Some(class.clone()),
-            sv,
+            sv: sv.clone(),
         })
     }
 
     fn from_json_internal(
         value: JsonValue,
-        classview: ClassView<'a>,
-        slot: Option<SlotView<'a>>,
-        sv: &'a SchemaView,
+        classview: ClassView,
+        slot: Option<SlotView>,
+        sv: &SchemaView,
         conv: &Converter,
         inside_list: bool,
         path: Vec<String>,
@@ -494,9 +494,9 @@ impl<'a> LinkMLValue<'a> {
 
     fn from_json(
         value: JsonValue,
-        class: ClassView<'a>,
-        slot: Option<SlotView<'a>>,
-        sv: &'a SchemaView,
+        class: ClassView,
+        slot: Option<SlotView>,
+        sv: &SchemaView,
         conv: &Converter,
         inside_list: bool,
     ) -> LResult<Self> {
@@ -506,20 +506,20 @@ impl<'a> LinkMLValue<'a> {
 
 pub fn load_yaml_file<'a>(
     path: &Path,
-    sv: &'a SchemaView,
-    class: &'a ClassView<'a>,
+    sv: &SchemaView,
+    class: &ClassView,
     conv: &Converter,
-) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLValue, Box<dyn std::error::Error>> {
     let text = fs::read_to_string(path)?;
     load_yaml_str(&text, sv, class, conv)
 }
 
 pub fn load_yaml_str<'a>(
     data: &str,
-    sv: &'a SchemaView,
-    class: &'a ClassView<'a>,
+    sv: &SchemaView,
+    class: &ClassView,
     conv: &Converter,
-) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLValue, Box<dyn std::error::Error>> {
     let value: serde_yaml::Value = serde_yaml::from_str(data)?;
     let json = serde_json::to_value(value)?;
     LinkMLValue::from_json(json, class.clone(), None, sv, conv, false)
@@ -529,9 +529,9 @@ pub fn load_yaml_str<'a>(
 pub fn load_json_file<'a>(
     path: &Path,
     sv: &'a SchemaView,
-    class: &'a ClassView<'a>,
+    class: &ClassView,
     conv: &Converter,
-) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLValue, Box<dyn std::error::Error>> {
     let text = fs::read_to_string(path)?;
     load_json_str(&text, sv, class, conv)
 }
@@ -539,15 +539,15 @@ pub fn load_json_file<'a>(
 pub fn load_json_str<'a>(
     data: &str,
     sv: &'a SchemaView,
-    class: &'a ClassView<'a>,
+    class: &ClassView,
     conv: &Converter,
-) -> std::result::Result<LinkMLValue<'a>, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLValue, Box<dyn std::error::Error>> {
     let value: JsonValue = serde_json::from_str(data)?;
     LinkMLValue::from_json(value, class.clone(), None, sv, conv, false)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
-fn validate_inner<'a>(value: &LinkMLValue<'a>) -> std::result::Result<(), String> {
+fn validate_inner(value: &LinkMLValue) -> std::result::Result<(), String> {
     match value {
         LinkMLValue::Scalar { .. } => Ok(()),
         LinkMLValue::List { values, .. } => {
@@ -568,11 +568,11 @@ fn validate_inner<'a>(value: &LinkMLValue<'a>) -> std::result::Result<(), String
     }
 }
 
-pub fn validate<'a>(value: &LinkMLValue<'a>) -> std::result::Result<(), String> {
+pub fn validate(value: &LinkMLValue) -> std::result::Result<(), String> {
     validate_inner(value)
 }
 
-fn validate_collect<'a>(value: &LinkMLValue<'a>, errors: &mut Vec<String>) {
+fn validate_collect(value: &LinkMLValue, errors: &mut Vec<String>) {
     match value {
         LinkMLValue::Scalar { .. } => {}
         LinkMLValue::List { values, .. } => {
@@ -591,7 +591,7 @@ fn validate_collect<'a>(value: &LinkMLValue<'a>, errors: &mut Vec<String>) {
     }
 }
 
-pub fn validate_errors<'a>(value: &LinkMLValue<'a>) -> Vec<String> {
+pub fn validate_errors(value: &LinkMLValue) -> Vec<String> {
     let mut errs = Vec::new();
     validate_collect(value, &mut errs);
     errs

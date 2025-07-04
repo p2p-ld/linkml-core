@@ -20,7 +20,7 @@ pub struct Delta {
     pub new: Option<JsonValue>,
 }
 
-impl<'a> LinkMLValue<'a> {
+impl LinkMLValue {
     pub fn to_json(&self) -> JsonValue {
         match self {
             LinkMLValue::Scalar { value, .. } => value.clone(),
@@ -69,15 +69,15 @@ impl<'a> LinkMLValue<'a> {
 }
 
 pub fn diff<'a>(
-    source: &LinkMLValue<'a>,
-    target: &LinkMLValue<'a>,
+    source: &LinkMLValue,
+    target: &LinkMLValue,
     ignore_missing_target: bool,
 ) -> Vec<Delta> {
     fn inner<'b>(
         path: &mut Vec<String>,
-        slot: Option<&SlotView<'b>>,
-        s: &LinkMLValue<'b>,
-        t: &LinkMLValue<'b>,
+        slot: Option<&SlotView>,
+        s: &LinkMLValue,
+        t: &LinkMLValue,
         ignore_missing: bool,
         out: &mut Vec<Delta>,
     ) {
@@ -248,11 +248,11 @@ pub fn diff<'a>(
     out
 }
 
-pub fn patch<'a>(
-    source: &'a LinkMLValue<'a>,
+pub fn patch(
+    source: &LinkMLValue,
     deltas: &[Delta],
-    sv: &'a SchemaView,
-) -> LinkMLValue<'a> {
+    sv: &SchemaView,
+) -> LinkMLValue {
     let mut json = source.to_json();
     for d in deltas {
         apply_delta(&mut json, d);

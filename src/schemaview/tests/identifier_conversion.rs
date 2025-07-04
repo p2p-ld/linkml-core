@@ -49,10 +49,10 @@ fn workflow_name_fails() {
     let id = Identifier::new("SomeClass");
     assert!(matches!(
         id.to_uri(&conv),
-        Err(IdentifierError::NameNotResolvable)
+        Err(IdentifierError::NameNotResolvable(_))
     ));
     assert!(matches!(
         id.to_curie(&conv),
-        Err(IdentifierError::NameNotResolvable)
+        Err(IdentifierError::NameNotResolvable(_))
     ));
 }

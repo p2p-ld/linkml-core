@@ -32,7 +32,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let schema = from_yaml(&args.schema)?;
     let mut sv = SchemaView::new();
     sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
+    eprintln!("Resolving schemas...");
     resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
+    eprintln!("Schemas resolved");
     let conv = sv.converter();
     let class_view = sv.get_tree_root_or(args.class.as_deref()).ok_or_else(|| {
         format!(
@@ -41,7 +43,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             args.schema.display()
         )
     })?;
-    
     let data_path = &args.data;
     let value = if let Some(ext) = data_path.extension() {
         if ext == "json" {

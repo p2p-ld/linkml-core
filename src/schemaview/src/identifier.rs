@@ -6,7 +6,7 @@ use std::str::FromStr;
 #[derive(Debug)]
 pub enum IdentifierError {
     /// Conversion failed because the identifier is just a name
-    NameNotResolvable,
+    NameNotResolvable(String),
     /// Error from the `curies` crate while expanding or compressing
     CurieError(CuriesError),
     /// Attempted to convert an [`Identifier`] into the wrong variant
@@ -136,7 +136,10 @@ impl Identifier {
         match self {
             Identifier::Uri(u) => Ok(u.clone()),
             Identifier::Curie(c) => Ok(Uri(conv.expand(&c.0)?.to_string())),
-            Identifier::Name(_) => Err(IdentifierError::NameNotResolvable),
+            Identifier::Name(_) => Err(IdentifierError::NameNotResolvable(format!(
+                "Cannot convert name '{}' to URI",
+                self
+            ))),
         }
     }
 
@@ -147,7 +150,10 @@ impl Identifier {
         match self {
             Identifier::Curie(c) => Ok(c.clone()),
             Identifier::Uri(u) => Ok(Curie(conv.compress(&u.0)?.to_string())),
-            Identifier::Name(_) => Err(IdentifierError::NameNotResolvable),
+            Identifier::Name(_) => Err(IdentifierError::NameNotResolvable(format!(
+                "Cannot convert name '{}' to CURIE",
+                self
+            ))),
         }
     }
 }

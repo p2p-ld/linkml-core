@@ -218,7 +218,7 @@ enum LinkMLValueOwned {
 }
 
 impl LinkMLValueOwned {
-    fn from_linkml<'a>(v: &LinkMLValue<'a>) -> Self {
+    fn from_linkml<'a>(v: &LinkMLValue) -> Self {
         match v {
             LinkMLValue::Scalar { value, slot, .. } => LinkMLValueOwned::Scalar {
                 value: value.clone(),
@@ -253,12 +253,12 @@ impl LinkMLValueOwned {
         }
     }
 
-    fn to_linkml<'a>(&self, sv: &'a SchemaView) -> LinkMLValue<'a> {
+    fn to_linkml<'a>(&self, sv: &'a SchemaView) -> LinkMLValue {
         fn inner<'a>(
             v: &LinkMLValueOwned,
             sv: &'a SchemaView,
             conv: &Converter,
-        ) -> LinkMLValue<'a> {
+        ) -> LinkMLValue {
             match v {
                 LinkMLValueOwned::Scalar { value, slot } => {
                     let slot_view = slot
@@ -269,7 +269,7 @@ impl LinkMLValueOwned {
                         value: value.clone(),
                         slot: slot_view,
                         class: None,
-                        sv,
+                        sv: sv.clone(),
                     }
                 }
                 LinkMLValueOwned::List { values, slot } => {
@@ -281,7 +281,7 @@ impl LinkMLValueOwned {
                         values: values.iter().map(|v| inner(v, sv, conv)).collect(),
                         slot: slot_view,
                         class: None,
-                        sv,
+                        sv: sv.clone(),
                     }
                 }
                 LinkMLValueOwned::Map { values, class } => {
@@ -295,7 +295,7 @@ impl LinkMLValueOwned {
                             .map(|(k, v)| (k.clone(), inner(v, sv, conv)))
                             .collect(),
                         class: class_view,
-                        sv,
+                        sv: sv.clone(),
                     }
                 }
             }
