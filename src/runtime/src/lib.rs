@@ -185,7 +185,7 @@ impl<'a> LinkMLValue<'a> {
 
     fn parse_list_slot(
         value: JsonValue,
-        class: Option<ClassView<'a>>,
+        class: ClassView<'a>,
         sl: SlotView<'a>,
         sv: &'a SchemaView,
         conv: &Converter,
@@ -204,7 +204,7 @@ impl<'a> LinkMLValue<'a> {
                 for (i, v) in arr.into_iter().enumerate() {
                     let mut p = path.clone();
                     p.push(format!("{}[{}]", sl.name, i));
-                    let v_transformed = if let (Some(cr), JsonValue::String(s)) = (&class_range, &v) {
+                    let v_transformed = if let (Some(cr), JsonValue::String(s)) = (class_range.as_ref(), &v) {
                         if let Some(id_slot) = cr.identifier_slot() {
                             let mut m = serde_json::Map::new();
                             m.insert(id_slot.name.clone(), JsonValue::String(s.clone()));
@@ -217,7 +217,7 @@ impl<'a> LinkMLValue<'a> {
                     };
                     values.push(Self::from_json_internal(
                         v_transformed,
-                        class_range.clone().unwrap(),
+                        class_range.as_ref().unwrap_or(&class).clone(),
                         slot_for_item.clone(),
                         sv,
                         conv,
@@ -228,7 +228,7 @@ impl<'a> LinkMLValue<'a> {
                 Ok(LinkMLValue::List {
                     values,
                     slot: sl.clone(),
-                    class: class.clone(),
+                    class: Some(class.clone()),
                     sv,
                 })
             }
@@ -241,7 +241,7 @@ impl<'a> LinkMLValue<'a> {
             (true, other) => Ok(LinkMLValue::Scalar {
                 value: other,
                 slot: sl.clone(),
-                class: class.clone(),
+                class: Some(class.clone()),
                 sv,
             }),
         }
@@ -466,7 +466,7 @@ impl<'a> LinkMLValue<'a> {
                 SlotContainerMode::List => {
                     return Self::parse_list_slot(
                         value,
-                        Some(classview),
+                        classview,
                         sl.clone(),
                         sv,
                         conv,
