@@ -1049,7 +1049,6 @@ impl CommonMetadata for crate::StructuredAlias {
         fn structured_aliases(&self) -> Option<impl poly_containers::SeqRef<crate::StructuredAlias>> {
         return self.structured_aliases.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-    
         fn mappings(&self) -> Option<impl poly_containers::SeqRef<uriorcurie>> {
         return self.mappings.as_ref();
     }
@@ -4949,9 +4948,9 @@ pub trait Element : Extensible  +  Annotatable  +  CommonMetadata   {
     // fn id_prefixes_mut(&mut self) -> &mut Option<impl poly_containers::SeqRef<ncname>>;
     // fn set_id_prefixes(&mut self, value: Option<&Vec<ncname>>);
 
-    fn id_prefixes_are_closed(&self) -> Option<&bool>;
-    // fn id_prefixes_are_closed_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_id_prefixes_are_closed(&mut self, value: Option<&bool>);
+    fn id_prefixes_are_closed(&self) -> Option<bool>;
+    // fn id_prefixes_are_closed_mut(&mut self) -> &mut Option<bool>;
+    // fn set_id_prefixes_are_closed(&mut self, value: Option<bool>);
 
     fn definition_uri(&self) -> Option<&uriorcurie>;
     // fn definition_uri_mut(&mut self) -> &mut Option<&uriorcurie>;
@@ -4983,8 +4982,8 @@ impl Element for crate::Element {
         fn id_prefixes(&self) -> Option<impl poly_containers::SeqRef<ncname>> {
         return self.id_prefixes.as_ref();
     }
-        fn id_prefixes_are_closed(&self) -> Option<&bool> {
-        return self.id_prefixes_are_closed.as_ref();
+        fn id_prefixes_are_closed(&self) -> Option<bool> {
+        return self.id_prefixes_are_closed;
     }
         fn definition_uri(&self) -> Option<&uriorcurie> {
         return self.definition_uri.as_ref();
@@ -5009,8 +5008,8 @@ impl Element for crate::SchemaDefinition {
         fn id_prefixes(&self) -> Option<impl poly_containers::SeqRef<ncname>> {
         return self.id_prefixes.as_ref();
     }
-        fn id_prefixes_are_closed(&self) -> Option<&bool> {
-        return self.id_prefixes_are_closed.as_ref();
+        fn id_prefixes_are_closed(&self) -> Option<bool> {
+        return self.id_prefixes_are_closed;
     }
         fn definition_uri(&self) -> Option<&uriorcurie> {
         return self.definition_uri.as_ref();
@@ -5035,8 +5034,8 @@ impl Element for crate::TypeDefinition {
         fn id_prefixes(&self) -> Option<impl poly_containers::SeqRef<ncname>> {
         return self.id_prefixes.as_ref();
     }
-        fn id_prefixes_are_closed(&self) -> Option<&bool> {
-        return self.id_prefixes_are_closed.as_ref();
+        fn id_prefixes_are_closed(&self) -> Option<bool> {
+        return self.id_prefixes_are_closed;
     }
         fn definition_uri(&self) -> Option<&uriorcurie> {
         return self.definition_uri.as_ref();
@@ -5061,8 +5060,8 @@ impl Element for crate::SubsetDefinition {
         fn id_prefixes(&self) -> Option<impl poly_containers::SeqRef<ncname>> {
         return self.id_prefixes.as_ref();
     }
-        fn id_prefixes_are_closed(&self) -> Option<&bool> {
-        return self.id_prefixes_are_closed.as_ref();
+        fn id_prefixes_are_closed(&self) -> Option<bool> {
+        return self.id_prefixes_are_closed;
     }
         fn definition_uri(&self) -> Option<&uriorcurie> {
         return self.definition_uri.as_ref();
@@ -5087,8 +5086,8 @@ impl Element for crate::Definition {
         fn id_prefixes(&self) -> Option<impl poly_containers::SeqRef<ncname>> {
         return self.id_prefixes.as_ref();
     }
-        fn id_prefixes_are_closed(&self) -> Option<&bool> {
-        return self.id_prefixes_are_closed.as_ref();
+        fn id_prefixes_are_closed(&self) -> Option<bool> {
+        return self.id_prefixes_are_closed;
     }
         fn definition_uri(&self) -> Option<&uriorcurie> {
         return self.definition_uri.as_ref();
@@ -5113,8 +5112,8 @@ impl Element for crate::EnumDefinition {
         fn id_prefixes(&self) -> Option<impl poly_containers::SeqRef<ncname>> {
         return self.id_prefixes.as_ref();
     }
-        fn id_prefixes_are_closed(&self) -> Option<&bool> {
-        return self.id_prefixes_are_closed.as_ref();
+        fn id_prefixes_are_closed(&self) -> Option<bool> {
+        return self.id_prefixes_are_closed;
     }
         fn definition_uri(&self) -> Option<&uriorcurie> {
         return self.definition_uri.as_ref();
@@ -5139,8 +5138,8 @@ impl Element for crate::SlotDefinition {
         fn id_prefixes(&self) -> Option<impl poly_containers::SeqRef<ncname>> {
         return self.id_prefixes.as_ref();
     }
-        fn id_prefixes_are_closed(&self) -> Option<&bool> {
-        return self.id_prefixes_are_closed.as_ref();
+        fn id_prefixes_are_closed(&self) -> Option<bool> {
+        return self.id_prefixes_are_closed;
     }
         fn definition_uri(&self) -> Option<&uriorcurie> {
         return self.definition_uri.as_ref();
@@ -5165,8 +5164,8 @@ impl Element for crate::ClassDefinition {
         fn id_prefixes(&self) -> Option<impl poly_containers::SeqRef<ncname>> {
         return self.id_prefixes.as_ref();
     }
-        fn id_prefixes_are_closed(&self) -> Option<&bool> {
-        return self.id_prefixes_are_closed.as_ref();
+        fn id_prefixes_are_closed(&self) -> Option<bool> {
+        return self.id_prefixes_are_closed;
     }
         fn definition_uri(&self) -> Option<&uriorcurie> {
         return self.definition_uri.as_ref();
@@ -5212,7 +5211,7 @@ impl Element for crate::ElementOrSubtype {
 
         }
     }
-        fn id_prefixes_are_closed(&self) -> Option<&bool> {
+        fn id_prefixes_are_closed(&self) -> Option<bool> {
         match self {
                 ElementOrSubtype::Element(val) => val.id_prefixes_are_closed(),
                 ElementOrSubtype::SchemaDefinition(val) => val.id_prefixes_are_closed(),
@@ -5310,7 +5309,7 @@ impl Element for crate::DefinitionOrSubtype {
 
         }
     }
-        fn id_prefixes_are_closed(&self) -> Option<&bool> {
+        fn id_prefixes_are_closed(&self) -> Option<bool> {
         match self {
                 DefinitionOrSubtype::Definition(val) => val.id_prefixes_are_closed(),
                 DefinitionOrSubtype::EnumDefinition(val) => val.id_prefixes_are_closed(),
@@ -5444,9 +5443,9 @@ pub trait SchemaDefinition : Element   {
     // fn generation_date_mut(&mut self) -> &mut Option<&NaiveDateTime>;
     // fn set_generation_date(&mut self, value: Option<&NaiveDateTime>);
 
-    fn slot_names_unique(&self) -> Option<&bool>;
-    // fn slot_names_unique_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_slot_names_unique(&mut self, value: Option<&bool>);
+    fn slot_names_unique(&self) -> Option<bool>;
+    // fn slot_names_unique_mut(&mut self) -> &mut Option<bool>;
+    // fn set_slot_names_unique(&mut self, value: Option<bool>);
 
     fn settings(&self) -> Option<impl poly_containers::MapRef<String,crate::Setting>>;
     // fn settings_mut(&mut self) -> &mut Option<impl poly_containers::MapRef<String,crate::Setting>>;
@@ -5517,8 +5516,8 @@ impl SchemaDefinition for crate::SchemaDefinition {
         fn generation_date(&self) -> Option<&NaiveDateTime> {
         return self.generation_date.as_ref();
     }
-        fn slot_names_unique(&self) -> Option<&bool> {
-        return self.slot_names_unique.as_ref();
+        fn slot_names_unique(&self) -> Option<bool> {
+        return self.slot_names_unique;
     }
         fn settings(&self) -> Option<impl poly_containers::MapRef<String,crate::Setting>> {
         return self.settings.as_ref();
@@ -5597,13 +5596,13 @@ pub trait Definition : Element   {
     // fn is_a_mut(&mut self) -> &mut Option<&str>;
     // fn set_is_a<E>(&mut self, value: Option<&str>) where E: Into<String>;
 
-    fn abstract_(&self) -> Option<&bool>;
-    // fn abstract__mut(&mut self) -> &mut Option<&bool>;
-    // fn set_abstract_(&mut self, value: Option<&bool>);
+    fn abstract_(&self) -> Option<bool>;
+    // fn abstract__mut(&mut self) -> &mut Option<bool>;
+    // fn set_abstract_(&mut self, value: Option<bool>);
 
-    fn mixin(&self) -> Option<&bool>;
-    // fn mixin_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_mixin(&mut self, value: Option<&bool>);
+    fn mixin(&self) -> Option<bool>;
+    // fn mixin_mut(&mut self) -> &mut Option<bool>;
+    // fn set_mixin(&mut self, value: Option<bool>);
 
     fn mixins(&self) -> Option<impl poly_containers::SeqRef<String>>;
     // fn mixins_mut(&mut self) -> &mut Option<impl poly_containers::SeqRef<String>>;
@@ -5628,11 +5627,11 @@ impl Definition for crate::Definition {
         fn is_a(&self) -> Option<&str> {
         return self.is_a.as_deref();
     }
-        fn abstract_(&self) -> Option<&bool> {
-        return self.abstract_.as_ref();
+        fn abstract_(&self) -> Option<bool> {
+        return self.abstract_;
     }
-        fn mixin(&self) -> Option<&bool> {
-        return self.mixin.as_ref();
+        fn mixin(&self) -> Option<bool> {
+        return self.mixin;
     }
         fn mixins(&self) -> Option<impl poly_containers::SeqRef<String>> {
         return self.mixins.as_ref();
@@ -5651,11 +5650,11 @@ impl Definition for crate::EnumDefinition {
         fn is_a(&self) -> Option<&str> {
         return self.is_a.as_deref();
     }
-        fn abstract_(&self) -> Option<&bool> {
-        return self.abstract_.as_ref();
+        fn abstract_(&self) -> Option<bool> {
+        return self.abstract_;
     }
-        fn mixin(&self) -> Option<&bool> {
-        return self.mixin.as_ref();
+        fn mixin(&self) -> Option<bool> {
+        return self.mixin;
     }
         fn mixins(&self) -> Option<impl poly_containers::SeqRef<String>> {
         return self.mixins.as_ref();
@@ -5674,11 +5673,11 @@ impl Definition for crate::SlotDefinition {
         fn is_a(&self) -> Option<&str> {
         return self.is_a.as_deref();
     }
-        fn abstract_(&self) -> Option<&bool> {
-        return self.abstract_.as_ref();
+        fn abstract_(&self) -> Option<bool> {
+        return self.abstract_;
     }
-        fn mixin(&self) -> Option<&bool> {
-        return self.mixin.as_ref();
+        fn mixin(&self) -> Option<bool> {
+        return self.mixin;
     }
         fn mixins(&self) -> Option<impl poly_containers::SeqRef<String>> {
         return self.mixins.as_ref();
@@ -5697,11 +5696,11 @@ impl Definition for crate::ClassDefinition {
         fn is_a(&self) -> Option<&str> {
         return self.is_a.as_deref();
     }
-        fn abstract_(&self) -> Option<&bool> {
-        return self.abstract_.as_ref();
+        fn abstract_(&self) -> Option<bool> {
+        return self.abstract_;
     }
-        fn mixin(&self) -> Option<&bool> {
-        return self.mixin.as_ref();
+        fn mixin(&self) -> Option<bool> {
+        return self.mixin;
     }
         fn mixins(&self) -> Option<impl poly_containers::SeqRef<String>> {
         return self.mixins.as_ref();
@@ -5727,7 +5726,7 @@ impl Definition for crate::DefinitionOrSubtype {
 
         }
     }
-        fn abstract_(&self) -> Option<&bool> {
+        fn abstract_(&self) -> Option<bool> {
         match self {
                 DefinitionOrSubtype::Definition(val) => val.abstract_(),
                 DefinitionOrSubtype::EnumDefinition(val) => val.abstract_(),
@@ -5736,7 +5735,7 @@ impl Definition for crate::DefinitionOrSubtype {
 
         }
     }
-        fn mixin(&self) -> Option<&bool> {
+        fn mixin(&self) -> Option<bool> {
         match self {
                 DefinitionOrSubtype::Definition(val) => val.mixin(),
                 DefinitionOrSubtype::EnumDefinition(val) => val.mixin(),
@@ -5882,17 +5881,17 @@ pub trait ReachabilityQuery   {
     // fn relationship_types_mut(&mut self) -> &mut Option<impl poly_containers::SeqRef<uriorcurie>>;
     // fn set_relationship_types(&mut self, value: Option<&Vec<uriorcurie>>);
 
-    fn is_direct(&self) -> Option<&bool>;
-    // fn is_direct_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_is_direct(&mut self, value: Option<&bool>);
+    fn is_direct(&self) -> Option<bool>;
+    // fn is_direct_mut(&mut self) -> &mut Option<bool>;
+    // fn set_is_direct(&mut self, value: Option<bool>);
 
-    fn include_self(&self) -> Option<&bool>;
-    // fn include_self_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_include_self(&mut self, value: Option<&bool>);
+    fn include_self(&self) -> Option<bool>;
+    // fn include_self_mut(&mut self) -> &mut Option<bool>;
+    // fn set_include_self(&mut self, value: Option<bool>);
 
-    fn traverse_up(&self) -> Option<&bool>;
-    // fn traverse_up_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_traverse_up(&mut self, value: Option<&bool>);
+    fn traverse_up(&self) -> Option<bool>;
+    // fn traverse_up_mut(&mut self) -> &mut Option<bool>;
+    // fn set_traverse_up(&mut self, value: Option<bool>);
 
 
 }
@@ -5907,14 +5906,14 @@ impl ReachabilityQuery for crate::ReachabilityQuery {
         fn relationship_types(&self) -> Option<impl poly_containers::SeqRef<uriorcurie>> {
         return self.relationship_types.as_ref();
     }
-        fn is_direct(&self) -> Option<&bool> {
-        return self.is_direct.as_ref();
+        fn is_direct(&self) -> Option<bool> {
+        return self.is_direct;
     }
-        fn include_self(&self) -> Option<&bool> {
-        return self.include_self.as_ref();
+        fn include_self(&self) -> Option<bool> {
+        return self.include_self;
     }
-        fn traverse_up(&self) -> Option<&bool> {
-        return self.traverse_up.as_ref();
+        fn traverse_up(&self) -> Option<bool> {
+        return self.traverse_up;
     }
 }
 
@@ -6565,9 +6564,9 @@ pub trait PathExpression : Expression  +  Extensible  +  Annotatable  +  CommonM
     // fn exactly_one_of_mut(&mut self) -> &mut Option<impl poly_containers::SeqRef<crate::PathExpression>>;
     // fn set_exactly_one_of<E>(&mut self, value: Option<&Vec<E>>) where E: Into<PathExpression>;
 
-    fn reversed(&self) -> Option<&bool>;
-    // fn reversed_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_reversed(&mut self, value: Option<&bool>);
+    fn reversed(&self) -> Option<bool>;
+    // fn reversed_mut(&mut self) -> &mut Option<bool>;
+    // fn set_reversed(&mut self, value: Option<bool>);
 
     fn traverse(&self) -> Option<&str>;
     // fn traverse_mut(&mut self) -> &mut Option<&str>;
@@ -6596,8 +6595,8 @@ impl PathExpression for crate::PathExpression {
         fn exactly_one_of(&self) -> Option<impl poly_containers::SeqRef<crate::PathExpression>> {
         return self.exactly_one_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-        fn reversed(&self) -> Option<&bool> {
-        return self.reversed.as_ref();
+        fn reversed(&self) -> Option<bool> {
+        return self.reversed;
     }
         fn traverse(&self) -> Option<&str> {
         return self.traverse.as_deref();
@@ -6626,25 +6625,25 @@ pub trait SlotExpression : Expression   {
     // fn bindings_mut(&mut self) -> &mut Option<impl poly_containers::SeqRef<crate::EnumBinding>>;
     // fn set_bindings<E>(&mut self, value: Option<&Vec<E>>) where E: Into<EnumBinding>;
 
-    fn required(&self) -> Option<&bool>;
-    // fn required_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_required(&mut self, value: Option<&bool>);
+    fn required(&self) -> Option<bool>;
+    // fn required_mut(&mut self) -> &mut Option<bool>;
+    // fn set_required(&mut self, value: Option<bool>);
 
-    fn recommended(&self) -> Option<&bool>;
-    // fn recommended_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_recommended(&mut self, value: Option<&bool>);
+    fn recommended(&self) -> Option<bool>;
+    // fn recommended_mut(&mut self) -> &mut Option<bool>;
+    // fn set_recommended(&mut self, value: Option<bool>);
 
-    fn multivalued(&self) -> Option<&bool>;
-    // fn multivalued_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_multivalued(&mut self, value: Option<&bool>);
+    fn multivalued(&self) -> Option<bool>;
+    // fn multivalued_mut(&mut self) -> &mut Option<bool>;
+    // fn set_multivalued(&mut self, value: Option<bool>);
 
-    fn inlined(&self) -> Option<&bool>;
-    // fn inlined_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_inlined(&mut self, value: Option<&bool>);
+    fn inlined(&self) -> Option<bool>;
+    // fn inlined_mut(&mut self) -> &mut Option<bool>;
+    // fn set_inlined(&mut self, value: Option<bool>);
 
-    fn inlined_as_list(&self) -> Option<&bool>;
-    // fn inlined_as_list_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_inlined_as_list(&mut self, value: Option<&bool>);
+    fn inlined_as_list(&self) -> Option<bool>;
+    // fn inlined_as_list_mut(&mut self) -> &mut Option<bool>;
+    // fn set_inlined_as_list(&mut self, value: Option<bool>);
 
     fn minimum_value(&self) -> Option<&crate::Anything>;
     // fn minimum_value_mut(&mut self) -> &mut Option<&crate::Anything>;
@@ -6742,20 +6741,20 @@ impl SlotExpression for crate::SlotExpression {
         fn bindings(&self) -> Option<impl poly_containers::SeqRef<crate::EnumBinding>> {
         return self.bindings.as_ref();
     }
-        fn required(&self) -> Option<&bool> {
-        return self.required.as_ref();
+        fn required(&self) -> Option<bool> {
+        return self.required;
     }
-        fn recommended(&self) -> Option<&bool> {
-        return self.recommended.as_ref();
+        fn recommended(&self) -> Option<bool> {
+        return self.recommended;
     }
-        fn multivalued(&self) -> Option<&bool> {
-        return self.multivalued.as_ref();
+        fn multivalued(&self) -> Option<bool> {
+        return self.multivalued;
     }
-        fn inlined(&self) -> Option<&bool> {
-        return self.inlined.as_ref();
+        fn inlined(&self) -> Option<bool> {
+        return self.inlined;
     }
-        fn inlined_as_list(&self) -> Option<&bool> {
-        return self.inlined_as_list.as_ref();
+        fn inlined_as_list(&self) -> Option<bool> {
+        return self.inlined_as_list;
     }
         fn minimum_value(&self) -> Option<&crate::Anything> {
         return self.minimum_value.as_ref();
@@ -6818,6 +6817,7 @@ impl SlotExpression for crate::SlotExpression {
         return self.all_of.as_ref();
     }
 }
+
 impl SlotExpression for crate::AnonymousSlotExpression {
         fn range(&self) -> Option<&str> {
         return self.range.as_deref();
@@ -6831,20 +6831,20 @@ impl SlotExpression for crate::AnonymousSlotExpression {
         fn bindings(&self) -> Option<impl poly_containers::SeqRef<crate::EnumBinding>> {
         return self.bindings.as_ref();
     }
-        fn required(&self) -> Option<&bool> {
-        return self.required.as_ref();
+        fn required(&self) -> Option<bool> {
+        return self.required;
     }
-        fn recommended(&self) -> Option<&bool> {
-        return self.recommended.as_ref();
+        fn recommended(&self) -> Option<bool> {
+        return self.recommended;
     }
-        fn multivalued(&self) -> Option<&bool> {
-        return self.multivalued.as_ref();
+        fn multivalued(&self) -> Option<bool> {
+        return self.multivalued;
     }
-        fn inlined(&self) -> Option<&bool> {
-        return self.inlined.as_ref();
+        fn inlined(&self) -> Option<bool> {
+        return self.inlined;
     }
-        fn inlined_as_list(&self) -> Option<&bool> {
-        return self.inlined_as_list.as_ref();
+        fn inlined_as_list(&self) -> Option<bool> {
+        return self.inlined_as_list;
     }
         fn minimum_value(&self) -> Option<&crate::Anything> {
         return self.minimum_value.as_ref();
@@ -6920,20 +6920,20 @@ impl SlotExpression for crate::SlotDefinition {
         fn bindings(&self) -> Option<impl poly_containers::SeqRef<crate::EnumBinding>> {
         return self.bindings.as_ref();
     }
-        fn required(&self) -> Option<&bool> {
-        return self.required.as_ref();
+        fn required(&self) -> Option<bool> {
+        return self.required;
     }
-        fn recommended(&self) -> Option<&bool> {
-        return self.recommended.as_ref();
+        fn recommended(&self) -> Option<bool> {
+        return self.recommended;
     }
-        fn multivalued(&self) -> Option<&bool> {
-        return self.multivalued.as_ref();
+        fn multivalued(&self) -> Option<bool> {
+        return self.multivalued;
     }
-        fn inlined(&self) -> Option<&bool> {
-        return self.inlined.as_ref();
+        fn inlined(&self) -> Option<bool> {
+        return self.inlined;
     }
-        fn inlined_as_list(&self) -> Option<&bool> {
-        return self.inlined_as_list.as_ref();
+        fn inlined_as_list(&self) -> Option<bool> {
+        return self.inlined_as_list;
     }
         fn minimum_value(&self) -> Option<&crate::Anything> {
         return self.minimum_value.as_ref();
@@ -7030,7 +7030,7 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-        fn required(&self) -> Option<&bool> {
+        fn required(&self) -> Option<bool> {
         match self {
                 SlotExpressionOrSubtype::SlotExpression(val) => val.required(),
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.required(),
@@ -7038,7 +7038,7 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-        fn recommended(&self) -> Option<&bool> {
+        fn recommended(&self) -> Option<bool> {
         match self {
                 SlotExpressionOrSubtype::SlotExpression(val) => val.recommended(),
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.recommended(),
@@ -7046,7 +7046,7 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-        fn multivalued(&self) -> Option<&bool> {
+        fn multivalued(&self) -> Option<bool> {
         match self {
                 SlotExpressionOrSubtype::SlotExpression(val) => val.multivalued(),
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.multivalued(),
@@ -7054,7 +7054,7 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-        fn inlined(&self) -> Option<&bool> {
+        fn inlined(&self) -> Option<bool> {
         match self {
                 SlotExpressionOrSubtype::SlotExpression(val) => val.inlined(),
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.inlined(),
@@ -7062,7 +7062,7 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-        fn inlined_as_list(&self) -> Option<&bool> {
+        fn inlined_as_list(&self) -> Option<bool> {
         match self {
                 SlotExpressionOrSubtype::SlotExpression(val) => val.inlined_as_list(),
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.inlined_as_list(),
@@ -7259,9 +7259,9 @@ pub trait SlotDefinition : Definition  +  SlotExpression   {
     // fn array_mut(&mut self) -> &mut Option<&crate::ArrayExpression>;
     // fn set_array<E>(&mut self, value: Option<E>) where E: Into<ArrayExpression>;
 
-    fn inherited(&self) -> Option<&bool>;
-    // fn inherited_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_inherited(&mut self, value: Option<&bool>);
+    fn inherited(&self) -> Option<bool>;
+    // fn inherited_mut(&mut self) -> &mut Option<bool>;
+    // fn set_inherited(&mut self, value: Option<bool>);
 
     fn readonly(&self) -> Option<&str>;
     // fn readonly_mut(&mut self) -> &mut Option<&str>;
@@ -7271,29 +7271,29 @@ pub trait SlotDefinition : Definition  +  SlotExpression   {
     // fn ifabsent_mut(&mut self) -> &mut Option<&str>;
     // fn set_ifabsent(&mut self, value: Option<&str>);
 
-    fn list_elements_unique(&self) -> Option<&bool>;
-    // fn list_elements_unique_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_list_elements_unique(&mut self, value: Option<&bool>);
+    fn list_elements_unique(&self) -> Option<bool>;
+    // fn list_elements_unique_mut(&mut self) -> &mut Option<bool>;
+    // fn set_list_elements_unique(&mut self, value: Option<bool>);
 
-    fn list_elements_ordered(&self) -> Option<&bool>;
-    // fn list_elements_ordered_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_list_elements_ordered(&mut self, value: Option<&bool>);
+    fn list_elements_ordered(&self) -> Option<bool>;
+    // fn list_elements_ordered_mut(&mut self) -> &mut Option<bool>;
+    // fn set_list_elements_ordered(&mut self, value: Option<bool>);
 
-    fn shared(&self) -> Option<&bool>;
-    // fn shared_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_shared(&mut self, value: Option<&bool>);
+    fn shared(&self) -> Option<bool>;
+    // fn shared_mut(&mut self) -> &mut Option<bool>;
+    // fn set_shared(&mut self, value: Option<bool>);
 
-    fn key(&self) -> Option<&bool>;
-    // fn key_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_key(&mut self, value: Option<&bool>);
+    fn key(&self) -> Option<bool>;
+    // fn key_mut(&mut self) -> &mut Option<bool>;
+    // fn set_key(&mut self, value: Option<bool>);
 
-    fn identifier(&self) -> Option<&bool>;
-    // fn identifier_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_identifier(&mut self, value: Option<&bool>);
+    fn identifier(&self) -> Option<bool>;
+    // fn identifier_mut(&mut self) -> &mut Option<bool>;
+    // fn set_identifier(&mut self, value: Option<bool>);
 
-    fn designates_type(&self) -> Option<&bool>;
-    // fn designates_type_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_designates_type(&mut self, value: Option<&bool>);
+    fn designates_type(&self) -> Option<bool>;
+    // fn designates_type_mut(&mut self) -> &mut Option<bool>;
+    // fn set_designates_type(&mut self, value: Option<bool>);
 
     fn alias(&self) -> Option<&str>;
     // fn alias_mut(&mut self) -> &mut Option<&str>;
@@ -7311,37 +7311,37 @@ pub trait SlotDefinition : Definition  +  SlotExpression   {
     // fn subproperty_of_mut(&mut self) -> &mut Option<&str>;
     // fn set_subproperty_of<E>(&mut self, value: Option<&str>) where E: Into<String>;
 
-    fn symmetric(&self) -> Option<&bool>;
-    // fn symmetric_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_symmetric(&mut self, value: Option<&bool>);
+    fn symmetric(&self) -> Option<bool>;
+    // fn symmetric_mut(&mut self) -> &mut Option<bool>;
+    // fn set_symmetric(&mut self, value: Option<bool>);
 
-    fn reflexive(&self) -> Option<&bool>;
-    // fn reflexive_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_reflexive(&mut self, value: Option<&bool>);
+    fn reflexive(&self) -> Option<bool>;
+    // fn reflexive_mut(&mut self) -> &mut Option<bool>;
+    // fn set_reflexive(&mut self, value: Option<bool>);
 
-    fn locally_reflexive(&self) -> Option<&bool>;
-    // fn locally_reflexive_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_locally_reflexive(&mut self, value: Option<&bool>);
+    fn locally_reflexive(&self) -> Option<bool>;
+    // fn locally_reflexive_mut(&mut self) -> &mut Option<bool>;
+    // fn set_locally_reflexive(&mut self, value: Option<bool>);
 
-    fn irreflexive(&self) -> Option<&bool>;
-    // fn irreflexive_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_irreflexive(&mut self, value: Option<&bool>);
+    fn irreflexive(&self) -> Option<bool>;
+    // fn irreflexive_mut(&mut self) -> &mut Option<bool>;
+    // fn set_irreflexive(&mut self, value: Option<bool>);
 
-    fn asymmetric(&self) -> Option<&bool>;
-    // fn asymmetric_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_asymmetric(&mut self, value: Option<&bool>);
+    fn asymmetric(&self) -> Option<bool>;
+    // fn asymmetric_mut(&mut self) -> &mut Option<bool>;
+    // fn set_asymmetric(&mut self, value: Option<bool>);
 
-    fn transitive(&self) -> Option<&bool>;
-    // fn transitive_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_transitive(&mut self, value: Option<&bool>);
+    fn transitive(&self) -> Option<bool>;
+    // fn transitive_mut(&mut self) -> &mut Option<bool>;
+    // fn set_transitive(&mut self, value: Option<bool>);
 
     fn inverse(&self) -> Option<&str>;
     // fn inverse_mut(&mut self) -> &mut Option<&str>;
     // fn set_inverse<E>(&mut self, value: Option<&str>) where E: Into<String>;
 
-    fn is_class_field(&self) -> Option<&bool>;
-    // fn is_class_field_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_is_class_field(&mut self, value: Option<&bool>);
+    fn is_class_field(&self) -> Option<bool>;
+    // fn is_class_field_mut(&mut self) -> &mut Option<bool>;
+    // fn set_is_class_field(&mut self, value: Option<bool>);
 
     fn transitive_form_of(&self) -> Option<&str>;
     // fn transitive_form_of_mut(&mut self) -> &mut Option<&str>;
@@ -7355,9 +7355,9 @@ pub trait SlotDefinition : Definition  +  SlotExpression   {
     // fn role_mut(&mut self) -> &mut Option<&str>;
     // fn set_role(&mut self, value: Option<&str>);
 
-    fn is_usage_slot(&self) -> Option<&bool>;
-    // fn is_usage_slot_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_is_usage_slot(&mut self, value: Option<&bool>);
+    fn is_usage_slot(&self) -> Option<bool>;
+    // fn is_usage_slot_mut(&mut self) -> &mut Option<bool>;
+    // fn set_is_usage_slot(&mut self, value: Option<bool>);
 
     fn usage_slot_name(&self) -> Option<&str>;
     // fn usage_slot_name_mut(&mut self) -> &mut Option<&str>;
@@ -7371,9 +7371,9 @@ pub trait SlotDefinition : Definition  +  SlotExpression   {
     // fn slot_group_mut(&mut self) -> &mut Option<&str>;
     // fn set_slot_group<E>(&mut self, value: Option<&str>) where E: Into<String>;
 
-    fn is_grouping_slot(&self) -> Option<&bool>;
-    // fn is_grouping_slot_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_is_grouping_slot(&mut self, value: Option<&bool>);
+    fn is_grouping_slot(&self) -> Option<bool>;
+    // fn is_grouping_slot_mut(&mut self) -> &mut Option<bool>;
+    // fn set_is_grouping_slot(&mut self, value: Option<bool>);
 
     fn path_rule(&self) -> Option<&crate::PathExpression>;
     // fn path_rule_mut(&mut self) -> &mut Option<&crate::PathExpression>;
@@ -7383,9 +7383,9 @@ pub trait SlotDefinition : Definition  +  SlotExpression   {
     // fn disjoint_with_mut(&mut self) -> &mut Option<impl poly_containers::SeqRef<String>>;
     // fn set_disjoint_with<E>(&mut self, value: Option<&Vec<String>>) where E: Into<String>;
 
-    fn children_are_mutually_disjoint(&self) -> Option<&bool>;
-    // fn children_are_mutually_disjoint_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_children_are_mutually_disjoint(&mut self, value: Option<&bool>);
+    fn children_are_mutually_disjoint(&self) -> Option<bool>;
+    // fn children_are_mutually_disjoint_mut(&mut self) -> &mut Option<bool>;
+    // fn set_children_are_mutually_disjoint(&mut self, value: Option<bool>);
 
     fn union_of(&self) -> Option<impl poly_containers::SeqRef<String>>;
     // fn union_of_mut(&mut self) -> &mut Option<impl poly_containers::SeqRef<String>>;
@@ -7411,8 +7411,8 @@ impl SlotDefinition for crate::SlotDefinition {
         fn array(&self) -> Option<&crate::ArrayExpression> {
         return self.array.as_ref();
     }
-        fn inherited(&self) -> Option<&bool> {
-        return self.inherited.as_ref();
+        fn inherited(&self) -> Option<bool> {
+        return self.inherited;
     }
         fn readonly(&self) -> Option<&str> {
         return self.readonly.as_deref();
@@ -7420,23 +7420,23 @@ impl SlotDefinition for crate::SlotDefinition {
         fn ifabsent(&self) -> Option<&str> {
         return self.ifabsent.as_deref();
     }
-        fn list_elements_unique(&self) -> Option<&bool> {
-        return self.list_elements_unique.as_ref();
+        fn list_elements_unique(&self) -> Option<bool> {
+        return self.list_elements_unique;
     }
-        fn list_elements_ordered(&self) -> Option<&bool> {
-        return self.list_elements_ordered.as_ref();
+        fn list_elements_ordered(&self) -> Option<bool> {
+        return self.list_elements_ordered;
     }
-        fn shared(&self) -> Option<&bool> {
-        return self.shared.as_ref();
+        fn shared(&self) -> Option<bool> {
+        return self.shared;
     }
-        fn key(&self) -> Option<&bool> {
-        return self.key.as_ref();
+        fn key(&self) -> Option<bool> {
+        return self.key;
     }
-        fn identifier(&self) -> Option<&bool> {
-        return self.identifier.as_ref();
+        fn identifier(&self) -> Option<bool> {
+        return self.identifier;
     }
-        fn designates_type(&self) -> Option<&bool> {
-        return self.designates_type.as_ref();
+        fn designates_type(&self) -> Option<bool> {
+        return self.designates_type;
     }
         fn alias(&self) -> Option<&str> {
         return self.alias.as_deref();
@@ -7450,29 +7450,29 @@ impl SlotDefinition for crate::SlotDefinition {
         fn subproperty_of(&self) -> Option<&str> {
         return self.subproperty_of.as_deref();
     }
-        fn symmetric(&self) -> Option<&bool> {
-        return self.symmetric.as_ref();
+        fn symmetric(&self) -> Option<bool> {
+        return self.symmetric;
     }
-        fn reflexive(&self) -> Option<&bool> {
-        return self.reflexive.as_ref();
+        fn reflexive(&self) -> Option<bool> {
+        return self.reflexive;
     }
-        fn locally_reflexive(&self) -> Option<&bool> {
-        return self.locally_reflexive.as_ref();
+        fn locally_reflexive(&self) -> Option<bool> {
+        return self.locally_reflexive;
     }
-        fn irreflexive(&self) -> Option<&bool> {
-        return self.irreflexive.as_ref();
+        fn irreflexive(&self) -> Option<bool> {
+        return self.irreflexive;
     }
-        fn asymmetric(&self) -> Option<&bool> {
-        return self.asymmetric.as_ref();
+        fn asymmetric(&self) -> Option<bool> {
+        return self.asymmetric;
     }
-        fn transitive(&self) -> Option<&bool> {
-        return self.transitive.as_ref();
+        fn transitive(&self) -> Option<bool> {
+        return self.transitive;
     }
         fn inverse(&self) -> Option<&str> {
         return self.inverse.as_deref();
     }
-        fn is_class_field(&self) -> Option<&bool> {
-        return self.is_class_field.as_ref();
+        fn is_class_field(&self) -> Option<bool> {
+        return self.is_class_field;
     }
         fn transitive_form_of(&self) -> Option<&str> {
         return self.transitive_form_of.as_deref();
@@ -7483,8 +7483,8 @@ impl SlotDefinition for crate::SlotDefinition {
         fn role(&self) -> Option<&str> {
         return self.role.as_deref();
     }
-        fn is_usage_slot(&self) -> Option<&bool> {
-        return self.is_usage_slot.as_ref();
+        fn is_usage_slot(&self) -> Option<bool> {
+        return self.is_usage_slot;
     }
         fn usage_slot_name(&self) -> Option<&str> {
         return self.usage_slot_name.as_deref();
@@ -7495,8 +7495,8 @@ impl SlotDefinition for crate::SlotDefinition {
         fn slot_group(&self) -> Option<&str> {
         return self.slot_group.as_deref();
     }
-        fn is_grouping_slot(&self) -> Option<&bool> {
-        return self.is_grouping_slot.as_ref();
+        fn is_grouping_slot(&self) -> Option<bool> {
+        return self.is_grouping_slot;
     }
         fn path_rule(&self) -> Option<&crate::PathExpression> {
         return self.path_rule.as_deref();
@@ -7504,8 +7504,8 @@ impl SlotDefinition for crate::SlotDefinition {
         fn disjoint_with(&self) -> Option<impl poly_containers::SeqRef<String>> {
         return self.disjoint_with.as_ref();
     }
-        fn children_are_mutually_disjoint(&self) -> Option<&bool> {
-        return self.children_are_mutually_disjoint.as_ref();
+        fn children_are_mutually_disjoint(&self) -> Option<bool> {
+        return self.children_are_mutually_disjoint;
     }
         fn union_of(&self) -> Option<impl poly_containers::SeqRef<String>> {
         return self.union_of.as_ref();
@@ -7686,9 +7686,9 @@ pub trait ClassDefinition : Definition  +  ClassExpression   {
     // fn defining_slots_mut(&mut self) -> &mut Option<impl poly_containers::SeqRef<String>>;
     // fn set_defining_slots<E>(&mut self, value: Option<&Vec<String>>) where E: Into<String>;
 
-    fn tree_root(&self) -> Option<&bool>;
-    // fn tree_root_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_tree_root(&mut self, value: Option<&bool>);
+    fn tree_root(&self) -> Option<bool>;
+    // fn tree_root_mut(&mut self) -> &mut Option<bool>;
+    // fn set_tree_root(&mut self, value: Option<bool>);
 
     fn unique_keys(&self) -> Option<impl poly_containers::MapRef<String,crate::UniqueKey>>;
     // fn unique_keys_mut(&mut self) -> &mut Option<impl poly_containers::MapRef<String,crate::UniqueKey>>;
@@ -7702,21 +7702,21 @@ pub trait ClassDefinition : Definition  +  ClassExpression   {
     // fn classification_rules_mut(&mut self) -> &mut Option<impl poly_containers::SeqRef<crate::AnonymousClassExpression>>;
     // fn set_classification_rules<E>(&mut self, value: Option<&Vec<E>>) where E: Into<AnonymousClassExpression>;
 
-    fn slot_names_unique(&self) -> Option<&bool>;
-    // fn slot_names_unique_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_slot_names_unique(&mut self, value: Option<&bool>);
+    fn slot_names_unique(&self) -> Option<bool>;
+    // fn slot_names_unique_mut(&mut self) -> &mut Option<bool>;
+    // fn set_slot_names_unique(&mut self, value: Option<bool>);
 
-    fn represents_relationship(&self) -> Option<&bool>;
-    // fn represents_relationship_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_represents_relationship(&mut self, value: Option<&bool>);
+    fn represents_relationship(&self) -> Option<bool>;
+    // fn represents_relationship_mut(&mut self) -> &mut Option<bool>;
+    // fn set_represents_relationship(&mut self, value: Option<bool>);
 
     fn disjoint_with(&self) -> Option<impl poly_containers::SeqRef<String>>;
     // fn disjoint_with_mut(&mut self) -> &mut Option<impl poly_containers::SeqRef<String>>;
     // fn set_disjoint_with<E>(&mut self, value: Option<&Vec<String>>) where E: Into<String>;
 
-    fn children_are_mutually_disjoint(&self) -> Option<&bool>;
-    // fn children_are_mutually_disjoint_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_children_are_mutually_disjoint(&mut self, value: Option<&bool>);
+    fn children_are_mutually_disjoint(&self) -> Option<bool>;
+    // fn children_are_mutually_disjoint_mut(&mut self) -> &mut Option<bool>;
+    // fn set_children_are_mutually_disjoint(&mut self, value: Option<bool>);
 
 
 }
@@ -7747,8 +7747,8 @@ impl ClassDefinition for crate::ClassDefinition {
         fn defining_slots(&self) -> Option<impl poly_containers::SeqRef<String>> {
         return self.defining_slots.as_ref();
     }
-        fn tree_root(&self) -> Option<&bool> {
-        return self.tree_root.as_ref();
+        fn tree_root(&self) -> Option<bool> {
+        return self.tree_root;
     }
         fn unique_keys(&self) -> Option<impl poly_containers::MapRef<String,crate::UniqueKey>> {
         return self.unique_keys
@@ -7761,17 +7761,17 @@ impl ClassDefinition for crate::ClassDefinition {
         fn classification_rules(&self) -> Option<impl poly_containers::SeqRef<crate::AnonymousClassExpression>> {
         return self.classification_rules.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-        fn slot_names_unique(&self) -> Option<&bool> {
-        return self.slot_names_unique.as_ref();
+        fn slot_names_unique(&self) -> Option<bool> {
+        return self.slot_names_unique;
     }
-        fn represents_relationship(&self) -> Option<&bool> {
-        return self.represents_relationship.as_ref();
+        fn represents_relationship(&self) -> Option<bool> {
+        return self.represents_relationship;
     }
         fn disjoint_with(&self) -> Option<impl poly_containers::SeqRef<String>> {
         return self.disjoint_with.as_ref();
     }
-        fn children_are_mutually_disjoint(&self) -> Option<&bool> {
-        return self.children_are_mutually_disjoint.as_ref();
+        fn children_are_mutually_disjoint(&self) -> Option<bool> {
+        return self.children_are_mutually_disjoint;
     }
 }
 
@@ -7803,17 +7803,17 @@ pub trait ClassRule : ClassLevelRule  +  Extensible  +  Annotatable  +  CommonMe
     // fn elseconditions_mut(&mut self) -> &mut Option<&crate::AnonymousClassExpression>;
     // fn set_elseconditions<E>(&mut self, value: Option<E>) where E: Into<AnonymousClassExpression>;
 
-    fn bidirectional(&self) -> Option<&bool>;
-    // fn bidirectional_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_bidirectional(&mut self, value: Option<&bool>);
+    fn bidirectional(&self) -> Option<bool>;
+    // fn bidirectional_mut(&mut self) -> &mut Option<bool>;
+    // fn set_bidirectional(&mut self, value: Option<bool>);
 
-    fn open_world(&self) -> Option<&bool>;
-    // fn open_world_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_open_world(&mut self, value: Option<&bool>);
+    fn open_world(&self) -> Option<bool>;
+    // fn open_world_mut(&mut self) -> &mut Option<bool>;
+    // fn set_open_world(&mut self, value: Option<bool>);
 
-    fn deactivated(&self) -> Option<&bool>;
-    // fn deactivated_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_deactivated(&mut self, value: Option<&bool>);
+    fn deactivated(&self) -> Option<bool>;
+    // fn deactivated_mut(&mut self) -> &mut Option<bool>;
+    // fn set_deactivated(&mut self, value: Option<bool>);
 
 
 }
@@ -7828,14 +7828,14 @@ impl ClassRule for crate::ClassRule {
         fn elseconditions(&self) -> Option<&crate::AnonymousClassExpression> {
         return self.elseconditions.as_deref();
     }
-        fn bidirectional(&self) -> Option<&bool> {
-        return self.bidirectional.as_ref();
+        fn bidirectional(&self) -> Option<bool> {
+        return self.bidirectional;
     }
-        fn open_world(&self) -> Option<&bool> {
-        return self.open_world.as_ref();
+        fn open_world(&self) -> Option<bool> {
+        return self.open_world;
     }
-        fn deactivated(&self) -> Option<&bool> {
-        return self.deactivated.as_ref();
+        fn deactivated(&self) -> Option<bool> {
+        return self.deactivated;
     }
 }
 
@@ -7920,13 +7920,13 @@ pub trait PatternExpression : Extensible  +  Annotatable  +  CommonMetadata   {
     // fn syntax_mut(&mut self) -> &mut Option<&str>;
     // fn set_syntax(&mut self, value: Option<&str>);
 
-    fn interpolated(&self) -> Option<&bool>;
-    // fn interpolated_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_interpolated(&mut self, value: Option<&bool>);
+    fn interpolated(&self) -> Option<bool>;
+    // fn interpolated_mut(&mut self) -> &mut Option<bool>;
+    // fn set_interpolated(&mut self, value: Option<bool>);
 
-    fn partial_match(&self) -> Option<&bool>;
-    // fn partial_match_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_partial_match(&mut self, value: Option<&bool>);
+    fn partial_match(&self) -> Option<bool>;
+    // fn partial_match_mut(&mut self) -> &mut Option<bool>;
+    // fn set_partial_match(&mut self, value: Option<bool>);
 
 
 }
@@ -7935,11 +7935,11 @@ impl PatternExpression for crate::PatternExpression {
         fn syntax(&self) -> Option<&str> {
         return self.syntax.as_deref();
     }
-        fn interpolated(&self) -> Option<&bool> {
-        return self.interpolated.as_ref();
+        fn interpolated(&self) -> Option<bool> {
+        return self.interpolated;
     }
-        fn partial_match(&self) -> Option<&bool> {
-        return self.partial_match.as_ref();
+        fn partial_match(&self) -> Option<bool> {
+        return self.partial_match;
     }
 }
 
@@ -8164,9 +8164,9 @@ pub trait UniqueKey : Extensible  +  Annotatable  +  CommonMetadata   {
     // fn unique_key_slots_mut(&mut self) -> &mut impl poly_containers::SeqRef<String>;
     // fn set_unique_key_slots<E>(&mut self, value: &Vec<String>) where E: Into<String>;
 
-    fn consider_nulls_inequal(&self) -> Option<&bool>;
-    // fn consider_nulls_inequal_mut(&mut self) -> &mut Option<&bool>;
-    // fn set_consider_nulls_inequal(&mut self, value: Option<&bool>);
+    fn consider_nulls_inequal(&self) -> Option<bool>;
+    // fn consider_nulls_inequal_mut(&mut self) -> &mut Option<bool>;
+    // fn set_consider_nulls_inequal(&mut self, value: Option<bool>);
 
 
 }
@@ -8178,8 +8178,8 @@ impl UniqueKey for crate::UniqueKey {
         fn unique_key_slots(&self) -> impl poly_containers::SeqRef<String> {
         return &self.unique_key_slots;
     }
-        fn consider_nulls_inequal(&self) -> Option<&bool> {
-        return self.consider_nulls_inequal.as_ref();
+        fn consider_nulls_inequal(&self) -> Option<bool> {
+        return self.consider_nulls_inequal;
     }
 }
 

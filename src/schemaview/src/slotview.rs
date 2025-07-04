@@ -1,9 +1,10 @@
-use std::cell::{OnceCell, Ref, RefCell};
+use std::cell::{OnceCell};
 use std::collections::HashSet;
 
 
 use curies::Converter;
-use linkml_meta::{any_of, EnumDefinition, SchemaDefinition, SlotDefinition, SlotExpressionOrSubtype};
+use linkml_meta::{EnumDefinition, SchemaDefinition, SlotDefinition, SlotExpressionOrSubtype};
+use linkml_meta::poly::SlotExpression;
 use crate::classview::ClassView;
 use crate::identifier::Identifier;
 use crate::schemaview::SchemaView;
@@ -28,6 +29,100 @@ pub struct RangeInfo<'a>{
     pub slotview: &'a SlotView<'a>,
 }
 
+impl<'a> RangeInfo<'a> {
+    pub fn get_range_class(&self) -> Option<ClassView<'a>> {
+        let conv = self.slotview.sv.converter_for_schema(self.slotview.schema_uri)?;
+        self.e
+            .range()
+            .and_then(|r| self.slotview.sv.get_class(&Identifier::new(r), &conv).ok().flatten())
+    }
+
+    pub fn get_range_enum(&self) -> Option<EnumDefinition> {
+        self.e
+            .range()
+            .and_then(|r| self.slotview.sv.get_enum_definition(&Identifier::new(r)))
+    }
+
+    pub fn is_range_scalar(&self) -> bool {
+        // its scalar if its not a class range
+        let cr = self.get_range_class();
+        if let Some(cr) = cr {
+            if cr.name() == "Anything" || cr.name() == "AnyValue" {
+                return true;
+            }
+            return false;
+        }
+        true
+    }
+
+    pub fn determine_slot_container_mode(&self) -> SlotContainerMode {
+        let range_class = self.get_range_class();
+        let multivalued = self.e.multivalued().unwrap_or(false);
+        if range_class.is_none() {
+            return if multivalued {
+                SlotContainerMode::List
+            } else {
+                SlotContainerMode::SingleValue
+            };
+        }
+        if multivalued && self.e.inlined_as_list().unwrap_or(false) {
+            return SlotContainerMode::List;
+        }
+        let key_slot = range_class.as_ref().and_then(|cv| cv.key_or_identifier_slot());
+        let identifier_slot = range_class.as_ref().and_then(|cv| cv.identifier_slot());
+        let mut inlined = self.e.inlined().unwrap_or(false);
+        if identifier_slot.is_none() {
+            inlined = true;
+        }
+        if !multivalued {
+            return SlotContainerMode::SingleValue;
+        }
+        if !inlined {
+            return SlotContainerMode::List;
+        }
+        if key_slot.is_some() {
+            SlotContainerMode::Mapping
+        } else {
+            SlotContainerMode::List
+        }
+    }
+
+    pub fn determine_slot_inline_mode(&self) -> SlotInlineMode {
+        let multivalued = self.e.multivalued().unwrap_or(false);
+        let range_class = self.get_range_class();
+
+        if range_class.is_none() {
+            return SlotInlineMode::Primitive;
+        }
+
+        if multivalued && self.e.inlined_as_list().unwrap_or(false) {
+            return SlotInlineMode::Inline;
+        }
+
+        let identifier_slot = range_class.as_ref().and_then(|cv| cv.identifier_slot());
+
+        let mut inlined = self.e.inlined().unwrap_or(false);
+        if identifier_slot.is_none() {
+            inlined = true;
+        }
+
+        if !multivalued {
+            return if inlined {
+                SlotInlineMode::Inline
+            } else {
+                SlotInlineMode::Reference
+            };
+        }
+
+        if !inlined {
+            SlotInlineMode::Reference
+        } else {
+            SlotInlineMode::Inline
+        }
+    }
+
+    
+}
 
 
 #[derive(Clone)]
@@ -213,36 +308,4 @@ impl<'a> SlotView<'a> {
         }
     }
 
-    pub fn can_contain_reference_to_class(
-        &self,
-        cls: &ClassView<'a>,
-        sv: &'a SchemaView,
-        conv: &Converter,
-    ) -> bool {
-        let mut classes_to_check = match self.definition().range.to_owned() {
-            Some(r) => vec![r],
-            None => return false,
-        };
-        let mut seen = HashSet::new();
-        let target = &cls.class.name;
-
-        while let Some(c) = classes_to_check.pop() {
-            if !seen.insert(c.to_owned()) {
-                continue;
-            }
-            if let Ok(Some(cv)) = sv.get_class(&Identifier::new(&c), conv) {
-                if cv.class.name == *target {
-                    return true;
-                }
-                for slot in cv.slots() {
-                    if let Some(r) = &slot.definition().range {
-                        if !seen.contains(r) {
-                            classes_to_check.push(r.to_owned());
-                        }
-                    }
-                }
-            }
-        }
-        false
-    }
 }
