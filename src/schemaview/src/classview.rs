@@ -203,6 +203,16 @@ impl ClassView {
         }
     }
 
+    pub fn get_type_designator_slot(&self) -> Option<&SlotDefinition> {
+        self.data.slots.iter().find_map(|s| {
+            if s.definition().designates_type.unwrap_or(false) {
+                return Some(s.definition())
+            } else {
+                None
+            }
+        })
+    }
+
     pub fn get_type_designator_value(
         &self,
         type_slot: &SlotDefinition,
