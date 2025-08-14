@@ -6,7 +6,6 @@ use crate::identifier::{
 };
 use curies::Converter;
 use linkml_meta::SchemaDefinition;
-use serde_yml::mapping::Iter;
 
 use crate::curie::curie2uri;
 // re-export views from submodules
@@ -29,7 +28,7 @@ impl From<IdentifierError> for SchemaViewError {
 
 
 #[derive(Clone)]
-struct SchemaViewData {
+pub(crate) struct SchemaViewData {
     pub(crate) schema_definitions: HashMap<String, SchemaDefinition>,
     /**
      * A list of all resolved schema imports, having (schema ID where the import was, import name)
@@ -40,7 +39,7 @@ struct SchemaViewData {
     pub(crate) converters: HashMap<String, Converter>,
 }
 
-struct SchemaViewCache {
+pub(crate) struct SchemaViewCache {
     pub(crate) class_uri_index: HashMap<String, (String, String)>,
     pub(crate) class_name_index: HashMap<String, (String, String)>,
     pub(crate) slot_uri_index: HashMap<String, (String, String)>,

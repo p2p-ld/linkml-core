@@ -38,7 +38,7 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
             // Attempt to treat the unresolved entry as a local file path
             let path = Path::new(&uri);
             if path.exists() {
-                let mut schema = match from_yaml(path) {
+                let schema = match from_yaml(path) {
                     Ok(s) => s,
                     Err(e) => {
                         return Err(format!(

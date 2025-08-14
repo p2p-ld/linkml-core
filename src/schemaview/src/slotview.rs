@@ -1,10 +1,7 @@
-use std::collections::btree_map::Range;
-use std::collections::HashSet;
 use std::sync::OnceLock;
 
 
-use curies::Converter;
-use linkml_meta::{EnumDefinition, SchemaDefinition, SlotDefinition, SlotExpressionOrSubtype};
+use linkml_meta::{EnumDefinition, SlotDefinition, SlotExpressionOrSubtype};
 use linkml_meta::poly::SlotExpression;
 use crate::classview::ClassView;
 use crate::identifier::Identifier;
