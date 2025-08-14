@@ -114,7 +114,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut errors = Vec::new();
     for uri in sv.get_unresolved_schemas() {
-        errors.push(format!("Unresolved import: {}", uri));
+        errors.push(format!("Unresolved import: {}", uri.1));
     }
 
     for (schema_uri, schema_def) in sv.iter_schemas() {

@@ -105,7 +105,7 @@ impl PySchemaView {
     }
 
     fn get_unresolved_schemas(&self) -> Vec<String> {
-        self.inner.get_unresolved_schemas()
+        self.inner.get_unresolved_schemas().iter().map(|(_, uri)| uri.clone()).collect()
     }
 
     fn get_schema(&self, uri: &str) -> Option<SchemaDefinition> {

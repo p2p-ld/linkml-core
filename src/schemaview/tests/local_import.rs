@@ -16,10 +16,12 @@ fn resolve_local_import() {
     let schema = from_yaml(Path::new(&data_path("local_main.yaml"))).unwrap();
     let mut sv = SchemaView::new();
     sv.add_schema(schema).unwrap();
-    let unresolved = sv.get_unresolved_schemas();
+    let unresolved = sv.get_unresolved_schemas().iter().map(|x| x.1.clone()).collect::<Vec<_>>();
     assert!(unresolved.contains(&"tests/data/local_target.yaml".to_string()));
     resolve_schemas(&mut sv).unwrap();
     let unresolved = sv.get_unresolved_schemas();
+    println!("Unresolved imports after resolution: {:?}", unresolved);
+    println!("Resolved schemas: {:?}", sv._get_resolved_schema_imports());
     assert!(unresolved.is_empty());
     assert!(sv.get_schema("http://example.com/local_target").is_some());
 }

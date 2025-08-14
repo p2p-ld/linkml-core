@@ -79,7 +79,7 @@ mod tests {
         let mut schema_view = SchemaView::new();
         schema_view.add_schema(schema).unwrap();
         let unresolved = schema_view.get_unresolved_schemas();
-        assert!(unresolved.contains(&"https://w3id.org/linkml/mappings".to_string()));
+        assert!(unresolved.iter().map(|x| x.1.clone()).collect::<Vec<_>>().contains(&"https://w3id.org/linkml/mappings".to_string()));
         println!("Unresolved schemas: {:?}", unresolved);
         resolve_schemas(&mut schema_view).unwrap();
         let unresolved = schema_view.get_unresolved_schemas();

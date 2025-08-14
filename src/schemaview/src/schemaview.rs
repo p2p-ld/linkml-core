@@ -31,6 +31,11 @@ impl From<IdentifierError> for SchemaViewError {
 #[derive(Clone)]
 struct SchemaViewData {
     pub(crate) schema_definitions: HashMap<String, SchemaDefinition>,
+    /**
+     * A list of all resolved schema imports, having (schema ID where the import was, import name)
+     * we need to keep this because sometimes the ID of the imported schema is different from the URL the schema was refered to by the import
+     */
+    pub(crate) resolved_schema_imports: Vec<(String, String)>,
     pub(crate) primary_schema: Option<String>,
     pub(crate) converters: HashMap<String, Converter>,
 }
@@ -59,6 +64,7 @@ impl SchemaViewData {
     pub fn new() -> Self {
         SchemaViewData {
             schema_definitions: HashMap::new(),
+            resolved_schema_imports: Vec::new(),
             primary_schema: None,
             converters: HashMap::new(),
         }
@@ -77,6 +83,12 @@ impl SchemaView {
             data: Arc::new(SchemaViewData::new()),
             cache: Arc::new(RwLock::new(SchemaViewCache::new())),
         }
+    }
+
+    pub fn _get_resolved_schema_imports(&self) -> Vec<(String, String)> {
+        // this is a private method to get the resolved schema imports
+        // it is used in tests and should not be used in production code
+        self.data.resolved_schema_imports.clone()
     }
 
     fn cache(&self) -> RwLockReadGuard<'_, SchemaViewCache> {
@@ -132,6 +144,10 @@ impl SchemaView {
     }
 
     pub fn add_schema(&mut self, schema: SchemaDefinition) -> Result<(), String> {
+        self.add_schema_with_import_ref(schema, None)
+    }
+
+    pub fn add_schema_with_import_ref(&mut self, schema: SchemaDefinition, import_reference: Option<(String, String)>) -> Result<(), String> {
         let schema_uri = schema.id.clone();
         let conv = converter_from_schema(&schema);
         self.index_schema_classes(&schema_uri, &schema, &conv)
@@ -140,6 +156,7 @@ impl SchemaView {
             .map_err(|e| format!("{:?}", e))?;
         let d = Arc::make_mut(&mut self.data);      // &mut SchemaViewData
         d.converters.insert(schema_uri.to_string(), conv.clone());
+        import_reference.map(|x| d.resolved_schema_imports.push(x));
         d.schema_definitions
             .insert(schema_uri.to_string(), schema);
         if d.primary_schema.is_none() {
@@ -269,7 +286,7 @@ impl SchemaView {
         Ok(())
     }
 
-    pub fn get_unresolved_schemas(&self) -> Vec<String> {
+    pub fn get_unresolved_schemas(&self) -> Vec<(String, String)> {
         // every schemadefinition has imports. check if an import is not in our list
         let mut unresolved = Vec::new();
         for (_name, schema) in &self.data.schema_definitions {
@@ -279,7 +296,9 @@ impl SchemaView {
                     match import_uri {
                         Some(uri) => {
                             if !self.data.schema_definitions.contains_key(&uri) {
-                                unresolved.push(uri);
+                                if !self.data.resolved_schema_imports.contains(&(schema.id.clone(), uri.clone())) {
+                                    unresolved.push((schema.id.clone(), uri));
+                                }
                             }
                         }
                         None => {
@@ -287,7 +306,9 @@ impl SchemaView {
                             // potential local file path and attempt to resolve later
                             let path = import.to_string();
                             if !self.data.schema_definitions.contains_key(&path) {
-                                unresolved.push(path);
+                                if !self.data.resolved_schema_imports.contains(&(schema.id.clone(), path.clone())) {
+                                    unresolved.push((schema.id.clone(), path));
+                                }
                             }
                         }
                     }

@@ -21,7 +21,7 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
         return Ok(());
     }
 
-    for uri in unresolved {
+    for (schema_id, uri) in unresolved {
         if let Some(resolved_uri) = get_uri_for_id(&uri) {
             // Load the schema from the resolved URI
             let schema = match from_uri(resolved_uri) {
@@ -33,7 +33,7 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
                     ))
                 }
             };
-            sv.add_schema(schema)?;
+            sv.add_schema_with_import_ref(schema, Some((schema_id, uri)))?;
         } else {
             // Attempt to treat the unresolved entry as a local file path
             let path = Path::new(&uri);
@@ -48,11 +48,8 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
                         ))
                     }
                 };
-                sv.add_schema(schema.clone())?;
-                if schema.id != uri.to_string() {
-                    panic!("Schema ID '{}' does not match URI '{}'.", schema.id, uri);
-                }
-
+                sv.add_schema_with_import_ref(schema.clone(), Some((schema_id.clone(), uri.clone())))?;
+    
             } else {
                 return Err(format!("No resolution found for URI: {}", uri));
             }
