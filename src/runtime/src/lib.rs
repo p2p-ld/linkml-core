@@ -57,6 +57,7 @@ fn slot_matches_key(slot: &SlotView, key: &str) -> bool {
     false
 }
 
+#[derive(Clone)]
 pub enum LinkMLValue {
     Scalar {
         value: JsonValue,
