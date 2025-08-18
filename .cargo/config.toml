@@ -1,0 +1,2 @@
+[env]
+CFLAGS_aarch64_unknown_linux_gnu = "-D__ARM_ARCH=8"
