@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let schema = from_yaml(&args.schema)?;
     let mut sv = SchemaView::new();
-    sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
+    sv.add_schema_with_import_ref(schema.clone(), Some(("".to_owned(), args.schema.to_str().unwrap_or("unknown").to_owned()))).map_err(|e| format!("{e}"))?;
     #[cfg(feature = "resolve")]
     {
         eprintln!("Resolving schemas...");

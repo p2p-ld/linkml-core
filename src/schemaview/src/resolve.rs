@@ -22,6 +22,7 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
     }
 
     for (schema_id, uri) in unresolved {
+        let schema_source_uri = sv.get_resolution_uri_of_schema(&schema_id);
         if let Some(resolved_uri) = get_uri_for_id(&uri) {
             // Load the schema from the resolved URI
             let schema = match from_uri(resolved_uri) {
@@ -36,9 +37,22 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
             sv.add_schema_with_import_ref(schema, Some((schema_id, uri)))?;
         } else {
             // Attempt to treat the unresolved entry as a local file path
-            let path = Path::new(&uri);
+            let mut path = Path::new(&uri).to_owned();
+            if !path.is_absolute() {
+                // imported_from_dir = parent from schema_source_uri
+                let imported_from_dir = Path::new(schema_source_uri.as_deref().unwrap_or("unknown")).parent().map(|p| p.to_path_buf());
+                if let Some(dir) = imported_from_dir {
+                    path = dir.join(path);                    
+                }
+                if (!path.exists() && path.with_extension("yaml").exists()) {
+                    path.set_extension("yaml");
+                }
+                if (!path.exists() && path.with_extension("yml").exists()) {
+                    path.set_extension("yml");
+                }
+            }
             if path.exists() {
-                let schema = match from_yaml(path) {
+                let schema = match from_yaml(&path) {
                     Ok(s) => s,
                     Err(e) => {
                         return Err(format!(
@@ -51,7 +65,7 @@ pub fn resolve_schemas(sv: &mut SchemaView) -> Result<(), String> {
                 sv.add_schema_with_import_ref(schema.clone(), Some((schema_id.clone(), uri.clone())))?;
     
             } else {
-                return Err(format!("No resolution found for URI: {}", uri));
+                return Err(format!("No resolution found for URI: {} imported from {}", uri, schema_source_uri.unwrap_or("unknown".to_owned())));
             }
         }
     }
