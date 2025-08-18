@@ -14,3 +14,5 @@ dynamic = ["version"]
 
 [tool.maturin]
 features = ["pyo3/extension-module", "python"]
+module-name = "linkml_runtime.linkml_runtime"
+python-source = "python"

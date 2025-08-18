@@ -2,6 +2,7 @@ use clap::Parser;
 use linkml_runtime::{load_json_file, load_yaml_file, validate_errors};
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io::from_yaml;
+#[cfg(feature = "resolve")]
 use linkml_schemaview::resolve::resolve_schemas;
 use linkml_schemaview::schemaview::SchemaView;
 use std::path::PathBuf;
@@ -21,6 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let schema = from_yaml(&args.schema)?;
     let mut sv = SchemaView::new();
     sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
+    #[cfg(feature = "resolve")]
     resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
     let conv = sv.converter();
     let class_view = sv

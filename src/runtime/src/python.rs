@@ -110,6 +110,29 @@ impl PySchemaView {
             .collect()
     }
 
+    fn get_unresolved_schema_refs(&self) -> Vec<(String, String)> {
+        self.inner.get_unresolved_schemas()
+    }
+
+    fn add_schema_str_with_import_ref(
+        &mut self,
+        data: &str,
+        schema_id: &str,
+        uri: &str,
+    ) -> PyResult<()> {
+        let deser = serde_yml::Deserializer::from_str(data);
+        let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
+            .map_err(|e| PyException::new_err(e.to_string()))?;
+        if let Some(inner) = Arc::get_mut(&mut self.inner) {
+            inner
+                .add_schema_with_import_ref(schema, Some((schema_id.to_string(), uri.to_string())))
+                .map_err(PyException::new_err)?;
+            Ok(())
+        } else {
+            Err(PyException::new_err("SchemaView already shared"))
+        }
+    }
+
     fn get_schema(&self, uri: &str) -> Option<SchemaDefinition> {
         self.inner.get_schema(uri).cloned()
     }
