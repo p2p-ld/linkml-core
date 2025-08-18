@@ -172,10 +172,22 @@ jobs:
       attestations: write
     steps:
       - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: wheels
+      - name: Collect wheels
+        run: |
+          shopt -s nullglob
+          for archive in wheels/*.zip; do
+            unzip "$archive" -d wheels
+            rm "$archive"
+          done
+          find wheels -mindepth 2 -name '*.whl' -exec mv -t wheels {} +
+          find wheels -mindepth 1 -type d -exec rm -rf {} +
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
-          subject-path: 'wheels-*/*'
+          subject-path: 'wheels/*'
       - name: Publish to PyPI
         if: false
         uses: PyO3/maturin-action@v1
@@ -184,9 +196,9 @@ jobs:
         with:
           working-directory: src/runtime
           command: upload
-          args: --non-interactive --skip-existing wheels-*/*
+          args: --non-interactive --skip-existing wheels/*
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
         if: ${{ github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') }}
         with:
-          files: wheels-*/*
+          files: wheels/*
