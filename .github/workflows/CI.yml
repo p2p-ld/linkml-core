@@ -174,8 +174,16 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           pattern: wheels-*
-          merge-multiple: true
           path: wheels
+      - name: Collect wheels
+        run: |
+          shopt -s nullglob
+          for archive in wheels/*.zip; do
+            unzip "$archive" -d wheels
+            rm "$archive"
+          done
+          find wheels -mindepth 2 -name '*.whl' -exec mv -t wheels {} +
+          find wheels -mindepth 1 -type d -exec rm -rf {} +
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
