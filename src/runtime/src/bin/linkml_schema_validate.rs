@@ -1,7 +1,7 @@
 use clap::{Parser, ValueEnum};
-use linkml_schemaview::{
-    identifier::Identifier, io::from_yaml, resolve::resolve_schemas, schemaview::SchemaView,
-};
+#[cfg(feature = "resolve")]
+use linkml_schemaview::resolve::resolve_schemas;
+use linkml_schemaview::{identifier::Identifier, io::from_yaml, schemaview::SchemaView};
 use serde_json;
 use std::path::PathBuf;
 
@@ -30,7 +30,12 @@ fn type_exists(
     match id {
         Id::Name(n) => {
             for (_, schema) in sv.iter_schemas() {
-                if schema.types.as_ref().map(|x| x.contains_key(n)).unwrap_or(false) {
+                if schema
+                    .types
+                    .as_ref()
+                    .map(|x| x.contains_key(n))
+                    .unwrap_or(false)
+                {
                     return Ok(true);
                 }
             }
@@ -40,13 +45,13 @@ fn type_exists(
             let target_uri = id.to_uri(conv)?;
             for (_, schema) in sv.iter_schemas() {
                 if let Some(types) = &schema.types {
-                for t in types.values() {
-                    if let Some(turi) = &t.type_uri {
-                        if Identifier::new(turi).to_uri(conv)?.0 == target_uri.0 {
-                            return Ok(true);
+                    for t in types.values() {
+                        if let Some(turi) = &t.type_uri {
+                            if Identifier::new(turi).to_uri(conv)?.0 == target_uri.0 {
+                                return Ok(true);
+                            }
                         }
                     }
-                }
                 }
             }
             Ok(false)
@@ -107,6 +112,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let schema = from_yaml(&args.schema)?;
     let mut sv = SchemaView::new();
     sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
+    #[cfg(feature = "resolve")]
     if let Err(e) = resolve_schemas(&mut sv) {
         eprintln!("{e}");
     }

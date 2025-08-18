@@ -15,6 +15,7 @@ pub fn from_yaml(path: &Path) -> Result<SchemaDefinition, Box<dyn Error>> {
     Ok(result?)
 }
 
+#[cfg(feature = "resolve")]
 pub fn from_uri(uri: &str) -> Result<SchemaDefinition, Box<dyn Error>> {
     let r = reqwest::blocking::get(uri)?;
     let reader = r.text()?;
@@ -41,8 +42,6 @@ mod tests {
         this_file
     }
 
-    use crate::resolve::resolve_schemas;
-
     use super::*;
     #[test]
     fn test_load_schema() {
@@ -68,6 +67,10 @@ mod tests {
         };
     }
 
+    #[cfg(feature = "resolve")]
+    use crate::resolve::resolve_schemas;
+
+    #[cfg(feature = "resolve")]
     #[test]
     fn test_resolve_schemas() {
         let path = &meta_path();
@@ -79,7 +82,11 @@ mod tests {
         let mut schema_view = SchemaView::new();
         schema_view.add_schema(schema).unwrap();
         let unresolved = schema_view.get_unresolved_schemas();
-        assert!(unresolved.iter().map(|x| x.1.clone()).collect::<Vec<_>>().contains(&"https://w3id.org/linkml/mappings".to_string()));
+        assert!(unresolved
+            .iter()
+            .map(|x| x.1.clone())
+            .collect::<Vec<_>>()
+            .contains(&"https://w3id.org/linkml/mappings".to_string()));
         println!("Unresolved schemas: {:?}", unresolved);
         resolve_schemas(&mut schema_view).unwrap();
         let unresolved = schema_view.get_unresolved_schemas();

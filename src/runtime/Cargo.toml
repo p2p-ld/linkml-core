@@ -28,7 +28,7 @@ name = "linkml-schema-validate"
 path = "src/bin/linkml_schema_validate.rs"
 
 [dependencies]
-linkml_schemaview = { package = "schemaview", path = "../schemaview" }
+linkml_schemaview = { package = "schemaview", path = "../schemaview", default-features = false }
 serde_json = "1.0"
 serde_yaml = "0.9"
 serde = { version = "1.0", features = ["derive"] }
@@ -49,5 +49,7 @@ predicates = "2"
 tempfile = "3"
 
 [features]
+default = ["resolve"]
 python = ["pyo3", "linkml_meta/pyo3"]
 extension-module = ["pyo3/extension-module"]
+resolve = ["linkml_schemaview/resolve"]
