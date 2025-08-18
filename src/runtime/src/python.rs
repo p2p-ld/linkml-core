@@ -1,6 +1,5 @@
 use crate::turtle::{turtle_to_string, TurtleOptions};
 use crate::{load_json_str, load_yaml_str, LinkMLValue};
-use curies::Converter;
 use linkml_meta::{ClassDefinition, SchemaDefinition};
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io;
@@ -12,7 +11,6 @@ use pyo3::types::{PyAny, PyModule};
 use pyo3::Bound;
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 use serde_json::Value as JsonValue;
-use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -105,13 +103,16 @@ impl PySchemaView {
     }
 
     fn get_unresolved_schemas(&self) -> Vec<String> {
-        self.inner.get_unresolved_schemas().iter().map(|(_, uri)| uri.clone()).collect()
+        self.inner
+            .get_unresolved_schemas()
+            .iter()
+            .map(|(_, uri)| uri.clone())
+            .collect()
     }
 
     fn get_schema(&self, uri: &str) -> Option<SchemaDefinition> {
         self.inner.get_schema(uri).cloned()
     }
-
 
     fn get_class_view(&self, id: &str) -> PyResult<Option<PyClassView>> {
         let conv = self.inner.converter();
@@ -201,118 +202,14 @@ pub fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     Ok(())
 }
 
-#[derive(Clone)]
-enum LinkMLValueOwned {
-    Scalar {
-        value: JsonValue,
-        slot: Option<String>,
-    },
-    List {
-        values: Vec<LinkMLValueOwned>,
-        slot: Option<String>,
-    },
-    Map {
-        values: HashMap<String, LinkMLValueOwned>,
-        class: Option<String>,
-    },
-}
-
-impl LinkMLValueOwned {
-    fn from_linkml<'a>(v: &LinkMLValue) -> Self {
-        match v {
-            LinkMLValue::Scalar { value, slot, .. } => LinkMLValueOwned::Scalar {
-                value: value.clone(),
-                slot: Some(slot.name.clone()),
-            },
-            LinkMLValue::List { values, slot, .. } => LinkMLValueOwned::List {
-                values: values.iter().map(Self::from_linkml).collect(),
-                slot: Some(slot.name.clone()),
-            },
-            LinkMLValue::Map { values, class, .. } => LinkMLValueOwned::Map {
-                values: values
-                    .iter()
-                    .map(|(k, v)| (k.clone(), Self::from_linkml(v)))
-                    .collect(),
-                class: Some(class.def().name.clone()),
-            },
-        }
-    }
-
-    fn to_json(&self) -> JsonValue {
-        match self {
-            LinkMLValueOwned::Scalar { value, .. } => value.clone(),
-            LinkMLValueOwned::List { values, .. } => {
-                JsonValue::Array(values.iter().map(|v| v.to_json()).collect())
-            }
-            LinkMLValueOwned::Map { values, .. } => JsonValue::Object(
-                values
-                    .iter()
-                    .map(|(k, v)| (k.clone(), v.to_json()))
-                    .collect(),
-            ),
-        }
-    }
-
-    fn to_linkml<'a>(&self, sv: &'a SchemaView) -> LinkMLValue {
-        fn inner<'a>(
-            v: &LinkMLValueOwned,
-            sv: &'a SchemaView,
-            conv: &Converter,
-        ) -> LinkMLValue {
-            match v {
-                LinkMLValueOwned::Scalar { value, slot } => {
-                    let slot_view = slot
-                        .as_ref()
-                        .and_then(|n| sv.get_slot(&Identifier::new(n), conv).ok().flatten())
-                        .expect("slot not found");
-                    LinkMLValue::Scalar {
-                        value: value.clone(),
-                        slot: slot_view,
-                        class: None,
-                        sv: sv.clone(),
-                    }
-                }
-                LinkMLValueOwned::List { values, slot } => {
-                    let slot_view = slot
-                        .as_ref()
-                        .and_then(|n| sv.get_slot(&Identifier::new(n), conv).ok().flatten())
-                        .expect("slot not found");
-                    LinkMLValue::List {
-                        values: values.iter().map(|v| inner(v, sv, conv)).collect(),
-                        slot: slot_view,
-                        class: None,
-                        sv: sv.clone(),
-                    }
-                }
-                LinkMLValueOwned::Map { values, class } => {
-                    let class_view = class
-                        .as_ref()
-                        .and_then(|n| sv.get_class(&Identifier::new(n), conv).ok().flatten())
-                        .expect("class not found");
-                    LinkMLValue::Map {
-                        values: values
-                            .iter()
-                            .map(|(k, v)| (k.clone(), inner(v, sv, conv)))
-                            .collect(),
-                        class: class_view,
-                        sv: sv.clone(),
-                    }
-                }
-            }
-        }
-        let conv = sv.converter();
-        inner(self, sv, &conv)
-    }
-}
-
 #[pyclass(name = "LinkMLValue")]
 pub struct PyLinkMLValue {
-    value: LinkMLValueOwned,
+    value: LinkMLValue,
     sv: Py<PySchemaView>,
 }
 
 impl PyLinkMLValue {
-    fn new(value: LinkMLValueOwned, sv: Py<PySchemaView>) -> Self {
+    fn new(value: LinkMLValue, sv: Py<PySchemaView>) -> Self {
         Self { value, sv }
     }
 }
@@ -336,24 +233,26 @@ impl Clone for PyLinkMLValue {
 impl PyLinkMLValue {
     fn slot_name(&self) -> Option<String> {
         match &self.value {
-            LinkMLValueOwned::Scalar { slot: Some(n), .. } => Some(n.clone()),
-            LinkMLValueOwned::List { slot: Some(n), .. } => Some(n.clone()),
+            LinkMLValue::Scalar { slot, .. } => Some(slot.name.clone()),
+            LinkMLValue::List { slot, .. } => Some(slot.name.clone()),
             _ => None,
         }
     }
 
     fn class_name(&self) -> Option<String> {
         match &self.value {
-            LinkMLValueOwned::Map { class: Some(n), .. } => Some(n.clone()),
+            LinkMLValue::Map { class, .. } => Some(class.def().name.clone()),
+            LinkMLValue::Scalar { class: Some(c), .. } => Some(c.def().name.clone()),
+            LinkMLValue::List { class: Some(c), .. } => Some(c.def().name.clone()),
             _ => None,
         }
     }
 
     fn __len__(&self) -> PyResult<usize> {
         Ok(match &self.value {
-            LinkMLValueOwned::Scalar { .. } => 0,
-            LinkMLValueOwned::List { values, .. } => values.len(),
-            LinkMLValueOwned::Map { values, .. } => values.len(),
+            LinkMLValue::Scalar { .. } => 0,
+            LinkMLValue::List { values, .. } => values.len(),
+            LinkMLValue::Map { values, .. } => values.len(),
         })
     }
 
@@ -363,14 +262,14 @@ impl PyLinkMLValue {
         key: &Bound<'py, PyAny>,
     ) -> PyResult<PyLinkMLValue> {
         match &self.value {
-            LinkMLValueOwned::List { values, .. } => {
+            LinkMLValue::List { values, .. } => {
                 let idx: usize = key.extract()?;
                 values
                     .get(idx)
                     .map(|v| PyLinkMLValue::new(v.clone(), self.sv.clone_ref(py)))
                     .ok_or_else(|| PyException::new_err("index out of range"))
             }
-            LinkMLValueOwned::Map { values, .. } => {
+            LinkMLValue::Map { values, .. } => {
                 let k: String = key.extract()?;
                 values
                     .get(&k)
@@ -383,19 +282,19 @@ impl PyLinkMLValue {
 
     fn keys(&self) -> PyResult<Vec<String>> {
         match &self.value {
-            LinkMLValueOwned::Map { values, .. } => Ok(values.keys().cloned().collect()),
+            LinkMLValue::Map { values, .. } => Ok(values.keys().cloned().collect()),
             _ => Ok(Vec::new()),
         }
     }
 
     fn values<'py>(&self, py: Python<'py>) -> PyResult<Vec<PyLinkMLValue>> {
         match &self.value {
-            LinkMLValueOwned::Map { values, .. } => Ok(values
+            LinkMLValue::Map { values, .. } => Ok(values
                 .values()
                 .cloned()
                 .map(|v| PyLinkMLValue::new(v, self.sv.clone_ref(py)))
                 .collect()),
-            LinkMLValueOwned::List { values, .. } => Ok(values
+            LinkMLValue::List { values, .. } => Ok(values
                 .iter()
                 .cloned()
                 .map(|v| PyLinkMLValue::new(v, self.sv.clone_ref(py)))
@@ -415,9 +314,8 @@ impl PyLinkMLValue {
             .primary_schema()
             .ok_or_else(|| PyException::new_err("no schema loaded"))?;
         let conv = rust_sv.converter();
-        let linkml = self.value.to_linkml(rust_sv);
         turtle_to_string(
-            &linkml,
+            &self.value,
             rust_sv,
             schema,
             &conv,
@@ -449,12 +347,11 @@ fn load_yaml(
         None => None,
     };
     let text = py_filelike_or_string_to_string(source)?;
-    let cv = class_view.ok_or_else(|| {
-        PyException::new_err("class not found, please provide a valid class")
-    })?;
+    let cv = class_view
+        .ok_or_else(|| PyException::new_err("class not found, please provide a valid class"))?;
     let v = load_yaml_str(&text, rust_sv, &cv, &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
-    Ok(PyLinkMLValue::new(LinkMLValueOwned::from_linkml(&v), sv))
+    Ok(PyLinkMLValue::new(v, sv))
 }
 
 #[pyfunction]
@@ -476,11 +373,10 @@ fn load_json(
         }
         None => None,
     };
-    let cv = class_view.ok_or_else(|| {
-        PyException::new_err("class not found, please provide a valid class")
-    })?;
+    let cv = class_view
+        .ok_or_else(|| PyException::new_err("class not found, please provide a valid class"))?;
     let text = py_filelike_or_string_to_string(source)?;
     let v = load_json_str(&text, rust_sv, &cv, &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
-    Ok(PyLinkMLValue::new(LinkMLValueOwned::from_linkml(&v), sv))
+    Ok(PyLinkMLValue::new(v, sv))
 }
