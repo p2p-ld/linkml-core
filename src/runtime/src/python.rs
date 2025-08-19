@@ -14,19 +14,19 @@ use serde_json::Value as JsonValue;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-fn py_filelike_or_string_to_string(obj: &Bound<'_, PyAny>) -> PyResult<String> {
+fn py_filelike_or_string_to_string(obj: &Bound<'_, PyAny>) -> PyResult<(String, Option<String>)> {
     if let Ok(s) = obj.extract::<String>() {
         if Path::new(&s).exists() {
-            return fs::read_to_string(&s).map_err(|e| PyException::new_err(e.to_string()));
+            return fs::read_to_string(&s).map_err(|e| PyException::new_err(e.to_string())).map(|res| (res, Some(s)));
         }
-        return Ok(s);
+        return Ok((s, None));
     }
     if obj.hasattr("__fspath__")? {
         let p: String = obj.call_method0("__fspath__")?.extract()?;
-        return fs::read_to_string(&p).map_err(|e| PyException::new_err(e.to_string()));
+        return fs::read_to_string(&p).map_err(|e| PyException::new_err(e.to_string())).map(|res| (res, Some(p)));
     }
     if obj.hasattr("read")? {
-        return obj.call_method0("read")?.extract();
+        return obj.call_method0("read")?.extract().map(|res| (res, None));
     }
     Err(PyException::new_err("expected string or file-like object"))
 }
@@ -66,11 +66,11 @@ impl PySchemaView {
     pub fn new(source: Option<&Bound<'_, PyAny>>) -> PyResult<Self> {
         let mut sv = SchemaView::new();
         if let Some(obj) = source {
-            let text = py_filelike_or_string_to_string(obj)?;
+            let (text, uri) = py_filelike_or_string_to_string(obj)?;
             let deser = serde_yml::Deserializer::from_str(&text);
             let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
                 .map_err(|e| PyException::new_err(e.to_string()))?;
-            sv.add_schema(schema).map_err(|e| PyException::new_err(e))?;
+            sv.add_schema_with_import_ref(schema, uri.map(|u| ("".to_owned(), u))).map_err(|e| PyException::new_err(e))?;
         }
         Ok(Self {
             inner: Arc::new(sv),
@@ -398,7 +398,7 @@ fn load_yaml(
         }
         None => None,
     };
-    let text = py_filelike_or_string_to_string(source)?;
+    let (text, _) = py_filelike_or_string_to_string(source)?;
     let cv = class_view
         .ok_or_else(|| PyException::new_err("class not found, please provide a valid class"))?;
     let v = load_yaml_str(&text, rust_sv, &cv, &conv)
@@ -427,7 +427,7 @@ fn load_json(
     };
     let cv = class_view
         .ok_or_else(|| PyException::new_err("class not found, please provide a valid class"))?;
-    let text = py_filelike_or_string_to_string(source)?;
+    let (text, _) = py_filelike_or_string_to_string(source)?;
     let v = load_json_str(&text, rust_sv, &cv, &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
     Ok(PyLinkMLValue::new(v, sv))
