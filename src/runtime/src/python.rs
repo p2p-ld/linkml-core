@@ -187,24 +187,31 @@ impl PySchemaView {
     }
 
     fn get_class_ids(&self) -> Vec<String> {
+        return self.inner.get_class_ids();
+        /* 
         let mut ids: HashSet<String> = HashSet::new();
         for (_, schema) in self.inner.iter_schemas() {
             if let Some(classes) = &schema.classes {
-                ids.extend(classes.keys().cloned());
+                classes.iter().map(|c| self.inner.get_uri(&schema.id, c.0)).for_each(|uri| {
+                    ids.insert(uri.to_string());
+                });
             }
         }
-        ids.into_iter().collect()
+        ids.into_iter().collect()*/
     }
 
     fn get_slot_ids(&self) -> Vec<String> {
+        return self.inner.get_slot_ids(); /*
         let mut ids: HashSet<String> = HashSet::new();
         for (_, schema) in self.inner.iter_schemas() {
             if let Some(slots) = &schema.slot_definitions {
-                ids.extend(slots.keys().cloned());
+                slots.iter().map(|c| self.inner.get_uri(&schema.id, c.0)).for_each(|uri| {
+                    ids.insert(uri.to_string());
+                });
             }
         }
-        ids.into_iter().collect()
-    }
+        ids.into_iter().collect()*/
+    } 
 }
 
 #[pymethods]

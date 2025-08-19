@@ -485,6 +485,14 @@ impl SchemaView {
         }
     }
 
+    pub fn get_class_ids(&self) -> Vec<String> {
+        return self.cache().class_uri_index.keys().cloned().collect::<Vec<String>>();
+    }
+
+    pub fn get_slot_ids(&self) -> Vec<String> {
+        return self.cache().slot_uri_index.keys().cloned().collect::<Vec<String>>();
+    }
+
     pub fn get_slot<'a>(
         &'a self,
         id: &Identifier,
