@@ -1,9 +1,10 @@
 use crate::turtle::{turtle_to_string, TurtleOptions};
 use crate::{load_json_str, load_yaml_str, LinkMLValue};
-use linkml_meta::{ClassDefinition, SchemaDefinition, SlotDefinition};
+use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io;
 use linkml_schemaview::schemaview::SchemaView;
+use linkml_schemaview::{classview::ClassView, slotview::SlotView};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 use pyo3::types::PyAnyMethods;
@@ -53,15 +54,27 @@ impl PySchemaView {
 }
 
 #[pyclass(name = "ClassView")]
+#[derive(Clone)]
 pub struct PyClassView {
-    class_name: String,
-    sv: Arc<SchemaView>,
+    inner: ClassView,
+}
+
+impl PyClassView {
+    pub fn as_rust(&self) -> &ClassView {
+        &self.inner
+    }
 }
 
 #[pyclass(name = "SlotView")]
+#[derive(Clone)]
 pub struct PySlotView {
-    slot_name: String,
-    _sv: Arc<SchemaView>,
+    inner: SlotView,
+}
+
+impl PySlotView {
+    pub fn as_rust(&self) -> &SlotView {
+        &self.inner
+    }
 }
 
 #[pymethods]
@@ -157,10 +170,7 @@ impl PySchemaView {
             .inner
             .get_class(&Identifier::new(id), &conv)
             .map_err(|e| PyException::new_err(format!("{:?}", e)))?
-            .map(|cv| PyClassView {
-                class_name: cv.def().name.clone(),
-                sv: self.inner.clone(),
-            }))
+            .map(|cv| PyClassView { inner: cv }))
     }
 
     fn get_slot_view(&self, id: &str) -> PyResult<Option<PySlotView>> {
@@ -169,10 +179,7 @@ impl PySchemaView {
             .inner
             .get_slot(&Identifier::new(id), &conv)
             .map_err(|e| PyException::new_err(format!("{:?}", e)))?
-            .map(|svw| PySlotView {
-                slot_name: svw.name,
-                _sv: self.inner.clone(),
-            }))
+            .map(|svw| PySlotView { inner: svw }))
     }
 
     fn schema_definitions(&self) -> Vec<SchemaDefinition> {
@@ -181,12 +188,14 @@ impl PySchemaView {
 
     fn class_definitions(&self) -> Vec<PyClassView> {
         let mut defs = Vec::new();
+        let conv = self.inner.converter();
         for (_, schema) in self.inner.iter_schemas() {
             if let Some(classes) = &schema.classes {
-                defs.extend(classes.keys().map(|name| PyClassView {
-                    class_name: name.clone(),
-                    sv: self.inner.clone(),
-                }));
+                for name in classes.keys() {
+                    if let Ok(Some(cv)) = self.inner.get_class(&Identifier::new(name), &conv) {
+                        defs.push(PyClassView { inner: cv });
+                    }
+                }
             }
         }
         defs
@@ -194,12 +203,14 @@ impl PySchemaView {
 
     fn slot_definitions(&self) -> Vec<PySlotView> {
         let mut defs = Vec::new();
+        let conv = self.inner.converter();
         for (_, schema) in self.inner.iter_schemas() {
             if let Some(slots) = &schema.slot_definitions {
-                defs.extend(slots.keys().map(|name| PySlotView {
-                    slot_name: name.clone(),
-                    _sv: self.inner.clone(),
-                }));
+                for name in slots.keys() {
+                    if let Ok(Some(sv)) = self.inner.get_slot(&Identifier::new(name), &conv) {
+                        defs.push(PySlotView { inner: sv });
+                    }
+                }
             }
         }
         defs
@@ -210,26 +221,52 @@ impl PySchemaView {
 impl PyClassView {
     #[getter]
     pub fn name(&self) -> String {
-        self.class_name.clone()
+        self.inner.name().to_string()
+    }
+
+    #[getter]
+    pub fn definition(&self) -> ClassDefinition {
+        self.inner.def().clone()
     }
 
     fn slots(&self) -> PyResult<Vec<PySlotView>> {
-        let conv = self.sv.converter();
-        let opt = self
-            .sv
-            .get_class(&Identifier::new(&self.class_name), &conv)
-            .map_err(|e| PyException::new_err(format!("{:?}", e)))?;
-        match opt {
-            Some(cv) => Ok(cv
-                .slots()
-                .iter()
-                .map(|s| PySlotView {
-                    slot_name: s.name.clone(),
-                    _sv: self.sv.clone(),
-                })
-                .collect()),
-            None => Ok(Vec::new()),
-        }
+        Ok(self
+            .inner
+            .slots()
+            .iter()
+            .cloned()
+            .map(|s| PySlotView { inner: s })
+            .collect())
+    }
+
+    fn parent_class(&self) -> PyResult<Option<PyClassView>> {
+        self.inner
+            .parent_class()
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))
+            .map(|opt| opt.map(|cv| PyClassView { inner: cv }))
+    }
+
+    fn identifier_slot(&self) -> Option<PySlotView> {
+        self.inner
+            .identifier_slot()
+            .map(|sv| PySlotView { inner: sv.clone() })
+    }
+
+    fn key_or_identifier_slot(&self) -> Option<PySlotView> {
+        self.inner
+            .key_or_identifier_slot()
+            .map(|sv| PySlotView { inner: sv.clone() })
+    }
+
+    fn get_descendants(&self, recurse: bool, include_mixins: bool) -> PyResult<Vec<PyClassView>> {
+        self.inner
+            .get_descendants(recurse, include_mixins)
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))
+            .map(|v| v.into_iter().map(|cv| PyClassView { inner: cv }).collect())
+    }
+
+    fn canonical_uri(&self) -> String {
+        self.inner.canonical_uri().to_string()
     }
 }
 
@@ -237,7 +274,34 @@ impl PyClassView {
 impl PySlotView {
     #[getter]
     pub fn name(&self) -> String {
-        self.slot_name.clone()
+        self.inner.name.clone()
+    }
+
+    #[getter]
+    pub fn definition(&self) -> SlotDefinition {
+        self.inner.definition().clone()
+    }
+
+    fn range_class(&self) -> Option<PyClassView> {
+        self.inner
+            .get_range_class()
+            .map(|cv| PyClassView { inner: cv })
+    }
+
+    fn range_enum(&self) -> Option<EnumDefinition> {
+        self.inner.get_range_enum()
+    }
+
+    fn is_range_scalar(&self) -> bool {
+        self.inner.is_range_scalar()
+    }
+
+    fn container_mode(&self) -> String {
+        format!("{:?}", self.inner.determine_slot_container_mode())
+    }
+
+    fn inline_mode(&self) -> String {
+        format!("{:?}", self.inner.determine_slot_inline_mode())
     }
 }
 
@@ -250,6 +314,7 @@ pub fn schemaview_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<SchemaDefinition>()?;
     m.add_class::<ClassDefinition>()?;
     m.add_class::<SlotDefinition>()?;
+    m.add_class::<EnumDefinition>()?;
     Ok(())
 }
 
@@ -405,19 +470,17 @@ fn load_yaml(
     let sv_ref = sv.bind(py).borrow();
     let rust_sv = sv_ref.as_rust();
     let conv = rust_sv.converter();
-    let class_view = match class {
+    let class_ref = match class {
         Some(cv) => {
-            let cv_ref = cv.bind(py).borrow();
-            rust_sv
-                .get_class(&Identifier::new(&cv_ref.name()), &conv)
-                .map_err(|e| PyException::new_err(format!("{:?}", e)))?
+            let bound = cv.bind(py);
+            Some(bound.borrow())
         }
         None => None,
     };
     let (text, _) = py_filelike_or_string_to_string(source)?;
-    let cv = class_view
+    let cv = class_ref
         .ok_or_else(|| PyException::new_err("class not found, please provide a valid class"))?;
-    let v = load_yaml_str(&text, rust_sv, &cv, &conv)
+    let v = load_yaml_str(&text, rust_sv, cv.as_rust(), &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
     Ok(PyLinkMLValue::new(v, sv))
 }
@@ -432,19 +495,17 @@ fn load_json(
     let sv_ref = sv.bind(py).borrow();
     let rust_sv = sv_ref.as_rust();
     let conv = rust_sv.converter();
-    let class_view = match class {
+    let class_ref = match class {
         Some(cv) => {
-            let cv_ref = cv.bind(py).borrow();
-            rust_sv
-                .get_class(&Identifier::new(&cv_ref.name()), &conv)
-                .map_err(|e| PyException::new_err(format!("{:?}", e)))?
+            let bound = cv.bind(py);
+            Some(bound.borrow())
         }
         None => None,
     };
-    let cv = class_view
+    let cv = class_ref
         .ok_or_else(|| PyException::new_err("class not found, please provide a valid class"))?;
     let (text, _) = py_filelike_or_string_to_string(source)?;
-    let v = load_json_str(&text, rust_sv, &cv, &conv)
+    let v = load_json_str(&text, rust_sv, cv.as_rust(), &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
     Ok(PyLinkMLValue::new(v, sv))
 }
