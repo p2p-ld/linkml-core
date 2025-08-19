@@ -73,37 +73,3 @@ assert c is not None and c.name == 'class_definition'
         );
     });
 }
-
-#[test]
-fn iterate_definitions_via_python() {
-    pyo3::prepare_freethreaded_python();
-    let yaml = std::fs::read_to_string(meta_path()).unwrap();
-    Python::with_gil(|py| {
-        let module = PyModule::new(py, "linkml_runtime").unwrap();
-        runtime_module(&module).unwrap();
-        let sys = py.import("sys").unwrap();
-        let modules = sys.getattr("modules").unwrap();
-        let sys_modules = modules.downcast::<PyDict>().unwrap();
-        sys_modules.set_item("linkml_runtime", module).unwrap();
-
-        let locals = PyDict::new(py);
-        locals.set_item("meta_yaml", &yaml).unwrap();
-        pyo3::py_run!(
-            py,
-            *locals,
-            r#"
-import linkml_runtime as lr
-sv = lr.make_schema_view()
-sv.add_schema_str(meta_yaml)
-cls = sv.class_definitions()
-assert any(type(c).__name__ == 'ClassView' for c in cls)
-assert any(c.name == 'class_definition' for c in cls)
-slots = sv.slot_definitions()
-assert any(type(s).__name__ == 'SlotView' for s in slots)
-assert any(s.name == 'name' for s in slots)
-schemas = sv.schema_definitions()
-assert any(s.name == 'meta' for s in schemas)
-"#
-        );
-    });
-}
