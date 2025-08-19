@@ -14,5 +14,5 @@ dynamic = ["version"]
 
 [tool.maturin]
 features = ["pyo3/extension-module", "python"]
-module-name = "linkml_runtime_rust.linkml_runtime_rust"
+module-name = "linkml_runtime_rust._native"
 python-source = "python"

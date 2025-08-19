@@ -20,3 +20,8 @@ src/main/Cargo.lock
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 venv
+src/runtime/python/linkml_runtime_rust/__pycache__/__init__.cpython-312.pyc
+src/runtime/python/linkml_runtime_rust/__pycache__/_resolver.cpython-312.pyc
+src/runtime/python/linkml_runtime_rust/__pycache__/schemaview.cpython-312.pyc
+src/runtime/python/linkml_runtime_rust/_native.cpython-312-x86_64-linux-gnu.so
+src/runtime/python/linkml_runtime_rust/linkml_runtime_rust.cpython-312-x86_64-linux-gnu.so
