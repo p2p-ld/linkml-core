@@ -12,7 +12,7 @@ use pyo3::types::{PyAny, PyModule};
 use pyo3::Bound;
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 use serde_json::Value as JsonValue;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -186,34 +186,24 @@ impl PySchemaView {
         self.inner.iter_schemas().map(|(_, s)| s.clone()).collect()
     }
 
-    fn class_definitions(&self) -> Vec<PyClassView> {
-        let mut defs = Vec::new();
-        let conv = self.inner.converter();
+    fn get_class_ids(&self) -> Vec<String> {
+        let mut ids: HashSet<String> = HashSet::new();
         for (_, schema) in self.inner.iter_schemas() {
             if let Some(classes) = &schema.classes {
-                for name in classes.keys() {
-                    if let Ok(Some(cv)) = self.inner.get_class(&Identifier::new(name), &conv) {
-                        defs.push(PyClassView { inner: cv });
-                    }
-                }
+                ids.extend(classes.keys().cloned());
             }
         }
-        defs
+        ids.into_iter().collect()
     }
 
-    fn slot_definitions(&self) -> Vec<PySlotView> {
-        let mut defs = Vec::new();
-        let conv = self.inner.converter();
+    fn get_slot_ids(&self) -> Vec<String> {
+        let mut ids: HashSet<String> = HashSet::new();
         for (_, schema) in self.inner.iter_schemas() {
             if let Some(slots) = &schema.slot_definitions {
-                for name in slots.keys() {
-                    if let Ok(Some(sv)) = self.inner.get_slot(&Identifier::new(name), &conv) {
-                        defs.push(PySlotView { inner: sv });
-                    }
-                }
+                ids.extend(slots.keys().cloned());
             }
         }
-        defs
+        ids.into_iter().collect()
     }
 }
 
