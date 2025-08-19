@@ -114,29 +114,22 @@ impl LinkMLValue {
         }
 
         let mut preferred: Option<&ClassView> = None;
-        if let Some(ts) = base
+        if let Some(td_slot) = base
             .slots()
             .iter()
-            .find(|s| s.definition().designates_type.unwrap_or(false))
+            .find(|s| s.definition().designates_type.unwrap_or(false)).map(|s| s.definition())
         {
-            if let Some(JsonValue::String(tv)) = map.get(&ts.name) {
-                if let Some(def) = ts
-                    .definitions
-                    .iter()
-                    .rev()
-                    .find(|d| d.designates_type.unwrap_or(false))
-                {
-                    for c in &cand_refs {
-                        if let Ok(vals) = c.get_accepted_type_designator_values(def, conv) {
-                            if vals.iter().any(|v| v.to_string() == *tv) {
-                                preferred = Some(*c);
-                                break;
-                            }
+            if let Some(JsonValue::String(tv)) = map.get(&td_slot.name) {
+                for c in &cand_refs {
+                    if let Ok(vals) = c.get_accepted_type_designator_values(td_slot, conv) {
+                        if vals.iter().any(|v| v.to_string() == *tv) {
+                            preferred = Some(*c);
+                            break;
                         }
                     }
                 }
-            }
-        }
+            } 
+        } else 
         if let Some(p) = preferred {
             return p.clone();
         }
@@ -148,7 +141,6 @@ impl LinkMLValue {
                 }
             }
         }
-
         base.clone()
     }
 

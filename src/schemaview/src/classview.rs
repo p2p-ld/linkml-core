@@ -179,6 +179,9 @@ impl ClassView {
         native: bool,
         expand: bool,
     ) -> Result<Identifier, IdentifierError> {
+        if native && expand {
+            return Ok(self.canonical_uri());
+        }
         let schema = self
             .data.sv
             .get_schema(&self.data.schema_uri)

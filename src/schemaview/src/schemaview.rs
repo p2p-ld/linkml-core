@@ -189,6 +189,7 @@ impl SchemaView {
             if d.primary_schema.is_none() {
                 d.primary_schema = Some(schema_uri.to_string());
             }
+            self.write_cache().clas_view_cache.clear();
             Ok(true)
         } else {
             Ok(false)
