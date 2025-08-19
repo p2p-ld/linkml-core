@@ -129,16 +129,36 @@ impl SchemaView {
         // only search in the primary schema for a class having an attribute `tree_root`
     }
 
-    pub fn get_uri(&self, schema_name: &str, class_name: &str) -> Identifier {
+    pub fn get_default_prefix_for_schema(&self, schema_id: &str, expand: bool) -> Option<String> {
+
+        let not_expanded = self.data.schema_definitions.get(schema_id).and_then(|s| s.default_prefix.clone());
+        let result = if expand {
+            let prefixes = self.data.schema_definitions.get(schema_id).and_then(|s| s.prefixes.clone());
+            match prefixes {
+                Some(prefixes) => {
+                    not_expanded.map(|n| prefixes.get(&n).map(|p| p.prefix_reference.clone())).flatten()
+                },
+                None => {
+                    // if we don't have a converter, just return the not expanded prefix
+                    not_expanded
+                }
+            }
+            
+        } else {
+            not_expanded
+        };
+        return result;
+
+    }
+
+    pub fn get_uri(&self, schema_id: &str, class_name: &str) -> Identifier {
         let res = if class_name.contains(':') {
             Identifier::new(class_name)
         } else {
-            if schema_name.contains('/') {
-                Identifier::new(&format!("{}/{}", schema_name, class_name))
-            } else {
-                let base = format!("{}:{}", schema_name, class_name);
-                Identifier::new(&base)
-            }
+            let s = self.get_default_prefix_for_schema(schema_id, true).unwrap_or(schema_id.to_string());
+
+            let base = format!("{}{}", s, class_name);
+            Identifier::new(&base)
         };
         res
     }

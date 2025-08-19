@@ -42,6 +42,10 @@ impl ClassView {
     pub fn name(&self) -> &str {
         &self.data.class.name
     }
+
+    pub fn schema_id(&self) -> &str {
+        &self.data.schema_uri
+    }
     pub fn new(
         class: &ClassDefinition,
         sv: &SchemaView,

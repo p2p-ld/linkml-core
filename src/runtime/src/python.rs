@@ -12,7 +12,7 @@ use pyo3::types::{PyAny, PyModule};
 use pyo3::Bound;
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 use serde_json::Value as JsonValue;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -100,6 +100,10 @@ impl PySchemaView {
         self.inner._get_resolved_schema_imports()
     }
 
+    fn get_default_prefix_for_schema(&self, schema_id: &str, expand: bool) -> Option<String> {
+        self.inner.get_default_prefix_for_schema(schema_id, expand)
+    }
+
     fn add_schema_from_path(&mut self, path: &str) -> PyResult<bool> {
         let schema =
             io::from_yaml(Path::new(path)).map_err(|e| PyException::new_err(e.to_string()))?;
@@ -182,8 +186,8 @@ impl PySchemaView {
             .map(|svw| PySlotView { inner: svw }))
     }
 
-    fn schema_definitions(&self) -> Vec<SchemaDefinition> {
-        self.inner.iter_schemas().map(|(_, s)| s.clone()).collect()
+    fn schema_ids(&self) -> Vec<String> {
+        self.inner.all_schema_definitions().map(|x| x.0.clone()).collect()
     }
 
     fn get_class_ids(&self) -> Vec<String> {
@@ -260,6 +264,10 @@ impl PyClassView {
             .get_descendants(recurse, include_mixins)
             .map_err(|e| PyException::new_err(format!("{:?}", e)))
             .map(|v| v.into_iter().map(|cv| PyClassView { inner: cv }).collect())
+    }
+
+    fn schema_id(&self) -> String {
+        self.inner.schema_id().to_string()
     }
 
     fn canonical_uri(&self) -> String {
