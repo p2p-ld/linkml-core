@@ -16,6 +16,9 @@ class _LazyClassGetter:
     def __iter__(self):
         return iter(self._sv.get_class_ids())
 
+    def items(self):
+        return ((cid, self._sv.get_class_view(cid)) for cid in self._sv.get_class_ids())
+
     def keys(self):
         return self._sv.get_class_ids()
 
@@ -32,6 +35,9 @@ class _LazySlotGetter:
 
     def __iter__(self):
         return iter(self._sv.get_slot_ids())
+    
+    def items(self):
+        return ((sid, self._sv.get_slot_view(sid)) for sid in self._sv.get_slot_ids())
 
     def keys(self):
         return self._sv.get_slot_ids()
