@@ -215,7 +215,7 @@ fn make_schema_view(source: Option<&Bound<'_, PyAny>>) -> PyResult<PySchemaView>
 }
 
 /// Python bindings for `linkml_runtime`.
-#[pymodule(name = "linkml_runtime")]
+#[pymodule(name = "linkml_runtime_rust")]
 pub fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pymodule!(schemaview_module))?;
     m.add_function(wrap_pyfunction!(make_schema_view, m)?)?;

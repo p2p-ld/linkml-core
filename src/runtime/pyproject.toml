@@ -3,7 +3,7 @@ requires = ["maturin>=1.7,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "linkml-runtime"
+name = "linkml-runtime-rust"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Rust",
@@ -14,5 +14,5 @@ dynamic = ["version"]
 
 [tool.maturin]
 features = ["pyo3/extension-module", "python"]
-module-name = "linkml_runtime.linkml_runtime"
+module-name = "linkml_runtime_rust.linkml_runtime_rust"
 python-source = "python"
