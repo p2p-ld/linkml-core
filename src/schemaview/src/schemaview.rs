@@ -143,7 +143,7 @@ impl SchemaView {
         res
     }
 
-    pub fn add_schema(&mut self, schema: SchemaDefinition) -> Result<(), String> {
+    pub fn add_schema(&mut self, schema: SchemaDefinition) -> Result<bool, String> {
         self.add_schema_with_import_ref(schema, None)
     }
 
@@ -153,7 +153,7 @@ impl SchemaView {
      *    * schema_id of the schema that had the import statement
      *    * the URI of the schema that was imported
      */
-    pub fn add_schema_with_import_ref(&mut self, schema: SchemaDefinition, import_reference: Option<(String, String)>) -> Result<(), String> {
+    pub fn add_schema_with_import_ref(&mut self, schema: SchemaDefinition, import_reference: Option<(String, String)>) -> Result<bool, String> {
         let schema_uri = schema.id.clone();
         let conv = converter_from_schema(&schema);
         self.index_schema_classes(&schema_uri, &schema, &conv)
@@ -163,12 +163,16 @@ impl SchemaView {
         let d = Arc::make_mut(&mut self.data);      // &mut SchemaViewData
         d.converters.insert(schema_uri.to_string(), conv.clone());
         import_reference.map(|x| d.resolved_schema_imports.insert((x.0, x.1), schema.id.clone()));
-        d.schema_definitions
-            .insert(schema_uri.to_string(), schema);
-        if d.primary_schema.is_none() {
-            d.primary_schema = Some(schema_uri.to_string());
+        if !d.schema_definitions.contains_key(&schema_uri) {
+            d.schema_definitions
+                .insert(schema_uri.to_string(), schema);
+            if d.primary_schema.is_none() {
+                d.primary_schema = Some(schema_uri.to_string());
+            }
+            Ok(true)
+        } else {
+            Ok(false)
         }
-        Ok(())
     }
 
     pub fn get_schema(&self, id: &str) -> Option<&SchemaDefinition> {

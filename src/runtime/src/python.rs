@@ -11,6 +11,7 @@ use pyo3::types::{PyAny, PyModule};
 use pyo3::Bound;
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 use serde_json::Value as JsonValue;
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -77,7 +78,11 @@ impl PySchemaView {
         })
     }
 
-    fn add_schema_from_path(&mut self, path: &str) -> PyResult<()> {
+    fn _get_resolved_schema_imports(&self) -> HashMap<(String, String), String> {
+        self.inner._get_resolved_schema_imports()
+    }
+
+    fn add_schema_from_path(&mut self, path: &str) -> PyResult<bool> {
         let schema =
             io::from_yaml(Path::new(path)).map_err(|e| PyException::new_err(e.to_string()))?;
         if let Some(inner) = Arc::get_mut(&mut self.inner) {
@@ -89,7 +94,7 @@ impl PySchemaView {
         }
     }
 
-    fn add_schema_str(&mut self, data: &str) -> PyResult<()> {
+    fn add_schema_str(&mut self, data: &str) -> PyResult<bool> {
         let deser = serde_yml::Deserializer::from_str(data);
         let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
             .map_err(|e| PyException::new_err(e.to_string()))?;

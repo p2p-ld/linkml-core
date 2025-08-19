@@ -24,28 +24,35 @@ def resolve_schemas(sv: "SchemaView") -> None:
     by using the standard library for network access. Local paths are resolved
     relative to the schema containing the import statement.
     """
+    nb_resolved = 1
 
-    for schema_id, uri in sv.get_unresolved_schema_refs():
-        target = _KNOWN_IMPORTS.get(uri, uri)
+    while nb_resolved > 0:
+        nb_resolved = 0
+        for schema_id, uri in sv.get_unresolved_schema_refs():
+            target = _KNOWN_IMPORTS.get(uri, uri)
 
-        path = Path(target)
-        if not path.exists():
-            if not path.is_absolute():
-                schema_source_uri = sv.get_resolution_uri_of_schema(schema_id)
-                if schema_source_uri:
-                    imported_from_dir = Path(schema_source_uri).parent
-                    if imported_from_dir:
-                        path = imported_from_dir / path
-                if not path.exists() and path.with_suffix(".yaml").exists():
-                    path = path.with_suffix(".yaml")
-                if not path.exists() and path.with_suffix(".yml").exists():
-                    path = path.with_suffix(".yml")
+            path = Path(target)
+            if not path.exists():
+                if not path.is_absolute():
+                    schema_source_uri = sv.get_resolution_uri_of_schema(schema_id)
+                    if schema_source_uri:
+                        schema_source_uri = Path(schema_source_uri)
+                    if schema_source_uri:
+                        imported_from_dir = schema_source_uri.parent
+                        if imported_from_dir:
+                            path = imported_from_dir / path
+                    if not path.exists() and path.with_suffix(".yaml").exists():
+                        path = path.with_suffix(".yaml")
+                    if not path.exists() and path.with_suffix(".yml").exists():
+                        path = path.with_suffix(".yml")
 
-        if path.exists():
-            text = path.read_text()
-        else:
-            with urlopen(target) as resp:  # nosec: B310 - controlled URLs
-                text = resp.read().decode("utf-8")
-
-        sv.add_schema_str_with_import_ref(text, schema_id, uri)
+            if path.exists():
+                text = path.read_text()
+                path = str(path)
+            else:
+                path = str(target)
+                with urlopen(target) as resp:  # nosec: B310 - controlled URLs
+                    text = resp.read().decode("utf-8")
+            if sv.add_schema_str_with_import_ref(text, schema_id, uri):
+                nb_resolved += 1
 
