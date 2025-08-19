@@ -114,6 +114,10 @@ impl PySchemaView {
         self.inner.get_unresolved_schemas()
     }
 
+    fn get_resolution_uri_of_schema(&self, id: &str) -> Option<String> {
+        self.inner.get_resolution_uri_of_schema(id)
+    }
+
     fn add_schema_str_with_import_ref(
         &mut self,
         data: &str,
