@@ -12,7 +12,7 @@ use pyo3::types::{PyAny, PyModule};
 use pyo3::Bound;
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 use serde_json::Value as JsonValue;
-use std::collections::{HashMap};
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -187,12 +187,15 @@ impl PySchemaView {
     }
 
     fn schema_ids(&self) -> Vec<String> {
-        self.inner.all_schema_definitions().map(|x| x.0.clone()).collect()
+        self.inner
+            .all_schema_definitions()
+            .map(|x| x.0.clone())
+            .collect()
     }
 
     fn get_class_ids(&self) -> Vec<String> {
         return self.inner.get_class_ids();
-        /* 
+        /*
         let mut ids: HashSet<String> = HashSet::new();
         for (_, schema) in self.inner.iter_schemas() {
             if let Some(classes) = &schema.classes {
@@ -206,16 +209,29 @@ impl PySchemaView {
 
     fn get_slot_ids(&self) -> Vec<String> {
         return self.inner.get_slot_ids(); /*
-        let mut ids: HashSet<String> = HashSet::new();
-        for (_, schema) in self.inner.iter_schemas() {
-            if let Some(slots) = &schema.slot_definitions {
-                slots.iter().map(|c| self.inner.get_uri(&schema.id, c.0)).for_each(|uri| {
-                    ids.insert(uri.to_string());
-                });
-            }
-        }
-        ids.into_iter().collect()*/
-    } 
+                                          let mut ids: HashSet<String> = HashSet::new();
+                                          for (_, schema) in self.inner.iter_schemas() {
+                                              if let Some(slots) = &schema.slot_definitions {
+                                                  slots.iter().map(|c| self.inner.get_uri(&schema.id, c.0)).for_each(|uri| {
+                                                      ids.insert(uri.to_string());
+                                                  });
+                                              }
+                                          }
+                                          ids.into_iter().collect()*/
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!(
+            "SchemaView(n_schemas={}, n_classes={}, n_slots={})",
+            self.inner.all_schema_definitions().count(),
+            self.inner.get_class_ids().len(),
+            self.inner.get_slot_ids().len()
+        ))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        self.__repr__()
+    }
 }
 
 #[pymethods]
@@ -273,6 +289,18 @@ impl PyClassView {
     fn canonical_uri(&self) -> String {
         self.inner.canonical_uri().to_string()
     }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!(
+            "ClassView(name='{}', slots={})",
+            self.inner.name(),
+            self.inner.slots().len()
+        ))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        self.__repr__()
+    }
 }
 
 #[pymethods]
@@ -307,6 +335,24 @@ impl PySlotView {
 
     fn inline_mode(&self) -> String {
         format!("{:?}", self.inner.determine_slot_inline_mode())
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let range = self
+            .inner
+            .definition()
+            .range
+            .clone()
+            .unwrap_or_else(|| "None".to_string());
+        Ok(format!(
+            "SlotView(name='{}', range='{}')",
+            self.inner.name.clone(),
+            range
+        ))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        self.__repr__()
     }
 }
 
