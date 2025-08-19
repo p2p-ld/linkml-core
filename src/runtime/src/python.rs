@@ -1,6 +1,6 @@
 use crate::turtle::{turtle_to_string, TurtleOptions};
 use crate::{load_json_str, load_yaml_str, LinkMLValue};
-use linkml_meta::{ClassDefinition, SchemaDefinition};
+use linkml_meta::{ClassDefinition, SchemaDefinition, SlotDefinition};
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io;
 use linkml_schemaview::schemaview::SchemaView;
@@ -160,6 +160,30 @@ impl PySchemaView {
                 _sv: self.inner.clone(),
             }))
     }
+
+    fn schema_definitions(&self) -> Vec<SchemaDefinition> {
+        self.inner.iter_schemas().map(|(_, s)| s.clone()).collect()
+    }
+
+    fn class_definitions(&self) -> Vec<ClassDefinition> {
+        let mut defs = Vec::new();
+        for (_, schema) in self.inner.iter_schemas() {
+            if let Some(classes) = &schema.classes {
+                defs.extend(classes.values().cloned());
+            }
+        }
+        defs
+    }
+
+    fn slot_definitions(&self) -> Vec<SlotDefinition> {
+        let mut defs = Vec::new();
+        for (_, schema) in self.inner.iter_schemas() {
+            if let Some(slots) = &schema.slot_definitions {
+                defs.extend(slots.values().cloned());
+            }
+        }
+        defs
+    }
 }
 
 #[pymethods]
@@ -205,6 +229,7 @@ pub fn schemaview_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySlotView>()?;
     m.add_class::<SchemaDefinition>()?;
     m.add_class::<ClassDefinition>()?;
+    m.add_class::<SlotDefinition>()?;
     Ok(())
 }
 
