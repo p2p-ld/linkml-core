@@ -281,6 +281,7 @@ impl ClassView {
         include_mixins: bool,
         schema_uri: &str,
         class_uri: &Identifier,
+        class_name: &str,
         result: &mut Vec<(String, String)>,
     ) -> Result<(), SchemaViewError> {
         let conv = self
@@ -292,9 +293,14 @@ impl ClassView {
                 for (cls_name, cls_def) in classes {
                     let mut is_descendant = false;
                     if let Some(parent) = &cls_def.is_a {
-                        if self.data.sv.identifier_equals(&self.data.sv.get_uri(&schema.id, parent), class_uri, &conv)? {
+                        if !(parent.contains(":") || parent.contains("/")) {
+                            if parent == class_name {
+                                is_descendant = true;
+                            }
+                        } else if self.data.sv.identifier_equals(&self.data.sv.get_uri(&schema.id, parent), class_uri, &conv)? {
                             is_descendant = true;
                         }
+
                     }
                     if !is_descendant && include_mixins {
                         if let Some(mixins) = &cls_def.mixins {
@@ -312,7 +318,7 @@ impl ClassView {
                         if !result.contains(&tpl) {
                             result.push(tpl);
                             if recurse {
-                                let _ = self.compute_descendant_identifiers(recurse, include_mixins, &schema.id, &self.data.sv.get_uri(&schema.id, cls_name), result)?;
+                                let _ = self.compute_descendant_identifiers(recurse, include_mixins, &schema.id, &self.data.sv.get_uri(&schema.id, cls_name), cls_name, result)?;
                             }
 
                         }
@@ -334,7 +340,7 @@ impl ClassView {
             .unwrap()
             .get_or_init(|| {
                 let mut  res = Vec::new();
-                self.compute_descendant_identifiers(recurse, include_mixins, &self.data.schema_uri, &self.canonical_uri(), &mut res).unwrap(); // fix this with try_get_or_init once stable!
+                self.compute_descendant_identifiers(recurse, include_mixins, &self.data.schema_uri, &self.canonical_uri(), &self.name(), &mut res).unwrap(); // fix this with try_get_or_init once stable!
                 res
             });
         idx.iter()
