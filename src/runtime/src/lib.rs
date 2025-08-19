@@ -104,7 +104,7 @@ impl LinkMLValue {
         sv: &SchemaView,
         conv: &Converter,
     ) -> ClassView {
-        let descendants = match base.get_descendants( true, false) {
+        let descendants = match base.get_descendants(true, false) {
             Ok(d) => d,
             Err(_) => Vec::new(),
         };
@@ -205,17 +205,18 @@ impl LinkMLValue {
                 for (i, v) in arr.into_iter().enumerate() {
                     let mut p = path.clone();
                     p.push(format!("{}[{}]", sl.name, i));
-                    let v_transformed = if let (Some(cr), JsonValue::String(s)) = (class_range.as_ref(), &v) {
-                        if let Some(id_slot) = cr.identifier_slot() {
-                            let mut m = serde_json::Map::new();
-                            m.insert(id_slot.name.clone(), JsonValue::String(s.clone()));
-                            JsonValue::Object(m)
+                    let v_transformed =
+                        if let (Some(cr), JsonValue::String(s)) = (class_range.as_ref(), &v) {
+                            if let Some(id_slot) = cr.identifier_slot() {
+                                let mut m = serde_json::Map::new();
+                                m.insert(id_slot.name.clone(), JsonValue::String(s.clone()));
+                                JsonValue::Object(m)
+                            } else {
+                                v
+                            }
                         } else {
                             v
-                        }
-                    } else {
-                        v
-                    };
+                        };
                     values.push(Self::from_json_internal(
                         v_transformed,
                         class_range.as_ref().unwrap_or(&class).clone(),
@@ -375,11 +376,25 @@ impl LinkMLValue {
         let sl = slot.ok_or_else(|| {
             LinkMLError(format!("list requires slot at {} for class={}", path_to_string(&path), class.name()))
         })?;
+        let class_range: Option<ClassView> = sl.get_range_class();
+        let slot_for_item = if class_range.is_some() {
+            None
+        } else {
+            Some(sl.clone())
+        };
         let mut values = Vec::new();
         for (i, v) in arr.into_iter().enumerate() {
             let mut p = path.clone();
             p.push(format!("[{}]", i));
-            values.push(Self::from_json_internal(v, class.clone(), None, sv, conv, false, p)?);
+            values.push(Self::from_json_internal(
+                v,
+                class_range.as_ref().unwrap_or(&class).clone(),
+                slot_for_item.clone(),
+                sv,
+                conv,
+                false,
+                p,
+            )?);
         }
         Ok(LinkMLValue::List {
             values,
@@ -400,7 +415,8 @@ impl LinkMLValue {
         let base_class = match slot {
             Some(sl) => sl.get_range_class(),
             None => Some(class.clone()),
-        }.ok_or_else(|| {
+        }
+        .ok_or_else(|| {
             LinkMLError(format!(
                 "object requires class or slot at {}",
                 path_to_string(&path)
@@ -410,7 +426,10 @@ impl LinkMLValue {
 
         let mut values = HashMap::new();
         for (k, v) in map.into_iter() {
-            let slot_tmp: Option<SlotView> = chosen.slots().iter().find(|s| slot_matches_key(s, &k))
+            let slot_tmp: Option<SlotView> = chosen
+                .slots()
+                .iter()
+                .find(|s| slot_matches_key(s, &k))
                 .cloned();
             let mut p = path.clone();
             p.push(k.clone());
@@ -441,7 +460,8 @@ impl LinkMLValue {
             let classview_name = class.name().to_string();
             LinkMLError(format!(
                 "scalar requires slot for at {} {}",
-                path_to_string(&path), classview_name
+                path_to_string(&path),
+                classview_name
             ))
         })?;
         Ok(LinkMLValue::Scalar {
@@ -487,9 +507,7 @@ impl LinkMLValue {
             JsonValue::Object(map) => {
                 Self::parse_object_value(map, classview, slot, sv, conv, path)
             }
-            other => {
-                Self::parse_scalar_value(other, classview, slot, sv, path)
-            }
+            other => Self::parse_scalar_value(other, classview, slot, sv, path),
         }
     }
 

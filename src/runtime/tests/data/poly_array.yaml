@@ -1,0 +1,8 @@
+obj:
+  type: Child
+  extra: top
+objs:
+  - type: Child
+    extra: first
+  - extra: second
+  - id: p1
