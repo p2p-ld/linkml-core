@@ -18,13 +18,17 @@ use std::sync::Arc;
 fn py_filelike_or_string_to_string(obj: &Bound<'_, PyAny>) -> PyResult<(String, Option<String>)> {
     if let Ok(s) = obj.extract::<String>() {
         if Path::new(&s).exists() {
-            return fs::read_to_string(&s).map_err(|e| PyException::new_err(e.to_string())).map(|res| (res, Some(s)));
+            return fs::read_to_string(&s)
+                .map_err(|e| PyException::new_err(e.to_string()))
+                .map(|res| (res, Some(s)));
         }
         return Ok((s, None));
     }
     if obj.hasattr("__fspath__")? {
         let p: String = obj.call_method0("__fspath__")?.extract()?;
-        return fs::read_to_string(&p).map_err(|e| PyException::new_err(e.to_string())).map(|res| (res, Some(p)));
+        return fs::read_to_string(&p)
+            .map_err(|e| PyException::new_err(e.to_string()))
+            .map(|res| (res, Some(p)));
     }
     if obj.hasattr("read")? {
         return obj.call_method0("read")?.extract().map(|res| (res, None));
@@ -71,7 +75,8 @@ impl PySchemaView {
             let deser = serde_yml::Deserializer::from_str(&text);
             let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
                 .map_err(|e| PyException::new_err(e.to_string()))?;
-            sv.add_schema_with_import_ref(schema, uri.map(|u| ("".to_owned(), u))).map_err(|e| PyException::new_err(e))?;
+            sv.add_schema_with_import_ref(schema, uri.map(|u| ("".to_owned(), u)))
+                .map_err(|e| PyException::new_err(e))?;
         }
         Ok(Self {
             inner: Arc::new(sv),
@@ -174,21 +179,27 @@ impl PySchemaView {
         self.inner.iter_schemas().map(|(_, s)| s.clone()).collect()
     }
 
-    fn class_definitions(&self) -> Vec<ClassDefinition> {
+    fn class_definitions(&self) -> Vec<PyClassView> {
         let mut defs = Vec::new();
         for (_, schema) in self.inner.iter_schemas() {
             if let Some(classes) = &schema.classes {
-                defs.extend(classes.values().cloned());
+                defs.extend(classes.keys().map(|name| PyClassView {
+                    class_name: name.clone(),
+                    sv: self.inner.clone(),
+                }));
             }
         }
         defs
     }
 
-    fn slot_definitions(&self) -> Vec<SlotDefinition> {
+    fn slot_definitions(&self) -> Vec<PySlotView> {
         let mut defs = Vec::new();
         for (_, schema) in self.inner.iter_schemas() {
             if let Some(slots) = &schema.slot_definitions {
-                defs.extend(slots.values().cloned());
+                defs.extend(slots.keys().map(|name| PySlotView {
+                    slot_name: name.clone(),
+                    _sv: self.inner.clone(),
+                }));
             }
         }
         defs
