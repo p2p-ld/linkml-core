@@ -373,7 +373,7 @@ impl LinkMLValue {
         path: Vec<String>,
     ) -> LResult<Self> {
         let sl = slot.ok_or_else(|| {
-            LinkMLError(format!("list requires slot at {}", path_to_string(&path)))
+            LinkMLError(format!("list requires slot at {} for class={}", path_to_string(&path), class.name()))
         })?;
         let mut values = Vec::new();
         for (i, v) in arr.into_iter().enumerate() {
