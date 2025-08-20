@@ -425,6 +425,15 @@ impl PyLinkMLValue {
     }
 
     #[getter]
+    fn kind(&self) -> String {
+        match &self.value {
+            LinkMLValue::Scalar { .. } => "scalar".to_string(),
+            LinkMLValue::List { .. } => "list".to_string(),
+            LinkMLValue::Map { .. } => "map".to_string(),
+        }
+    }
+
+    #[getter]
     fn slot_definition(&self) -> Option<SlotDefinition> {
         match &self.value {
             LinkMLValue::Scalar { slot, .. } => Some(slot.definition().clone()),
@@ -443,6 +452,7 @@ impl PyLinkMLValue {
         }
     }
 
+    #[getter]
     fn class_name(&self) -> Option<String> {
         match &self.value {
             LinkMLValue::Map { class, .. } => Some(class.def().name.clone()),

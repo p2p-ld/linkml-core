@@ -3,6 +3,6 @@
 from ._native import *  # noqa: F401,F403
 from ._resolver import resolve_schemas
 from .schemaview import SchemaView
-from .pretty import pretty_linkml_value
+from .debug_utils import pretty_linkml_value
 __all__ = [name for name in globals() if not name.startswith("_")]
 

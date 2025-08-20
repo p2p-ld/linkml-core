@@ -25,3 +25,4 @@ src/runtime/python/linkml_runtime_rust/__pycache__/_resolver.cpython-312.pyc
 src/runtime/python/linkml_runtime_rust/__pycache__/schemaview.cpython-312.pyc
 src/runtime/python/linkml_runtime_rust/_native.cpython-312-x86_64-linux-gnu.so
 src/runtime/python/linkml_runtime_rust/linkml_runtime_rust.cpython-312-x86_64-linux-gnu.so
+src/runtime/python/linkml_runtime_rust/__pycache__
