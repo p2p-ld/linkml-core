@@ -1,3 +1,4 @@
+use crate::diff::{diff as diff_internal, patch as patch_internal, Delta};
 use crate::turtle::{turtle_to_string, TurtleOptions};
 use crate::{load_json_str, load_yaml_str, LinkMLValue};
 use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
@@ -382,6 +383,9 @@ pub fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(make_schema_view, m)?)?;
     m.add_function(wrap_pyfunction!(load_yaml, m)?)?;
     m.add_function(wrap_pyfunction!(load_json, m)?)?;
+    m.add_function(wrap_pyfunction!(py_diff, m)?)?;
+    m.add_function(wrap_pyfunction!(py_patch, m)?)?;
+    m.add_function(wrap_pyfunction!(py_to_turtle, m)?)?;
     m.add_class::<PyLinkMLValue>()?;
     Ok(())
 }
@@ -616,4 +620,44 @@ fn load_json(
     let v = load_json_str(&text, rust_sv, cv.as_rust(), &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
     Ok(PyLinkMLValue::new(v, sv))
+}
+
+#[pyfunction(name = "diff", signature = (source, target, ignore_missing_target=None))]
+fn py_diff(
+    py: Python<'_>,
+    source: &PyLinkMLValue,
+    target: &PyLinkMLValue,
+    ignore_missing_target: Option<bool>,
+) -> PyResult<PyObject> {
+    let deltas = diff_internal(
+        &source.value,
+        &target.value,
+        ignore_missing_target.unwrap_or(false),
+    );
+    let vals: Vec<JsonValue> = deltas
+        .iter()
+        .map(|d| serde_json::to_value(d).unwrap())
+        .collect();
+    Ok(json_value_to_py(py, &JsonValue::Array(vals)))
+}
+
+#[pyfunction(name = "patch")]
+fn py_patch(
+    py: Python<'_>,
+    source: &PyLinkMLValue,
+    deltas: &Bound<'_, PyAny>,
+) -> PyResult<PyLinkMLValue> {
+    let json_mod = PyModule::import(py, "json")?;
+    let deltas_str: String = json_mod.call_method1("dumps", (deltas,))?.extract()?;
+    let deltas_vec: Vec<Delta> =
+        serde_json::from_str(&deltas_str).map_err(|e| PyException::new_err(e.to_string()))?;
+    let sv_ref = source.sv.bind(py).borrow();
+    let rust_sv = sv_ref.as_rust();
+    let new_value = patch_internal(&source.value, &deltas_vec, rust_sv);
+    Ok(PyLinkMLValue::new(new_value, source.sv.clone_ref(py)))
+}
+
+#[pyfunction(name = "to_turtle", signature = (value, skolem=None))]
+fn py_to_turtle(py: Python<'_>, value: &PyLinkMLValue, skolem: Option<bool>) -> PyResult<String> {
+    value.as_turtle(py, skolem)
 }
