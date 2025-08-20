@@ -6,7 +6,7 @@ use serde_json::{Map, Value as JsonValue};
 const IGNORE_ANNOTATION: &str = "diff.linkml.io/ignore";
 
 fn slot_is_ignored(slot: &SlotView) -> bool {
-    if slot.definitions.is_empty() {
+    if slot.definitions().is_empty() {
         return false;
     }
     slot.definition()

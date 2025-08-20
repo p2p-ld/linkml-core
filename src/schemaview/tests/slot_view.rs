@@ -36,7 +36,7 @@ fn slot_lookup_and_class_slots() {
     let slots = class.slots();
     let mut map: HashMap<String, usize> = HashMap::new();
     for s in slots {
-        map.insert(s.name.clone(), s.definitions.len());
+        map.insert(s.name.clone(), s.definitions().len());
     }
     assert_eq!(map.get("symbol"), Some(&1usize));
     assert_eq!(map.get("exact mappings"), Some(&2usize));

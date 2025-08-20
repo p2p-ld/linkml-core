@@ -101,7 +101,7 @@ impl ClassView {
                     let mut defs: Vec<SlotDefinition> = Vec::new();
                     if let Some(base) = sv.get_slot(&Identifier::new(slot_ref), conv)? {
                         slot_schema_uri = base.schema_uri.to_owned();
-                        defs.extend(base.definitions);
+                        defs.extend(base.definitions().iter().cloned());
                     }
                     if let Some(cu) = &class_def.slot_usage {
                         if let Some(usage) = cu.get(slot_ref) {
