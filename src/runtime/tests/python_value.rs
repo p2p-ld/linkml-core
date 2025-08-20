@@ -44,7 +44,10 @@ sv = lr.make_schema_view(schema_path)
 cls = sv.get_class_view('Person')
 value = lr.load_yaml(person_path, sv, cls)
 assert value.class_name() == 'Person'
-assert value['name'].slot_name() == 'name'
+assert value.class_definition.name == 'Person'
+assert value['name'].slot_name == 'name'
+assert value['name'].slot_definition.name == 'name'
+assert value['name'].class_definition.name == 'Person'
 assert value['name'].as_python() == 'Alice'
 "#
         );

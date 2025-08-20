@@ -415,10 +415,30 @@ impl Clone for PyLinkMLValue {
 
 #[pymethods]
 impl PyLinkMLValue {
+    #[getter]
     fn slot_name(&self) -> Option<String> {
         match &self.value {
             LinkMLValue::Scalar { slot, .. } => Some(slot.name.clone()),
             LinkMLValue::List { slot, .. } => Some(slot.name.clone()),
+            _ => None,
+        }
+    }
+
+    #[getter]
+    fn slot_definition(&self) -> Option<SlotDefinition> {
+        match &self.value {
+            LinkMLValue::Scalar { slot, .. } => Some(slot.definition().clone()),
+            LinkMLValue::List { slot, .. } => Some(slot.definition().clone()),
+            _ => None,
+        }
+    }
+
+    #[getter]
+    fn class_definition(&self) -> Option<ClassDefinition> {
+        match &self.value {
+            LinkMLValue::Map { class, .. } => Some(class.def().clone()),
+            LinkMLValue::Scalar { class: Some(c), .. } => Some(c.def().clone()),
+            LinkMLValue::List { class: Some(c), .. } => Some(c.def().clone()),
             _ => None,
         }
     }
