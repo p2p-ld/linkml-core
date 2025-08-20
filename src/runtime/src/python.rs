@@ -509,6 +509,33 @@ impl PyLinkMLValue {
         )
         .map_err(|e| PyException::new_err(e.to_string()))
     }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(match &self.value {
+            LinkMLValue::Scalar { value, slot, .. } => {
+                format!("LinkMLValue.Scalar(slot='{}', value={})", slot.name, value)
+            }
+            LinkMLValue::List { values, slot, .. } => {
+                format!(
+                    "LinkMLValue.List(slot='{}', len={})",
+                    slot.name,
+                    values.len()
+                )
+            }
+            LinkMLValue::Map { values, class, .. } => {
+                let keys: Vec<&String> = values.keys().collect();
+                format!(
+                    "LinkMLValue.Map(class='{}', keys={:?})",
+                    class.def().name.clone(),
+                    keys
+                )
+            }
+        })
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        self.__repr__()
+    }
 }
 
 #[pyfunction]
