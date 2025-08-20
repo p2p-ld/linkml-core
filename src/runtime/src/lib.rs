@@ -129,7 +129,7 @@ impl LinkMLValue {
                     }
                 }
             } 
-        } else 
+        } 
         if let Some(p) = preferred {
             return p.clone();
         }
