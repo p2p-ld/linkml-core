@@ -92,7 +92,7 @@ pub type last_updated_on = NaiveDateTime;
 pub type modified_by = uriorcurie;
 pub type status = uriorcurie;
 pub type literal_form = String;
-pub type alias_predicate = String;
+pub type alias_predicate = AliasPredicateEnum;
 pub type alias_contexts = Vec<uri>;
 pub type in_language = String;
 pub type source = uriorcurie;
@@ -106,7 +106,7 @@ pub type values_from = Vec<uriorcurie>;
 pub type code_set = uriorcurie;
 pub type code_set_version = String;
 pub type code_set_tag = String;
-pub type pv_formula = String;
+pub type pv_formula = PvFormulaOptions;
 pub type permissible_values = Vec<PermissibleValue>;
 pub type enum_uri = uriorcurie;
 pub type include = Vec<AnonymousEnumExpression>;
@@ -188,7 +188,7 @@ pub type ifabsent = String;
 pub type implicit_prefix = String;
 pub type value_specification_constant = String;
 pub type list_value_specification_constant = String;
-pub type value_presence = String;
+pub type value_presence = PresenceEnum;
 pub type equals_string = String;
 pub type equals_number = isize;
 pub type equals_expression = String;
@@ -242,7 +242,7 @@ pub type structured_pattern = PatternExpression;
 pub type string_serialization = String;
 pub type bindings = Vec<EnumBinding>;
 pub type binds_value_of = String;
-pub type obligation_level = String;
+pub type obligation_level = ObligationLevelEnum;
 pub type type_mappings = Vec<TypeMapping>;
 pub type framework_key = String;
 pub type mapped_type = TypeDefinition;
@@ -276,10 +276,11 @@ pub type reversed = bool;
 pub type traverse = SlotDefinition;
 pub type path_rule = PathExpression;
 pub type represents_relationship = bool;
-pub type relational_role = String;
+pub type relational_role = RelationalRoleEnum;
 
 // Enums
 
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum PvFormulaOptions {
     CODE,
@@ -288,12 +289,110 @@ pub enum PvFormulaOptions {
     FHIRCODING,
     LABEL,
 }
+
+impl core::fmt::Display for PvFormulaOptions {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            PvFormulaOptions::CODE => f.write_str("CODE"),
+            PvFormulaOptions::CURIE => f.write_str("CURIE"),
+            PvFormulaOptions::URI => f.write_str("URI"),
+            PvFormulaOptions::FHIRCODING => f.write_str("FHIRCODING"),
+            PvFormulaOptions::LABEL => f.write_str("LABEL"),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for PvFormulaOptions {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        let s: &str = match self {
+            PvFormulaOptions::CODE => "CODE",
+            PvFormulaOptions::CURIE => "CURIE",
+            PvFormulaOptions::URI => "URI",
+            PvFormulaOptions::FHIRCODING => "FHIRCODING",
+            PvFormulaOptions::LABEL => "LABEL",
+        };
+        Ok(pyo3::types::PyString::new(py, s).into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for PvFormulaOptions {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(s) = ob.extract::<&str>() {
+            match s {
+                "CODE" => Ok(PvFormulaOptions::CODE),
+                "CURIE" => Ok(PvFormulaOptions::CURIE),
+                "URI" => Ok(PvFormulaOptions::URI),
+                "FHIRCODING" => Ok(PvFormulaOptions::FHIRCODING),
+                "LABEL" => Ok(PvFormulaOptions::LABEL),
+                _ => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                    format!("invalid value for PvFormulaOptions: {}", s),
+                )),
+            }
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                concat!("expected str for ", stringify!(PvFormulaOptions)),
+            ))
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum PresenceEnum {
     UNCOMMITTED,
     PRESENT,
     ABSENT,
 }
+
+impl core::fmt::Display for PresenceEnum {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            PresenceEnum::UNCOMMITTED => f.write_str("UNCOMMITTED"),
+            PresenceEnum::PRESENT => f.write_str("PRESENT"),
+            PresenceEnum::ABSENT => f.write_str("ABSENT"),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for PresenceEnum {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        let s: &str = match self {
+            PresenceEnum::UNCOMMITTED => "UNCOMMITTED",
+            PresenceEnum::PRESENT => "PRESENT",
+            PresenceEnum::ABSENT => "ABSENT",
+        };
+        Ok(pyo3::types::PyString::new(py, s).into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for PresenceEnum {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(s) = ob.extract::<&str>() {
+            match s {
+                "UNCOMMITTED" => Ok(PresenceEnum::UNCOMMITTED),
+                "PRESENT" => Ok(PresenceEnum::PRESENT),
+                "ABSENT" => Ok(PresenceEnum::ABSENT),
+                _ => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                    format!("invalid value for PresenceEnum: {}", s),
+                )),
+            }
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                concat!("expected str for ", stringify!(PresenceEnum)),
+            ))
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum RelationalRoleEnum {
     SUBJECT,
@@ -302,6 +401,58 @@ pub enum RelationalRoleEnum {
     NODE,
     OTHERROLE,
 }
+
+impl core::fmt::Display for RelationalRoleEnum {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            RelationalRoleEnum::SUBJECT => f.write_str("SUBJECT"),
+            RelationalRoleEnum::OBJECT => f.write_str("OBJECT"),
+            RelationalRoleEnum::PREDICATE => f.write_str("PREDICATE"),
+            RelationalRoleEnum::NODE => f.write_str("NODE"),
+            RelationalRoleEnum::OTHERROLE => f.write_str("OTHERROLE"),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for RelationalRoleEnum {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        let s: &str = match self {
+            RelationalRoleEnum::SUBJECT => "SUBJECT",
+            RelationalRoleEnum::OBJECT => "OBJECT",
+            RelationalRoleEnum::PREDICATE => "PREDICATE",
+            RelationalRoleEnum::NODE => "NODE",
+            RelationalRoleEnum::OTHERROLE => "OTHERROLE",
+        };
+        Ok(pyo3::types::PyString::new(py, s).into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for RelationalRoleEnum {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(s) = ob.extract::<&str>() {
+            match s {
+                "SUBJECT" => Ok(RelationalRoleEnum::SUBJECT),
+                "OBJECT" => Ok(RelationalRoleEnum::OBJECT),
+                "PREDICATE" => Ok(RelationalRoleEnum::PREDICATE),
+                "NODE" => Ok(RelationalRoleEnum::NODE),
+                "OTHERROLE" => Ok(RelationalRoleEnum::OTHERROLE),
+                _ => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                    format!("invalid value for RelationalRoleEnum: {}", s),
+                )),
+            }
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                concat!("expected str for ", stringify!(RelationalRoleEnum)),
+            ))
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum AliasPredicateEnum {
     EXACTSYNONYM,
@@ -309,6 +460,55 @@ pub enum AliasPredicateEnum {
     BROADSYNONYM,
     NARROWSYNONYM,
 }
+
+impl core::fmt::Display for AliasPredicateEnum {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            AliasPredicateEnum::EXACTSYNONYM => f.write_str("EXACTSYNONYM"),
+            AliasPredicateEnum::RELATEDSYNONYM => f.write_str("RELATEDSYNONYM"),
+            AliasPredicateEnum::BROADSYNONYM => f.write_str("BROADSYNONYM"),
+            AliasPredicateEnum::NARROWSYNONYM => f.write_str("NARROWSYNONYM"),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for AliasPredicateEnum {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        let s: &str = match self {
+            AliasPredicateEnum::EXACTSYNONYM => "EXACTSYNONYM",
+            AliasPredicateEnum::RELATEDSYNONYM => "RELATEDSYNONYM",
+            AliasPredicateEnum::BROADSYNONYM => "BROADSYNONYM",
+            AliasPredicateEnum::NARROWSYNONYM => "NARROWSYNONYM",
+        };
+        Ok(pyo3::types::PyString::new(py, s).into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for AliasPredicateEnum {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(s) = ob.extract::<&str>() {
+            match s {
+                "EXACTSYNONYM" => Ok(AliasPredicateEnum::EXACTSYNONYM),
+                "RELATEDSYNONYM" => Ok(AliasPredicateEnum::RELATEDSYNONYM),
+                "BROADSYNONYM" => Ok(AliasPredicateEnum::BROADSYNONYM),
+                "NARROWSYNONYM" => Ok(AliasPredicateEnum::NARROWSYNONYM),
+                _ => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                    format!("invalid value for AliasPredicateEnum: {}", s),
+                )),
+            }
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                concat!("expected str for ", stringify!(AliasPredicateEnum)),
+            ))
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum ObligationLevelEnum {
     REQUIRED,
@@ -316,6 +516,57 @@ pub enum ObligationLevelEnum {
     OPTIONAL,
     EXAMPLE,
     DISCOURAGED,
+}
+
+impl core::fmt::Display for ObligationLevelEnum {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            ObligationLevelEnum::REQUIRED => f.write_str("REQUIRED"),
+            ObligationLevelEnum::RECOMMENDED => f.write_str("RECOMMENDED"),
+            ObligationLevelEnum::OPTIONAL => f.write_str("OPTIONAL"),
+            ObligationLevelEnum::EXAMPLE => f.write_str("EXAMPLE"),
+            ObligationLevelEnum::DISCOURAGED => f.write_str("DISCOURAGED"),
+        }
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> IntoPyObject<'py> for ObligationLevelEnum {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        let s: &str = match self {
+            ObligationLevelEnum::REQUIRED => "REQUIRED",
+            ObligationLevelEnum::RECOMMENDED => "RECOMMENDED",
+            ObligationLevelEnum::OPTIONAL => "OPTIONAL",
+            ObligationLevelEnum::EXAMPLE => "EXAMPLE",
+            ObligationLevelEnum::DISCOURAGED => "DISCOURAGED",
+        };
+        Ok(pyo3::types::PyString::new(py, s).into_any())
+    }
+}
+
+#[cfg(feature = "pyo3")]
+impl<'py> FromPyObject<'py> for ObligationLevelEnum {
+    fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+        if let Ok(s) = ob.extract::<&str>() {
+            match s {
+                "REQUIRED" => Ok(ObligationLevelEnum::REQUIRED),
+                "RECOMMENDED" => Ok(ObligationLevelEnum::RECOMMENDED),
+                "OPTIONAL" => Ok(ObligationLevelEnum::OPTIONAL),
+                "EXAMPLE" => Ok(ObligationLevelEnum::EXAMPLE),
+                "DISCOURAGED" => Ok(ObligationLevelEnum::DISCOURAGED),
+                _ => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                    format!("invalid value for ObligationLevelEnum: {}", s),
+                )),
+            }
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                concat!("expected str for ", stringify!(ObligationLevelEnum)),
+            ))
+        }
+    }
 }
 
 // Classes
@@ -408,17 +659,14 @@ impl serde_utils::InlinedPair for Extension {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum ExtensionOrSubtype {    Extension(Extension),     Annotation(Annotation)}
+pub enum ExtensionOrSubtype {    Annotation(Annotation)}
 
-impl From<Extension>   for ExtensionOrSubtype { fn from(x: Extension)   -> Self { Self::Extension(x) } }
 impl From<Annotation>   for ExtensionOrSubtype { fn from(x: Annotation)   -> Self { Self::Annotation(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ExtensionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<Extension>() {
-            return Ok(ExtensionOrSubtype::Extension(val));
-        }        if let Ok(val) = ob.extract::<Annotation>() {
+        if let Ok(val) = ob.extract::<Annotation>() {
             return Ok(ExtensionOrSubtype::Annotation(val));
         }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
             "invalid ExtensionOrSubtype",
@@ -434,7 +682,6 @@ impl<'py> IntoPyObject<'py> for ExtensionOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            ExtensionOrSubtype::Extension(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ExtensionOrSubtype::Annotation(val) => val.into_pyobject(py).map(move |b| b.into_any()),
         }
     }
@@ -471,9 +718,6 @@ impl serde_utils::InlinedPair for ExtensionOrSubtype {
     type Error     = String;
 
     fn from_pair_mapping(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = Extension::from_pair_mapping(k.clone(), v.clone()) {
-            return Ok(ExtensionOrSubtype::Extension(x));
-        }
         if let Ok(x) = Annotation::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ExtensionOrSubtype::Annotation(x));
         }
@@ -481,9 +725,6 @@ impl serde_utils::InlinedPair for ExtensionOrSubtype {
     }
 
     fn from_pair_simple(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = Extension::from_pair_simple(k.clone(), v.clone()) {
-            return Ok(ExtensionOrSubtype::Extension(x));
-        }
         if let Ok(x) = Annotation::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ExtensionOrSubtype::Annotation(x));
         }
@@ -492,7 +733,6 @@ impl serde_utils::InlinedPair for ExtensionOrSubtype {
 
     fn extract_key(&self) -> &Self::Key {
         match self {
-            ExtensionOrSubtype::Extension(inner) => inner.extract_key(),
             ExtensionOrSubtype::Annotation(inner) => inner.extract_key(),
         }
     }
@@ -543,9 +783,8 @@ impl<'py> FromPyObject<'py> for Box<Extensible> {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum ExtensibleOrSubtype {    Extensible(Extensible),     Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
+pub enum ExtensibleOrSubtype {    Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
-impl From<Extensible>   for ExtensibleOrSubtype { fn from(x: Extensible)   -> Self { Self::Extensible(x) } }
 impl From<Element>   for ExtensibleOrSubtype { fn from(x: Element)   -> Self { Self::Element(x) } }
 impl From<EnumBinding>   for ExtensibleOrSubtype { fn from(x: EnumBinding)   -> Self { Self::EnumBinding(x) } }
 impl From<StructuredAlias>   for ExtensibleOrSubtype { fn from(x: StructuredAlias)   -> Self { Self::StructuredAlias(x) } }
@@ -572,9 +811,7 @@ impl From<ClassDefinition>   for ExtensibleOrSubtype { fn from(x: ClassDefinitio
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ExtensibleOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<Extensible>() {
-            return Ok(ExtensibleOrSubtype::Extensible(val));
-        }        if let Ok(val) = ob.extract::<Element>() {
+        if let Ok(val) = ob.extract::<Element>() {
             return Ok(ExtensibleOrSubtype::Element(val));
         }        if let Ok(val) = ob.extract::<EnumBinding>() {
             return Ok(ExtensibleOrSubtype::EnumBinding(val));
@@ -632,7 +869,6 @@ impl<'py> IntoPyObject<'py> for ExtensibleOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            ExtensibleOrSubtype::Extensible(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ExtensibleOrSubtype::Element(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ExtensibleOrSubtype::EnumBinding(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ExtensibleOrSubtype::StructuredAlias(val) => val.into_pyobject(py).map(move |b| b.into_any()),
@@ -729,9 +965,8 @@ impl<'py> FromPyObject<'py> for Box<Annotatable> {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum AnnotatableOrSubtype {    Annotatable(Annotatable),     Annotation(Annotation),     Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
+pub enum AnnotatableOrSubtype {    Annotation(Annotation),     Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
-impl From<Annotatable>   for AnnotatableOrSubtype { fn from(x: Annotatable)   -> Self { Self::Annotatable(x) } }
 impl From<Annotation>   for AnnotatableOrSubtype { fn from(x: Annotation)   -> Self { Self::Annotation(x) } }
 impl From<Element>   for AnnotatableOrSubtype { fn from(x: Element)   -> Self { Self::Element(x) } }
 impl From<EnumBinding>   for AnnotatableOrSubtype { fn from(x: EnumBinding)   -> Self { Self::EnumBinding(x) } }
@@ -759,9 +994,7 @@ impl From<ClassDefinition>   for AnnotatableOrSubtype { fn from(x: ClassDefiniti
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for AnnotatableOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<Annotatable>() {
-            return Ok(AnnotatableOrSubtype::Annotatable(val));
-        }        if let Ok(val) = ob.extract::<Annotation>() {
+        if let Ok(val) = ob.extract::<Annotation>() {
             return Ok(AnnotatableOrSubtype::Annotation(val));
         }        if let Ok(val) = ob.extract::<Element>() {
             return Ok(AnnotatableOrSubtype::Element(val));
@@ -821,7 +1054,6 @@ impl<'py> IntoPyObject<'py> for AnnotatableOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            AnnotatableOrSubtype::Annotatable(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             AnnotatableOrSubtype::Annotation(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             AnnotatableOrSubtype::Element(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             AnnotatableOrSubtype::EnumBinding(val) => val.into_pyobject(py).map(move |b| b.into_any()),
@@ -1193,9 +1425,8 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadata> {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum CommonMetadataOrSubtype {    CommonMetadata(CommonMetadata),     Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
+pub enum CommonMetadataOrSubtype {    Element(Element),     EnumBinding(EnumBinding),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     ClassRule(ClassRule),     ArrayExpression(ArrayExpression),     DimensionExpression(DimensionExpression),     PatternExpression(PatternExpression),     ImportExpression(ImportExpression),     PermissibleValue(PermissibleValue),     UniqueKey(UniqueKey),     TypeMapping(TypeMapping),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
-impl From<CommonMetadata>   for CommonMetadataOrSubtype { fn from(x: CommonMetadata)   -> Self { Self::CommonMetadata(x) } }
 impl From<Element>   for CommonMetadataOrSubtype { fn from(x: Element)   -> Self { Self::Element(x) } }
 impl From<EnumBinding>   for CommonMetadataOrSubtype { fn from(x: EnumBinding)   -> Self { Self::EnumBinding(x) } }
 impl From<StructuredAlias>   for CommonMetadataOrSubtype { fn from(x: StructuredAlias)   -> Self { Self::StructuredAlias(x) } }
@@ -1222,9 +1453,7 @@ impl From<ClassDefinition>   for CommonMetadataOrSubtype { fn from(x: ClassDefin
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for CommonMetadataOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<CommonMetadata>() {
-            return Ok(CommonMetadataOrSubtype::CommonMetadata(val));
-        }        if let Ok(val) = ob.extract::<Element>() {
+        if let Ok(val) = ob.extract::<Element>() {
             return Ok(CommonMetadataOrSubtype::Element(val));
         }        if let Ok(val) = ob.extract::<EnumBinding>() {
             return Ok(CommonMetadataOrSubtype::EnumBinding(val));
@@ -1282,7 +1511,6 @@ impl<'py> IntoPyObject<'py> for CommonMetadataOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            CommonMetadataOrSubtype::CommonMetadata(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             CommonMetadataOrSubtype::Element(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             CommonMetadataOrSubtype::EnumBinding(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             CommonMetadataOrSubtype::StructuredAlias(val) => val.into_pyobject(py).map(move |b| b.into_any()),
@@ -1334,6 +1562,67 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadataOrSubtype> {
 }
 
 
+
+pub mod element_utl {
+    use super::*;
+    #[derive(Debug, Clone, PartialEq)]
+    #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+    pub enum name_range {
+        String(String),
+        ncname(ncname)    
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> FromPyObject<'py> for name_range {
+        fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+            if let Ok(val) = ob.extract::<String>() {
+                return Ok(name_range::String(val));
+            }            if let Ok(val) = ob.extract::<ncname>() {
+                return Ok(name_range::ncname(val));
+            }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                "invalid name",
+            ))
+        }
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> IntoPyObject<'py> for name_range {
+        type Target = PyAny;
+        type Output = Bound<'py, Self::Target>;
+        type Error = PyErr;
+
+        fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+            match self {
+                name_range::String(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+                name_range::ncname(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+            }
+        }
+    }
+
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> IntoPyObject<'py> for Box<name_range>
+    {
+        type Target = PyAny;
+        type Output = Bound<'py, Self::Target>;
+        type Error = PyErr;
+        fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+            (*self).into_pyobject(py).map(move |x| x.into_any())
+        }
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> FromPyObject<'py> for Box<name_range> {
+        fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+            if let Ok(val) = ob.extract::<name_range>() {
+                return Ok(Box::new(val));
+            }
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                "invalid name",
+            ))
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -1520,9 +1809,8 @@ impl serde_utils::InlinedPair for Element {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum ElementOrSubtype {    Element(Element),     SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
+pub enum ElementOrSubtype {    SchemaDefinition(SchemaDefinition),     TypeDefinition(TypeDefinition),     SubsetDefinition(SubsetDefinition),     Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
-impl From<Element>   for ElementOrSubtype { fn from(x: Element)   -> Self { Self::Element(x) } }
 impl From<SchemaDefinition>   for ElementOrSubtype { fn from(x: SchemaDefinition)   -> Self { Self::SchemaDefinition(x) } }
 impl From<TypeDefinition>   for ElementOrSubtype { fn from(x: TypeDefinition)   -> Self { Self::TypeDefinition(x) } }
 impl From<SubsetDefinition>   for ElementOrSubtype { fn from(x: SubsetDefinition)   -> Self { Self::SubsetDefinition(x) } }
@@ -1534,9 +1822,7 @@ impl From<ClassDefinition>   for ElementOrSubtype { fn from(x: ClassDefinition) 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ElementOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<Element>() {
-            return Ok(ElementOrSubtype::Element(val));
-        }        if let Ok(val) = ob.extract::<SchemaDefinition>() {
+        if let Ok(val) = ob.extract::<SchemaDefinition>() {
             return Ok(ElementOrSubtype::SchemaDefinition(val));
         }        if let Ok(val) = ob.extract::<TypeDefinition>() {
             return Ok(ElementOrSubtype::TypeDefinition(val));
@@ -1564,7 +1850,6 @@ impl<'py> IntoPyObject<'py> for ElementOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            ElementOrSubtype::Element(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ElementOrSubtype::SchemaDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ElementOrSubtype::TypeDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ElementOrSubtype::SubsetDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
@@ -1607,9 +1892,6 @@ impl serde_utils::InlinedPair for ElementOrSubtype {
     type Error     = String;
 
     fn from_pair_mapping(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = Element::from_pair_mapping(k.clone(), v.clone()) {
-            return Ok(ElementOrSubtype::Element(x));
-        }
         if let Ok(x) = SchemaDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::SchemaDefinition(x));
         }
@@ -1635,9 +1917,6 @@ impl serde_utils::InlinedPair for ElementOrSubtype {
     }
 
     fn from_pair_simple(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = Element::from_pair_simple(k.clone(), v.clone()) {
-            return Ok(ElementOrSubtype::Element(x));
-        }
         if let Ok(x) = SchemaDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(ElementOrSubtype::SchemaDefinition(x));
         }
@@ -1664,7 +1943,6 @@ impl serde_utils::InlinedPair for ElementOrSubtype {
 
     fn extract_key(&self) -> &Self::Key {
         match self {
-            ElementOrSubtype::Element(inner) => inner.extract_key(),
             ElementOrSubtype::SchemaDefinition(inner) => inner.extract_key(),
             ElementOrSubtype::TypeDefinition(inner) => inner.extract_key(),
             ElementOrSubtype::SubsetDefinition(inner) => inner.extract_key(),
@@ -2385,6 +2663,193 @@ impl serde_utils::InlinedPair for SubsetDefinition {
     }
 }
 
+pub mod definition_utl {
+    use super::*;
+    #[derive(Debug, Clone, PartialEq)]
+    #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+    pub enum is_a_range {
+        Definition(Definition),
+        SlotDefinition(SlotDefinition),
+        ClassDefinition(ClassDefinition)    
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> FromPyObject<'py> for is_a_range {
+        fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+            if let Ok(val) = ob.extract::<Definition>() {
+                return Ok(is_a_range::Definition(val));
+            }            if let Ok(val) = ob.extract::<SlotDefinition>() {
+                return Ok(is_a_range::SlotDefinition(val));
+            }            if let Ok(val) = ob.extract::<ClassDefinition>() {
+                return Ok(is_a_range::ClassDefinition(val));
+            }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                "invalid is_a",
+            ))
+        }
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> IntoPyObject<'py> for is_a_range {
+        type Target = PyAny;
+        type Output = Bound<'py, Self::Target>;
+        type Error = PyErr;
+
+        fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+            match self {
+                is_a_range::Definition(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+                is_a_range::SlotDefinition(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+                is_a_range::ClassDefinition(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+            }
+        }
+    }
+
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> IntoPyObject<'py> for Box<is_a_range>
+    {
+        type Target = PyAny;
+        type Output = Bound<'py, Self::Target>;
+        type Error = PyErr;
+        fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+            (*self).into_pyobject(py).map(move |x| x.into_any())
+        }
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> FromPyObject<'py> for Box<is_a_range> {
+        fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+            if let Ok(val) = ob.extract::<is_a_range>() {
+                return Ok(Box::new(val));
+            }
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                "invalid is_a",
+            ))
+        }
+    }
+    #[derive(Debug, Clone, PartialEq)]
+    #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+    pub enum mixins_range {
+        Definition(Definition),
+        SlotDefinition(SlotDefinition),
+        ClassDefinition(ClassDefinition)    
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> FromPyObject<'py> for mixins_range {
+        fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+            if let Ok(val) = ob.extract::<Definition>() {
+                return Ok(mixins_range::Definition(val));
+            }            if let Ok(val) = ob.extract::<SlotDefinition>() {
+                return Ok(mixins_range::SlotDefinition(val));
+            }            if let Ok(val) = ob.extract::<ClassDefinition>() {
+                return Ok(mixins_range::ClassDefinition(val));
+            }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                "invalid mixins",
+            ))
+        }
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> IntoPyObject<'py> for mixins_range {
+        type Target = PyAny;
+        type Output = Bound<'py, Self::Target>;
+        type Error = PyErr;
+
+        fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+            match self {
+                mixins_range::Definition(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+                mixins_range::SlotDefinition(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+                mixins_range::ClassDefinition(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+            }
+        }
+    }
+
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> IntoPyObject<'py> for Box<mixins_range>
+    {
+        type Target = PyAny;
+        type Output = Bound<'py, Self::Target>;
+        type Error = PyErr;
+        fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+            (*self).into_pyobject(py).map(move |x| x.into_any())
+        }
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> FromPyObject<'py> for Box<mixins_range> {
+        fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+            if let Ok(val) = ob.extract::<mixins_range>() {
+                return Ok(Box::new(val));
+            }
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                "invalid mixins",
+            ))
+        }
+    }
+    #[derive(Debug, Clone, PartialEq)]
+    #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+    pub enum apply_to_range {
+        Definition(Definition),
+        SlotDefinition(SlotDefinition),
+        ClassDefinition(ClassDefinition)    
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> FromPyObject<'py> for apply_to_range {
+        fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+            if let Ok(val) = ob.extract::<Definition>() {
+                return Ok(apply_to_range::Definition(val));
+            }            if let Ok(val) = ob.extract::<SlotDefinition>() {
+                return Ok(apply_to_range::SlotDefinition(val));
+            }            if let Ok(val) = ob.extract::<ClassDefinition>() {
+                return Ok(apply_to_range::ClassDefinition(val));
+            }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                "invalid apply_to",
+            ))
+        }
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> IntoPyObject<'py> for apply_to_range {
+        type Target = PyAny;
+        type Output = Bound<'py, Self::Target>;
+        type Error = PyErr;
+
+        fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+            match self {
+                apply_to_range::Definition(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+                apply_to_range::SlotDefinition(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+                apply_to_range::ClassDefinition(val) => Ok(val.into_pyobject(py).map(move |b| <pyo3::Bound<'_, _> as Clone>::clone(&b).into_any())?),
+            }
+        }
+    }
+
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> IntoPyObject<'py> for Box<apply_to_range>
+    {
+        type Target = PyAny;
+        type Output = Bound<'py, Self::Target>;
+        type Error = PyErr;
+        fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+            (*self).into_pyobject(py).map(move |x| x.into_any())
+        }
+    }
+
+    #[cfg(feature = "pyo3")]
+    impl<'py> FromPyObject<'py> for Box<apply_to_range> {
+        fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
+            if let Ok(val) = ob.extract::<apply_to_range>() {
+                return Ok(Box::new(val));
+            }
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+                "invalid apply_to",
+            ))
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
@@ -2586,9 +3051,8 @@ impl serde_utils::InlinedPair for Definition {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum DefinitionOrSubtype {    Definition(Definition),     EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
+pub enum DefinitionOrSubtype {    EnumDefinition(EnumDefinition),     SlotDefinition(SlotDefinition),     ClassDefinition(ClassDefinition)}
 
-impl From<Definition>   for DefinitionOrSubtype { fn from(x: Definition)   -> Self { Self::Definition(x) } }
 impl From<EnumDefinition>   for DefinitionOrSubtype { fn from(x: EnumDefinition)   -> Self { Self::EnumDefinition(x) } }
 impl From<SlotDefinition>   for DefinitionOrSubtype { fn from(x: SlotDefinition)   -> Self { Self::SlotDefinition(x) } }
 impl From<ClassDefinition>   for DefinitionOrSubtype { fn from(x: ClassDefinition)   -> Self { Self::ClassDefinition(x) } }
@@ -2596,9 +3060,7 @@ impl From<ClassDefinition>   for DefinitionOrSubtype { fn from(x: ClassDefinitio
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for DefinitionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<Definition>() {
-            return Ok(DefinitionOrSubtype::Definition(val));
-        }        if let Ok(val) = ob.extract::<EnumDefinition>() {
+        if let Ok(val) = ob.extract::<EnumDefinition>() {
             return Ok(DefinitionOrSubtype::EnumDefinition(val));
         }        if let Ok(val) = ob.extract::<SlotDefinition>() {
             return Ok(DefinitionOrSubtype::SlotDefinition(val));
@@ -2618,7 +3080,6 @@ impl<'py> IntoPyObject<'py> for DefinitionOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            DefinitionOrSubtype::Definition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             DefinitionOrSubtype::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             DefinitionOrSubtype::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             DefinitionOrSubtype::ClassDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
@@ -2657,9 +3118,6 @@ impl serde_utils::InlinedPair for DefinitionOrSubtype {
     type Error     = String;
 
     fn from_pair_mapping(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = Definition::from_pair_mapping(k.clone(), v.clone()) {
-            return Ok(DefinitionOrSubtype::Definition(x));
-        }
         if let Ok(x) = EnumDefinition::from_pair_mapping(k.clone(), v.clone()) {
             return Ok(DefinitionOrSubtype::EnumDefinition(x));
         }
@@ -2673,9 +3131,6 @@ impl serde_utils::InlinedPair for DefinitionOrSubtype {
     }
 
     fn from_pair_simple(k: Self::Key, v: Self::Value) -> Result<Self, Self::Error> {
-        if let Ok(x) = Definition::from_pair_simple(k.clone(), v.clone()) {
-            return Ok(DefinitionOrSubtype::Definition(x));
-        }
         if let Ok(x) = EnumDefinition::from_pair_simple(k.clone(), v.clone()) {
             return Ok(DefinitionOrSubtype::EnumDefinition(x));
         }
@@ -2690,7 +3145,6 @@ impl serde_utils::InlinedPair for DefinitionOrSubtype {
 
     fn extract_key(&self) -> &Self::Key {
         match self {
-            DefinitionOrSubtype::Definition(inner) => inner.extract_key(),
             DefinitionOrSubtype::EnumDefinition(inner) => inner.extract_key(),
             DefinitionOrSubtype::SlotDefinition(inner) => inner.extract_key(),
             DefinitionOrSubtype::ClassDefinition(inner) => inner.extract_key(),
@@ -2710,7 +3164,7 @@ pub struct AnonymousEnumExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub code_set_version: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub pv_formula: Option<String>,
+    pub pv_formula: Option<PvFormulaOptions>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional"))]
     #[cfg_attr(feature = "serde", serde(default))]
     pub permissible_values: Option<HashMap<String, PermissibleValue>>,
@@ -2732,7 +3186,7 @@ pub struct AnonymousEnumExpression {
 #[pymethods]
 impl AnonymousEnumExpression {
     #[new]
-    pub fn new(code_set: Option<uriorcurie>, code_set_tag: Option<String>, code_set_version: Option<String>, pv_formula: Option<String>, permissible_values: Option<HashMap<String, PermissibleValue>>, include: Option<Vec<Box<AnonymousEnumExpression>>>, minus: Option<Vec<Box<AnonymousEnumExpression>>>, inherits: Option<Vec<String>>, reachable_from: Option<ReachabilityQuery>, matches: Option<MatchQuery>, concepts: Option<Vec<uriorcurie>>) -> Self {
+    pub fn new(code_set: Option<uriorcurie>, code_set_tag: Option<String>, code_set_version: Option<String>, pv_formula: Option<PvFormulaOptions>, permissible_values: Option<HashMap<String, PermissibleValue>>, include: Option<Vec<Box<AnonymousEnumExpression>>>, minus: Option<Vec<Box<AnonymousEnumExpression>>>, inherits: Option<Vec<String>>, reachable_from: Option<ReachabilityQuery>, matches: Option<MatchQuery>, concepts: Option<Vec<uriorcurie>>) -> Self {
         AnonymousEnumExpression{code_set, code_set_tag, code_set_version, pv_formula, permissible_values, include, minus, inherits, reachable_from, matches, concepts}
     }
 }
@@ -2775,7 +3229,7 @@ pub struct EnumDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
     pub code_set_version: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub pv_formula: Option<String>,
+    pub pv_formula: Option<PvFormulaOptions>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional"))]
     #[cfg_attr(feature = "serde", serde(default))]
     pub permissible_values: Option<HashMap<String, PermissibleValue>>,
@@ -2919,7 +3373,7 @@ pub struct EnumDefinition {
 #[pymethods]
 impl EnumDefinition {
     #[new]
-    pub fn new(enum_uri: Option<uriorcurie>, code_set: Option<uriorcurie>, code_set_tag: Option<String>, code_set_version: Option<String>, pv_formula: Option<String>, permissible_values: Option<HashMap<String, PermissibleValue>>, include: Option<Vec<Box<AnonymousEnumExpression>>>, minus: Option<Vec<Box<AnonymousEnumExpression>>>, inherits: Option<Vec<String>>, reachable_from: Option<ReachabilityQuery>, matches: Option<MatchQuery>, concepts: Option<Vec<uriorcurie>>, is_a: Option<String>, abstract_: Option<bool>, mixin: Option<bool>, mixins: Option<Vec<String>>, apply_to: Option<Vec<String>>, values_from: Option<Vec<uriorcurie>>, string_serialization: Option<String>, name: String, id_prefixes: Option<Vec<ncname>>, id_prefixes_are_closed: Option<bool>, definition_uri: Option<uriorcurie>, local_names: Option<HashMap<String, LocalName>>, conforms_to: Option<String>, implements: Option<Vec<uriorcurie>>, instantiates: Option<Vec<uriorcurie>>, extensions: Option<HashMap<String, ExtensionOrSubtype>>, annotations: Option<HashMap<String, Annotation>>, description: Option<String>, alt_descriptions: Option<HashMap<String, AltDescription>>, title: Option<String>, deprecated: Option<String>, todos: Option<Vec<String>>, notes: Option<Vec<String>>, comments: Option<Vec<String>>, examples: Option<Vec<Example>>, in_subset: Option<Vec<String>>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Option<Vec<uriorcurie>>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Option<Vec<String>>, structured_aliases: Option<Vec<StructuredAlias>>, mappings: Option<Vec<uriorcurie>>, exact_mappings: Option<Vec<uriorcurie>>, close_mappings: Option<Vec<uriorcurie>>, related_mappings: Option<Vec<uriorcurie>>, narrow_mappings: Option<Vec<uriorcurie>>, broad_mappings: Option<Vec<uriorcurie>>, created_by: Option<uriorcurie>, contributors: Option<Vec<uriorcurie>>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Option<Vec<uriorcurie>>, keywords: Option<Vec<String>>) -> Self {
+    pub fn new(enum_uri: Option<uriorcurie>, code_set: Option<uriorcurie>, code_set_tag: Option<String>, code_set_version: Option<String>, pv_formula: Option<PvFormulaOptions>, permissible_values: Option<HashMap<String, PermissibleValue>>, include: Option<Vec<Box<AnonymousEnumExpression>>>, minus: Option<Vec<Box<AnonymousEnumExpression>>>, inherits: Option<Vec<String>>, reachable_from: Option<ReachabilityQuery>, matches: Option<MatchQuery>, concepts: Option<Vec<uriorcurie>>, is_a: Option<String>, abstract_: Option<bool>, mixin: Option<bool>, mixins: Option<Vec<String>>, apply_to: Option<Vec<String>>, values_from: Option<Vec<uriorcurie>>, string_serialization: Option<String>, name: String, id_prefixes: Option<Vec<ncname>>, id_prefixes_are_closed: Option<bool>, definition_uri: Option<uriorcurie>, local_names: Option<HashMap<String, LocalName>>, conforms_to: Option<String>, implements: Option<Vec<uriorcurie>>, instantiates: Option<Vec<uriorcurie>>, extensions: Option<HashMap<String, ExtensionOrSubtype>>, annotations: Option<HashMap<String, Annotation>>, description: Option<String>, alt_descriptions: Option<HashMap<String, AltDescription>>, title: Option<String>, deprecated: Option<String>, todos: Option<Vec<String>>, notes: Option<Vec<String>>, comments: Option<Vec<String>>, examples: Option<Vec<Example>>, in_subset: Option<Vec<String>>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Option<Vec<uriorcurie>>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Option<Vec<String>>, structured_aliases: Option<Vec<StructuredAlias>>, mappings: Option<Vec<uriorcurie>>, exact_mappings: Option<Vec<uriorcurie>>, close_mappings: Option<Vec<uriorcurie>>, related_mappings: Option<Vec<uriorcurie>>, narrow_mappings: Option<Vec<uriorcurie>>, broad_mappings: Option<Vec<uriorcurie>>, created_by: Option<uriorcurie>, contributors: Option<Vec<uriorcurie>>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Option<Vec<uriorcurie>>, keywords: Option<Vec<String>>) -> Self {
         EnumDefinition{enum_uri, code_set, code_set_tag, code_set_version, pv_formula, permissible_values, include, minus, inherits, reachable_from, matches, concepts, is_a, abstract_, mixin, mixins, apply_to, values_from, string_serialization, name, id_prefixes, id_prefixes_are_closed, definition_uri, local_names, conforms_to, implements, instantiates, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, rank, categories, keywords}
     }
 }
@@ -2994,11 +3448,11 @@ pub struct EnumBinding {
     #[cfg_attr(feature = "serde", serde(default))]
     pub range: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub obligation_level: Option<String>,
+    pub obligation_level: Option<ObligationLevelEnum>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub binds_value_of: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub pv_formula: Option<String>,
+    pub pv_formula: Option<PvFormulaOptions>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional"))]
     #[cfg_attr(feature = "serde", serde(default))]
     pub extensions: Option<HashMap<String, ExtensionOrSubtype>>,
@@ -3091,7 +3545,7 @@ pub struct EnumBinding {
 #[pymethods]
 impl EnumBinding {
     #[new]
-    pub fn new(range: Option<String>, obligation_level: Option<String>, binds_value_of: Option<String>, pv_formula: Option<String>, extensions: Option<HashMap<String, ExtensionOrSubtype>>, annotations: Option<HashMap<String, Annotation>>, description: Option<String>, alt_descriptions: Option<HashMap<String, AltDescription>>, title: Option<String>, deprecated: Option<String>, todos: Option<Vec<String>>, notes: Option<Vec<String>>, comments: Option<Vec<String>>, examples: Option<Vec<Example>>, in_subset: Option<Vec<String>>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Option<Vec<uriorcurie>>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Option<Vec<String>>, structured_aliases: Option<Vec<StructuredAlias>>, mappings: Option<Vec<uriorcurie>>, exact_mappings: Option<Vec<uriorcurie>>, close_mappings: Option<Vec<uriorcurie>>, related_mappings: Option<Vec<uriorcurie>>, narrow_mappings: Option<Vec<uriorcurie>>, broad_mappings: Option<Vec<uriorcurie>>, created_by: Option<uriorcurie>, contributors: Option<Vec<uriorcurie>>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Option<Vec<uriorcurie>>, keywords: Option<Vec<String>>) -> Self {
+    pub fn new(range: Option<String>, obligation_level: Option<ObligationLevelEnum>, binds_value_of: Option<String>, pv_formula: Option<PvFormulaOptions>, extensions: Option<HashMap<String, ExtensionOrSubtype>>, annotations: Option<HashMap<String, Annotation>>, description: Option<String>, alt_descriptions: Option<HashMap<String, AltDescription>>, title: Option<String>, deprecated: Option<String>, todos: Option<Vec<String>>, notes: Option<Vec<String>>, comments: Option<Vec<String>>, examples: Option<Vec<Example>>, in_subset: Option<Vec<String>>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Option<Vec<uriorcurie>>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Option<Vec<String>>, structured_aliases: Option<Vec<StructuredAlias>>, mappings: Option<Vec<uriorcurie>>, exact_mappings: Option<Vec<uriorcurie>>, close_mappings: Option<Vec<uriorcurie>>, related_mappings: Option<Vec<uriorcurie>>, narrow_mappings: Option<Vec<uriorcurie>>, broad_mappings: Option<Vec<uriorcurie>>, created_by: Option<uriorcurie>, contributors: Option<Vec<uriorcurie>>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Option<Vec<uriorcurie>>, keywords: Option<Vec<String>>) -> Self {
         EnumBinding{range, obligation_level, binds_value_of, pv_formula, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, rank, categories, keywords}
     }
 }
@@ -3224,7 +3678,7 @@ pub struct StructuredAlias {
     pub literal_form: String,
     #[cfg_attr(feature = "serde", serde(default))]
     #[cfg_attr(feature = "serde", serde(alias = "predicate"))]
-    pub alias_predicate: Option<String>,
+    pub alias_predicate: Option<AliasPredicateEnum>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value_optional"))]
     #[cfg_attr(feature = "serde", serde(default))]
     pub categories: Option<Vec<uriorcurie>>,
@@ -3321,7 +3775,7 @@ pub struct StructuredAlias {
 #[pymethods]
 impl StructuredAlias {
     #[new]
-    pub fn new(literal_form: String, alias_predicate: Option<String>, categories: Option<Vec<uriorcurie>>, alias_contexts: Option<Vec<uri>>, extensions: Option<HashMap<String, ExtensionOrSubtype>>, annotations: Option<HashMap<String, Annotation>>, description: Option<String>, alt_descriptions: Option<HashMap<String, AltDescription>>, title: Option<String>, deprecated: Option<String>, todos: Option<Vec<String>>, notes: Option<Vec<String>>, comments: Option<Vec<String>>, examples: Option<Vec<Example>>, in_subset: Option<Vec<String>>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Option<Vec<uriorcurie>>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Option<Vec<String>>, structured_aliases: Option<Vec<Box<StructuredAlias>>>, mappings: Option<Vec<uriorcurie>>, exact_mappings: Option<Vec<uriorcurie>>, close_mappings: Option<Vec<uriorcurie>>, related_mappings: Option<Vec<uriorcurie>>, narrow_mappings: Option<Vec<uriorcurie>>, broad_mappings: Option<Vec<uriorcurie>>, created_by: Option<uriorcurie>, contributors: Option<Vec<uriorcurie>>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, keywords: Option<Vec<String>>) -> Self {
+    pub fn new(literal_form: String, alias_predicate: Option<AliasPredicateEnum>, categories: Option<Vec<uriorcurie>>, alias_contexts: Option<Vec<uri>>, extensions: Option<HashMap<String, ExtensionOrSubtype>>, annotations: Option<HashMap<String, Annotation>>, description: Option<String>, alt_descriptions: Option<HashMap<String, AltDescription>>, title: Option<String>, deprecated: Option<String>, todos: Option<Vec<String>>, notes: Option<Vec<String>>, comments: Option<Vec<String>>, examples: Option<Vec<Example>>, in_subset: Option<Vec<String>>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Option<Vec<uriorcurie>>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Option<Vec<String>>, structured_aliases: Option<Vec<Box<StructuredAlias>>>, mappings: Option<Vec<uriorcurie>>, exact_mappings: Option<Vec<uriorcurie>>, close_mappings: Option<Vec<uriorcurie>>, related_mappings: Option<Vec<uriorcurie>>, narrow_mappings: Option<Vec<uriorcurie>>, broad_mappings: Option<Vec<uriorcurie>>, created_by: Option<uriorcurie>, contributors: Option<Vec<uriorcurie>>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, keywords: Option<Vec<String>>) -> Self {
         StructuredAlias{literal_form, alias_predicate, categories, alias_contexts, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, rank, keywords}
     }
 }
@@ -3359,9 +3813,8 @@ pub struct Expression {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum ExpressionOrSubtype {    Expression(Expression),     TypeExpression(TypeExpression),     EnumExpression(EnumExpression),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     SlotExpression(SlotExpression),     AnonymousSlotExpression(AnonymousSlotExpression),     SlotDefinition(SlotDefinition),     AnonymousClassExpression(AnonymousClassExpression),     AnonymousEnumExpression(AnonymousEnumExpression),     EnumDefinition(EnumDefinition),     AnonymousTypeExpression(AnonymousTypeExpression),     TypeDefinition(TypeDefinition)}
+pub enum ExpressionOrSubtype {    TypeExpression(TypeExpression),     EnumExpression(EnumExpression),     StructuredAlias(StructuredAlias),     AnonymousExpression(AnonymousExpression),     PathExpression(PathExpression),     SlotExpression(SlotExpression),     AnonymousSlotExpression(AnonymousSlotExpression),     SlotDefinition(SlotDefinition),     AnonymousClassExpression(AnonymousClassExpression),     AnonymousEnumExpression(AnonymousEnumExpression),     EnumDefinition(EnumDefinition),     AnonymousTypeExpression(AnonymousTypeExpression),     TypeDefinition(TypeDefinition)}
 
-impl From<Expression>   for ExpressionOrSubtype { fn from(x: Expression)   -> Self { Self::Expression(x) } }
 impl From<TypeExpression>   for ExpressionOrSubtype { fn from(x: TypeExpression)   -> Self { Self::TypeExpression(x) } }
 impl From<EnumExpression>   for ExpressionOrSubtype { fn from(x: EnumExpression)   -> Self { Self::EnumExpression(x) } }
 impl From<StructuredAlias>   for ExpressionOrSubtype { fn from(x: StructuredAlias)   -> Self { Self::StructuredAlias(x) } }
@@ -3379,9 +3832,7 @@ impl From<TypeDefinition>   for ExpressionOrSubtype { fn from(x: TypeDefinition)
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ExpressionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<Expression>() {
-            return Ok(ExpressionOrSubtype::Expression(val));
-        }        if let Ok(val) = ob.extract::<TypeExpression>() {
+        if let Ok(val) = ob.extract::<TypeExpression>() {
             return Ok(ExpressionOrSubtype::TypeExpression(val));
         }        if let Ok(val) = ob.extract::<EnumExpression>() {
             return Ok(ExpressionOrSubtype::EnumExpression(val));
@@ -3421,7 +3872,6 @@ impl<'py> IntoPyObject<'py> for ExpressionOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            ExpressionOrSubtype::Expression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ExpressionOrSubtype::TypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ExpressionOrSubtype::EnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ExpressionOrSubtype::StructuredAlias(val) => val.into_pyobject(py).map(move |b| b.into_any()),
@@ -3533,18 +3983,15 @@ impl<'py> FromPyObject<'py> for Box<TypeExpression> {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum TypeExpressionOrSubtype {    TypeExpression(TypeExpression),     AnonymousTypeExpression(AnonymousTypeExpression),     TypeDefinition(TypeDefinition)}
+pub enum TypeExpressionOrSubtype {    AnonymousTypeExpression(AnonymousTypeExpression),     TypeDefinition(TypeDefinition)}
 
-impl From<TypeExpression>   for TypeExpressionOrSubtype { fn from(x: TypeExpression)   -> Self { Self::TypeExpression(x) } }
 impl From<AnonymousTypeExpression>   for TypeExpressionOrSubtype { fn from(x: AnonymousTypeExpression)   -> Self { Self::AnonymousTypeExpression(x) } }
 impl From<TypeDefinition>   for TypeExpressionOrSubtype { fn from(x: TypeDefinition)   -> Self { Self::TypeDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for TypeExpressionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<TypeExpression>() {
-            return Ok(TypeExpressionOrSubtype::TypeExpression(val));
-        }        if let Ok(val) = ob.extract::<AnonymousTypeExpression>() {
+        if let Ok(val) = ob.extract::<AnonymousTypeExpression>() {
             return Ok(TypeExpressionOrSubtype::AnonymousTypeExpression(val));
         }        if let Ok(val) = ob.extract::<TypeDefinition>() {
             return Ok(TypeExpressionOrSubtype::TypeDefinition(val));
@@ -3562,7 +4009,6 @@ impl<'py> IntoPyObject<'py> for TypeExpressionOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            TypeExpressionOrSubtype::TypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             TypeExpressionOrSubtype::TypeDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
         }
@@ -3606,7 +4052,7 @@ pub struct EnumExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub code_set_version: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub pv_formula: Option<String>,
+    pub pv_formula: Option<PvFormulaOptions>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional"))]
     #[cfg_attr(feature = "serde", serde(default))]
     pub permissible_values: Option<HashMap<String, PermissibleValue>>,
@@ -3628,7 +4074,7 @@ pub struct EnumExpression {
 #[pymethods]
 impl EnumExpression {
     #[new]
-    pub fn new(code_set: Option<uriorcurie>, code_set_tag: Option<String>, code_set_version: Option<String>, pv_formula: Option<String>, permissible_values: Option<HashMap<String, PermissibleValue>>, include: Option<Vec<AnonymousEnumExpression>>, minus: Option<Vec<AnonymousEnumExpression>>, inherits: Option<Vec<String>>, reachable_from: Option<ReachabilityQuery>, matches: Option<MatchQuery>, concepts: Option<Vec<uriorcurie>>) -> Self {
+    pub fn new(code_set: Option<uriorcurie>, code_set_tag: Option<String>, code_set_version: Option<String>, pv_formula: Option<PvFormulaOptions>, permissible_values: Option<HashMap<String, PermissibleValue>>, include: Option<Vec<AnonymousEnumExpression>>, minus: Option<Vec<AnonymousEnumExpression>>, inherits: Option<Vec<String>>, reachable_from: Option<ReachabilityQuery>, matches: Option<MatchQuery>, concepts: Option<Vec<uriorcurie>>) -> Self {
         EnumExpression{code_set, code_set_tag, code_set_version, pv_formula, permissible_values, include, minus, inherits, reachable_from, matches, concepts}
     }
 }
@@ -3660,18 +4106,15 @@ impl<'py> FromPyObject<'py> for Box<EnumExpression> {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum EnumExpressionOrSubtype {    EnumExpression(EnumExpression),     AnonymousEnumExpression(AnonymousEnumExpression),     EnumDefinition(EnumDefinition)}
+pub enum EnumExpressionOrSubtype {    AnonymousEnumExpression(AnonymousEnumExpression),     EnumDefinition(EnumDefinition)}
 
-impl From<EnumExpression>   for EnumExpressionOrSubtype { fn from(x: EnumExpression)   -> Self { Self::EnumExpression(x) } }
 impl From<AnonymousEnumExpression>   for EnumExpressionOrSubtype { fn from(x: AnonymousEnumExpression)   -> Self { Self::AnonymousEnumExpression(x) } }
 impl From<EnumDefinition>   for EnumExpressionOrSubtype { fn from(x: EnumDefinition)   -> Self { Self::EnumDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for EnumExpressionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<EnumExpression>() {
-            return Ok(EnumExpressionOrSubtype::EnumExpression(val));
-        }        if let Ok(val) = ob.extract::<AnonymousEnumExpression>() {
+        if let Ok(val) = ob.extract::<AnonymousEnumExpression>() {
             return Ok(EnumExpressionOrSubtype::AnonymousEnumExpression(val));
         }        if let Ok(val) = ob.extract::<EnumDefinition>() {
             return Ok(EnumExpressionOrSubtype::EnumDefinition(val));
@@ -3689,7 +4132,6 @@ impl<'py> IntoPyObject<'py> for EnumExpressionOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            EnumExpressionOrSubtype::EnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             EnumExpressionOrSubtype::EnumDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
         }
@@ -3850,18 +4292,15 @@ impl<'py> FromPyObject<'py> for Box<AnonymousExpression> {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum AnonymousExpressionOrSubtype {    AnonymousExpression(AnonymousExpression),     AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression)}
+pub enum AnonymousExpressionOrSubtype {    AnonymousSlotExpression(AnonymousSlotExpression),     AnonymousClassExpression(AnonymousClassExpression)}
 
-impl From<AnonymousExpression>   for AnonymousExpressionOrSubtype { fn from(x: AnonymousExpression)   -> Self { Self::AnonymousExpression(x) } }
 impl From<AnonymousSlotExpression>   for AnonymousExpressionOrSubtype { fn from(x: AnonymousSlotExpression)   -> Self { Self::AnonymousSlotExpression(x) } }
 impl From<AnonymousClassExpression>   for AnonymousExpressionOrSubtype { fn from(x: AnonymousClassExpression)   -> Self { Self::AnonymousClassExpression(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for AnonymousExpressionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<AnonymousExpression>() {
-            return Ok(AnonymousExpressionOrSubtype::AnonymousExpression(val));
-        }        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
+        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
             return Ok(AnonymousExpressionOrSubtype::AnonymousSlotExpression(val));
         }        if let Ok(val) = ob.extract::<AnonymousClassExpression>() {
             return Ok(AnonymousExpressionOrSubtype::AnonymousClassExpression(val));
@@ -3879,7 +4318,6 @@ impl<'py> IntoPyObject<'py> for AnonymousExpressionOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            AnonymousExpressionOrSubtype::AnonymousExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             AnonymousExpressionOrSubtype::AnonymousClassExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
         }
@@ -4089,7 +4527,7 @@ pub struct SlotExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub implicit_prefix: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub value_presence: Option<String>,
+    pub value_presence: Option<PresenceEnum>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value_optional"))]
@@ -4122,7 +4560,7 @@ pub struct SlotExpression {
 #[pymethods]
 impl SlotExpression {
     #[new]
-    pub fn new(range: Option<String>, range_expression: Option<AnonymousClassExpression>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Option<Vec<EnumBinding>>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<String>, equals_string: Option<String>, equals_string_in: Option<Vec<String>>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Option<AnonymousSlotExpression>, all_members: Option<AnonymousSlotExpression>, none_of: Option<Vec<AnonymousSlotExpression>>, exactly_one_of: Option<Vec<AnonymousSlotExpression>>, any_of: Option<Vec<AnonymousSlotExpression>>, all_of: Option<Vec<AnonymousSlotExpression>>) -> Self {
+    pub fn new(range: Option<String>, range_expression: Option<AnonymousClassExpression>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Option<Vec<EnumBinding>>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<PresenceEnum>, equals_string: Option<String>, equals_string_in: Option<Vec<String>>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Option<AnonymousSlotExpression>, all_members: Option<AnonymousSlotExpression>, none_of: Option<Vec<AnonymousSlotExpression>>, exactly_one_of: Option<Vec<AnonymousSlotExpression>>, any_of: Option<Vec<AnonymousSlotExpression>>, all_of: Option<Vec<AnonymousSlotExpression>>) -> Self {
         SlotExpression{range, range_expression, enum_range, bindings, required, recommended, multivalued, inlined, inlined_as_list, minimum_value, maximum_value, pattern, structured_pattern, unit, implicit_prefix, value_presence, equals_string, equals_string_in, equals_number, equals_expression, exact_cardinality, minimum_cardinality, maximum_cardinality, has_member, all_members, none_of, exactly_one_of, any_of, all_of}
     }
 }
@@ -4154,18 +4592,15 @@ impl<'py> FromPyObject<'py> for Box<SlotExpression> {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum SlotExpressionOrSubtype {    SlotExpression(SlotExpression),     AnonymousSlotExpression(AnonymousSlotExpression),     SlotDefinition(SlotDefinition)}
+pub enum SlotExpressionOrSubtype {    AnonymousSlotExpression(AnonymousSlotExpression),     SlotDefinition(SlotDefinition)}
 
-impl From<SlotExpression>   for SlotExpressionOrSubtype { fn from(x: SlotExpression)   -> Self { Self::SlotExpression(x) } }
 impl From<AnonymousSlotExpression>   for SlotExpressionOrSubtype { fn from(x: AnonymousSlotExpression)   -> Self { Self::AnonymousSlotExpression(x) } }
 impl From<SlotDefinition>   for SlotExpressionOrSubtype { fn from(x: SlotDefinition)   -> Self { Self::SlotDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for SlotExpressionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<SlotExpression>() {
-            return Ok(SlotExpressionOrSubtype::SlotExpression(val));
-        }        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
+        if let Ok(val) = ob.extract::<AnonymousSlotExpression>() {
             return Ok(SlotExpressionOrSubtype::AnonymousSlotExpression(val));
         }        if let Ok(val) = ob.extract::<SlotDefinition>() {
             return Ok(SlotExpressionOrSubtype::SlotDefinition(val));
@@ -4183,7 +4618,6 @@ impl<'py> IntoPyObject<'py> for SlotExpressionOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            SlotExpressionOrSubtype::SlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             SlotExpressionOrSubtype::SlotDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
         }
@@ -4251,7 +4685,7 @@ pub struct AnonymousSlotExpression {
     #[cfg_attr(feature = "serde", serde(default))]
     pub implicit_prefix: Option<String>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub value_presence: Option<String>,
+    pub value_presence: Option<PresenceEnum>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
     #[cfg_attr(feature = "serde", serde(deserialize_with = "serde_utils::deserialize_primitive_list_or_single_value_optional"))]
@@ -4371,7 +4805,7 @@ pub struct AnonymousSlotExpression {
 #[pymethods]
 impl AnonymousSlotExpression {
     #[new]
-    pub fn new(range: Option<String>, range_expression: Option<Box<AnonymousClassExpression>>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Option<Vec<EnumBinding>>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<String>, equals_string: Option<String>, equals_string_in: Option<Vec<String>>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Option<Box<AnonymousSlotExpression>>, all_members: Option<Box<AnonymousSlotExpression>>, none_of: Option<Vec<Box<AnonymousSlotExpression>>>, exactly_one_of: Option<Vec<Box<AnonymousSlotExpression>>>, any_of: Option<Vec<Box<AnonymousSlotExpression>>>, all_of: Option<Vec<Box<AnonymousSlotExpression>>>, extensions: Option<HashMap<String, ExtensionOrSubtype>>, annotations: Option<HashMap<String, Annotation>>, description: Option<String>, alt_descriptions: Option<HashMap<String, AltDescription>>, title: Option<String>, deprecated: Option<String>, todos: Option<Vec<String>>, notes: Option<Vec<String>>, comments: Option<Vec<String>>, examples: Option<Vec<Example>>, in_subset: Option<Vec<String>>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Option<Vec<uriorcurie>>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Option<Vec<String>>, structured_aliases: Option<Vec<StructuredAlias>>, mappings: Option<Vec<uriorcurie>>, exact_mappings: Option<Vec<uriorcurie>>, close_mappings: Option<Vec<uriorcurie>>, related_mappings: Option<Vec<uriorcurie>>, narrow_mappings: Option<Vec<uriorcurie>>, broad_mappings: Option<Vec<uriorcurie>>, created_by: Option<uriorcurie>, contributors: Option<Vec<uriorcurie>>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Option<Vec<uriorcurie>>, keywords: Option<Vec<String>>) -> Self {
+    pub fn new(range: Option<String>, range_expression: Option<Box<AnonymousClassExpression>>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Option<Vec<EnumBinding>>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<PresenceEnum>, equals_string: Option<String>, equals_string_in: Option<Vec<String>>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Option<Box<AnonymousSlotExpression>>, all_members: Option<Box<AnonymousSlotExpression>>, none_of: Option<Vec<Box<AnonymousSlotExpression>>>, exactly_one_of: Option<Vec<Box<AnonymousSlotExpression>>>, any_of: Option<Vec<Box<AnonymousSlotExpression>>>, all_of: Option<Vec<Box<AnonymousSlotExpression>>>, extensions: Option<HashMap<String, ExtensionOrSubtype>>, annotations: Option<HashMap<String, Annotation>>, description: Option<String>, alt_descriptions: Option<HashMap<String, AltDescription>>, title: Option<String>, deprecated: Option<String>, todos: Option<Vec<String>>, notes: Option<Vec<String>>, comments: Option<Vec<String>>, examples: Option<Vec<Example>>, in_subset: Option<Vec<String>>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Option<Vec<uriorcurie>>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Option<Vec<String>>, structured_aliases: Option<Vec<StructuredAlias>>, mappings: Option<Vec<uriorcurie>>, exact_mappings: Option<Vec<uriorcurie>>, close_mappings: Option<Vec<uriorcurie>>, related_mappings: Option<Vec<uriorcurie>>, narrow_mappings: Option<Vec<uriorcurie>>, broad_mappings: Option<Vec<uriorcurie>>, created_by: Option<uriorcurie>, contributors: Option<Vec<uriorcurie>>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Option<Vec<uriorcurie>>, keywords: Option<Vec<String>>) -> Self {
         AnonymousSlotExpression{range, range_expression, enum_range, bindings, required, recommended, multivalued, inlined, inlined_as_list, minimum_value, maximum_value, pattern, structured_pattern, unit, implicit_prefix, value_presence, equals_string, equals_string_in, equals_number, equals_expression, exact_cardinality, minimum_cardinality, maximum_cardinality, has_member, all_members, none_of, exactly_one_of, any_of, all_of, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, rank, categories, keywords}
     }
 }
@@ -4498,7 +4932,7 @@ pub struct SlotDefinition {
     pub usage_slot_name: Option<String>,
     #[merge(strategy = merge::option::overwrite_none)]
     #[cfg_attr(feature = "serde", serde(default))]
-    pub relational_role: Option<String>,
+    pub relational_role: Option<RelationalRoleEnum>,
     #[merge(strategy = merge::option::overwrite_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub slot_group: Option<String>,
@@ -4568,7 +5002,7 @@ pub struct SlotDefinition {
     pub implicit_prefix: Option<String>,
     #[merge(strategy = merge::option::overwrite_none)]
     #[cfg_attr(feature = "serde", serde(default))]
-    pub value_presence: Option<String>,
+    pub value_presence: Option<PresenceEnum>,
     #[merge(strategy = merge::option::overwrite_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
@@ -4786,7 +5220,7 @@ pub struct SlotDefinition {
 #[pymethods]
 impl SlotDefinition {
     #[new]
-    pub fn new(singular_name: Option<String>, domain: Option<String>, slot_uri: Option<uriorcurie>, array: Option<ArrayExpression>, inherited: Option<bool>, readonly: Option<String>, ifabsent: Option<String>, list_elements_unique: Option<bool>, list_elements_ordered: Option<bool>, shared: Option<bool>, key: Option<bool>, identifier: Option<bool>, designates_type: Option<bool>, alias: Option<String>, owner: Option<String>, domain_of: Option<Vec<String>>, subproperty_of: Option<String>, symmetric: Option<bool>, reflexive: Option<bool>, locally_reflexive: Option<bool>, irreflexive: Option<bool>, asymmetric: Option<bool>, transitive: Option<bool>, inverse: Option<String>, is_class_field: Option<bool>, transitive_form_of: Option<String>, reflexive_transitive_form_of: Option<String>, role: Option<String>, is_usage_slot: Option<bool>, usage_slot_name: Option<String>, relational_role: Option<String>, slot_group: Option<String>, is_grouping_slot: Option<bool>, path_rule: Option<Box<PathExpression>>, disjoint_with: Option<Vec<String>>, children_are_mutually_disjoint: Option<bool>, union_of: Option<Vec<String>>, type_mappings: Option<HashMap<String, TypeMapping>>, range: Option<String>, range_expression: Option<Box<AnonymousClassExpression>>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Option<Vec<EnumBinding>>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<String>, equals_string: Option<String>, equals_string_in: Option<Vec<String>>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Option<Box<AnonymousSlotExpression>>, all_members: Option<Box<AnonymousSlotExpression>>, none_of: Option<Vec<Box<AnonymousSlotExpression>>>, exactly_one_of: Option<Vec<Box<AnonymousSlotExpression>>>, any_of: Option<Vec<Box<AnonymousSlotExpression>>>, all_of: Option<Vec<Box<AnonymousSlotExpression>>>, is_a: Option<String>, abstract_: Option<bool>, mixin: Option<bool>, mixins: Option<Vec<String>>, apply_to: Option<Vec<String>>, values_from: Option<Vec<uriorcurie>>, string_serialization: Option<String>, name: String, id_prefixes: Option<Vec<ncname>>, id_prefixes_are_closed: Option<bool>, definition_uri: Option<uriorcurie>, local_names: Option<HashMap<String, LocalName>>, conforms_to: Option<String>, implements: Option<Vec<uriorcurie>>, instantiates: Option<Vec<uriorcurie>>, extensions: Option<HashMap<String, ExtensionOrSubtype>>, annotations: Option<HashMap<String, Annotation>>, description: Option<String>, alt_descriptions: Option<HashMap<String, AltDescription>>, title: Option<String>, deprecated: Option<String>, todos: Option<Vec<String>>, notes: Option<Vec<String>>, comments: Option<Vec<String>>, examples: Option<Vec<Example>>, in_subset: Option<Vec<String>>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Option<Vec<uriorcurie>>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Option<Vec<String>>, structured_aliases: Option<Vec<StructuredAlias>>, mappings: Option<Vec<uriorcurie>>, exact_mappings: Option<Vec<uriorcurie>>, close_mappings: Option<Vec<uriorcurie>>, related_mappings: Option<Vec<uriorcurie>>, narrow_mappings: Option<Vec<uriorcurie>>, broad_mappings: Option<Vec<uriorcurie>>, created_by: Option<uriorcurie>, contributors: Option<Vec<uriorcurie>>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Option<Vec<uriorcurie>>, keywords: Option<Vec<String>>) -> Self {
+    pub fn new(singular_name: Option<String>, domain: Option<String>, slot_uri: Option<uriorcurie>, array: Option<ArrayExpression>, inherited: Option<bool>, readonly: Option<String>, ifabsent: Option<String>, list_elements_unique: Option<bool>, list_elements_ordered: Option<bool>, shared: Option<bool>, key: Option<bool>, identifier: Option<bool>, designates_type: Option<bool>, alias: Option<String>, owner: Option<String>, domain_of: Option<Vec<String>>, subproperty_of: Option<String>, symmetric: Option<bool>, reflexive: Option<bool>, locally_reflexive: Option<bool>, irreflexive: Option<bool>, asymmetric: Option<bool>, transitive: Option<bool>, inverse: Option<String>, is_class_field: Option<bool>, transitive_form_of: Option<String>, reflexive_transitive_form_of: Option<String>, role: Option<String>, is_usage_slot: Option<bool>, usage_slot_name: Option<String>, relational_role: Option<RelationalRoleEnum>, slot_group: Option<String>, is_grouping_slot: Option<bool>, path_rule: Option<Box<PathExpression>>, disjoint_with: Option<Vec<String>>, children_are_mutually_disjoint: Option<bool>, union_of: Option<Vec<String>>, type_mappings: Option<HashMap<String, TypeMapping>>, range: Option<String>, range_expression: Option<Box<AnonymousClassExpression>>, enum_range: Option<EnumExpressionOrSubtype>, bindings: Option<Vec<EnumBinding>>, required: Option<bool>, recommended: Option<bool>, multivalued: Option<bool>, inlined: Option<bool>, inlined_as_list: Option<bool>, minimum_value: Option<Anything>, maximum_value: Option<Anything>, pattern: Option<String>, structured_pattern: Option<PatternExpression>, unit: Option<UnitOfMeasure>, implicit_prefix: Option<String>, value_presence: Option<PresenceEnum>, equals_string: Option<String>, equals_string_in: Option<Vec<String>>, equals_number: Option<isize>, equals_expression: Option<String>, exact_cardinality: Option<isize>, minimum_cardinality: Option<isize>, maximum_cardinality: Option<isize>, has_member: Option<Box<AnonymousSlotExpression>>, all_members: Option<Box<AnonymousSlotExpression>>, none_of: Option<Vec<Box<AnonymousSlotExpression>>>, exactly_one_of: Option<Vec<Box<AnonymousSlotExpression>>>, any_of: Option<Vec<Box<AnonymousSlotExpression>>>, all_of: Option<Vec<Box<AnonymousSlotExpression>>>, is_a: Option<String>, abstract_: Option<bool>, mixin: Option<bool>, mixins: Option<Vec<String>>, apply_to: Option<Vec<String>>, values_from: Option<Vec<uriorcurie>>, string_serialization: Option<String>, name: String, id_prefixes: Option<Vec<ncname>>, id_prefixes_are_closed: Option<bool>, definition_uri: Option<uriorcurie>, local_names: Option<HashMap<String, LocalName>>, conforms_to: Option<String>, implements: Option<Vec<uriorcurie>>, instantiates: Option<Vec<uriorcurie>>, extensions: Option<HashMap<String, ExtensionOrSubtype>>, annotations: Option<HashMap<String, Annotation>>, description: Option<String>, alt_descriptions: Option<HashMap<String, AltDescription>>, title: Option<String>, deprecated: Option<String>, todos: Option<Vec<String>>, notes: Option<Vec<String>>, comments: Option<Vec<String>>, examples: Option<Vec<Example>>, in_subset: Option<Vec<String>>, from_schema: Option<uri>, imported_from: Option<String>, source: Option<uriorcurie>, in_language: Option<String>, see_also: Option<Vec<uriorcurie>>, deprecated_element_has_exact_replacement: Option<uriorcurie>, deprecated_element_has_possible_replacement: Option<uriorcurie>, aliases: Option<Vec<String>>, structured_aliases: Option<Vec<StructuredAlias>>, mappings: Option<Vec<uriorcurie>>, exact_mappings: Option<Vec<uriorcurie>>, close_mappings: Option<Vec<uriorcurie>>, related_mappings: Option<Vec<uriorcurie>>, narrow_mappings: Option<Vec<uriorcurie>>, broad_mappings: Option<Vec<uriorcurie>>, created_by: Option<uriorcurie>, contributors: Option<Vec<uriorcurie>>, created_on: Option<NaiveDateTime>, last_updated_on: Option<NaiveDateTime>, modified_by: Option<uriorcurie>, status: Option<uriorcurie>, rank: Option<isize>, categories: Option<Vec<uriorcurie>>, keywords: Option<Vec<String>>) -> Self {
         SlotDefinition{singular_name, domain, slot_uri, array, inherited, readonly, ifabsent, list_elements_unique, list_elements_ordered, shared, key, identifier, designates_type, alias, owner, domain_of, subproperty_of, symmetric, reflexive, locally_reflexive, irreflexive, asymmetric, transitive, inverse, is_class_field, transitive_form_of, reflexive_transitive_form_of, role, is_usage_slot, usage_slot_name, relational_role, slot_group, is_grouping_slot, path_rule, disjoint_with, children_are_mutually_disjoint, union_of, type_mappings, range, range_expression, enum_range, bindings, required, recommended, multivalued, inlined, inlined_as_list, minimum_value, maximum_value, pattern, structured_pattern, unit, implicit_prefix, value_presence, equals_string, equals_string_in, equals_number, equals_expression, exact_cardinality, minimum_cardinality, maximum_cardinality, has_member, all_members, none_of, exactly_one_of, any_of, all_of, is_a, abstract_, mixin, mixins, apply_to, values_from, string_serialization, name, id_prefixes, id_prefixes_are_closed, definition_uri, local_names, conforms_to, implements, instantiates, extensions, annotations, description, alt_descriptions, title, deprecated, todos, notes, comments, examples, in_subset, from_schema, imported_from, source, in_language, see_also, deprecated_element_has_exact_replacement, deprecated_element_has_possible_replacement, aliases, structured_aliases, mappings, exact_mappings, close_mappings, related_mappings, narrow_mappings, broad_mappings, created_by, contributors, created_on, last_updated_on, modified_by, status, rank, categories, keywords}
     }
 }
@@ -4911,18 +5345,15 @@ impl<'py> FromPyObject<'py> for Box<ClassExpression> {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum ClassExpressionOrSubtype {    ClassExpression(ClassExpression),     AnonymousClassExpression(AnonymousClassExpression),     ClassDefinition(ClassDefinition)}
+pub enum ClassExpressionOrSubtype {    AnonymousClassExpression(AnonymousClassExpression),     ClassDefinition(ClassDefinition)}
 
-impl From<ClassExpression>   for ClassExpressionOrSubtype { fn from(x: ClassExpression)   -> Self { Self::ClassExpression(x) } }
 impl From<AnonymousClassExpression>   for ClassExpressionOrSubtype { fn from(x: AnonymousClassExpression)   -> Self { Self::AnonymousClassExpression(x) } }
 impl From<ClassDefinition>   for ClassExpressionOrSubtype { fn from(x: ClassDefinition)   -> Self { Self::ClassDefinition(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ClassExpressionOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<ClassExpression>() {
-            return Ok(ClassExpressionOrSubtype::ClassExpression(val));
-        }        if let Ok(val) = ob.extract::<AnonymousClassExpression>() {
+        if let Ok(val) = ob.extract::<AnonymousClassExpression>() {
             return Ok(ClassExpressionOrSubtype::AnonymousClassExpression(val));
         }        if let Ok(val) = ob.extract::<ClassDefinition>() {
             return Ok(ClassExpressionOrSubtype::ClassDefinition(val));
@@ -4940,7 +5371,6 @@ impl<'py> IntoPyObject<'py> for ClassExpressionOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            ClassExpressionOrSubtype::ClassExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ClassExpressionOrSubtype::AnonymousClassExpression(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ClassExpressionOrSubtype::ClassDefinition(val) => val.into_pyobject(py).map(move |b| b.into_any()),
         }
@@ -5363,17 +5793,14 @@ pub struct ClassLevelRule {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature="serde", serde(untagged))]
-pub enum ClassLevelRuleOrSubtype {    ClassLevelRule(ClassLevelRule),     ClassRule(ClassRule)}
+pub enum ClassLevelRuleOrSubtype {    ClassRule(ClassRule)}
 
-impl From<ClassLevelRule>   for ClassLevelRuleOrSubtype { fn from(x: ClassLevelRule)   -> Self { Self::ClassLevelRule(x) } }
 impl From<ClassRule>   for ClassLevelRuleOrSubtype { fn from(x: ClassRule)   -> Self { Self::ClassRule(x) } }
 
 #[cfg(feature = "pyo3")]
 impl<'py> FromPyObject<'py> for ClassLevelRuleOrSubtype {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
-        if let Ok(val) = ob.extract::<ClassLevelRule>() {
-            return Ok(ClassLevelRuleOrSubtype::ClassLevelRule(val));
-        }        if let Ok(val) = ob.extract::<ClassRule>() {
+        if let Ok(val) = ob.extract::<ClassRule>() {
             return Ok(ClassLevelRuleOrSubtype::ClassRule(val));
         }Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
             "invalid ClassLevelRuleOrSubtype",
@@ -5389,7 +5816,6 @@ impl<'py> IntoPyObject<'py> for ClassLevelRuleOrSubtype {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            ClassLevelRuleOrSubtype::ClassLevelRule(val) => val.into_pyobject(py).map(move |b| b.into_any()),
             ClassLevelRuleOrSubtype::ClassRule(val) => val.into_pyobject(py).map(move |b| b.into_any()),
         }
     }
@@ -5568,7 +5994,6 @@ pub mod array_expression_utl {
         isize(isize),
         bool(bool)    
     }
-
 
     #[cfg(feature = "pyo3")]
     impl<'py> FromPyObject<'py> for maximum_number_dimensions_range {
