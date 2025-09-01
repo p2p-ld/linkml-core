@@ -621,7 +621,6 @@ impl<'py> FromPyObject<'py> for Box<Extension> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Extension {
     type Key   = uriorcurie;
-        
     type Value = AnyValue;
     type Error = String;
 
@@ -643,7 +642,6 @@ impl serde_utils::InlinedPair for Extension {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("extension_tag".into()), Value::String(k));
@@ -652,7 +650,7 @@ impl serde_utils::InlinedPair for Extension {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -1158,7 +1156,6 @@ impl<'py> FromPyObject<'py> for Box<Annotation> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Annotation {
     type Key   = uriorcurie;
-        
     type Value = AnyValue;
     type Error = String;
 
@@ -1180,7 +1177,6 @@ impl serde_utils::InlinedPair for Annotation {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("extension_tag".into()), Value::String(k));
@@ -1189,7 +1185,7 @@ impl serde_utils::InlinedPair for Annotation {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -1259,9 +1255,9 @@ pub struct Anything(
 
 #[cfg(feature = "serde")]
 impl Serialize for Anything {
-    fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+    fn serialize<S>(&self, to_ser: S) -> Result<S::Ok, S::Error>
     where S: serde::Serializer {
-        self.0.serialize(ser)
+        self.0.serialize(to_ser)
     }
 }
 
@@ -1569,8 +1565,7 @@ pub mod element_utl {
     #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
     pub enum name_range {
         String(String),
-        ncname(ncname)    
-    }
+        ncname(ncname)    }
 
     #[cfg(feature = "pyo3")]
     impl<'py> FromPyObject<'py> for name_range {
@@ -1771,7 +1766,6 @@ impl<'py> FromPyObject<'py> for Box<Element> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Element {
     type Key   = String;
-        
     type Value = bool;
     type Error = String;
 
@@ -1793,7 +1787,6 @@ impl serde_utils::InlinedPair for Element {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
@@ -1802,7 +1795,7 @@ impl serde_utils::InlinedPair for Element {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -2156,7 +2149,6 @@ impl<'py> FromPyObject<'py> for Box<SchemaDefinition> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for SchemaDefinition {
     type Key   = ncname;
-        
     type Value = uri;
     type Error = String;
 
@@ -2178,7 +2170,6 @@ impl serde_utils::InlinedPair for SchemaDefinition {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
@@ -2187,7 +2178,7 @@ impl serde_utils::InlinedPair for SchemaDefinition {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -2444,7 +2435,6 @@ impl<'py> FromPyObject<'py> for Box<TypeDefinition> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for TypeDefinition {
     type Key   = String;
-        
     type Value = TypeDefinition;
     type Error = String;
 
@@ -2466,7 +2456,6 @@ impl serde_utils::InlinedPair for TypeDefinition {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
@@ -2475,7 +2464,7 @@ impl serde_utils::InlinedPair for TypeDefinition {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -2627,7 +2616,6 @@ impl<'py> FromPyObject<'py> for Box<SubsetDefinition> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for SubsetDefinition {
     type Key   = String;
-        
     type Value = bool;
     type Error = String;
 
@@ -2649,7 +2637,6 @@ impl serde_utils::InlinedPair for SubsetDefinition {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
@@ -2658,7 +2645,7 @@ impl serde_utils::InlinedPair for SubsetDefinition {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -2670,8 +2657,7 @@ pub mod definition_utl {
     pub enum is_a_range {
         Definition(Definition),
         SlotDefinition(SlotDefinition),
-        ClassDefinition(ClassDefinition)    
-    }
+        ClassDefinition(ClassDefinition)    }
 
     #[cfg(feature = "pyo3")]
     impl<'py> FromPyObject<'py> for is_a_range {
@@ -2731,8 +2717,7 @@ pub mod definition_utl {
     pub enum mixins_range {
         Definition(Definition),
         SlotDefinition(SlotDefinition),
-        ClassDefinition(ClassDefinition)    
-    }
+        ClassDefinition(ClassDefinition)    }
 
     #[cfg(feature = "pyo3")]
     impl<'py> FromPyObject<'py> for mixins_range {
@@ -2792,8 +2777,7 @@ pub mod definition_utl {
     pub enum apply_to_range {
         Definition(Definition),
         SlotDefinition(SlotDefinition),
-        ClassDefinition(ClassDefinition)    
-    }
+        ClassDefinition(ClassDefinition)    }
 
     #[cfg(feature = "pyo3")]
     impl<'py> FromPyObject<'py> for apply_to_range {
@@ -3013,7 +2997,6 @@ impl<'py> FromPyObject<'py> for Box<Definition> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Definition {
     type Key   = String;
-        
     type Value = Definition;
     type Error = String;
 
@@ -3035,7 +3018,6 @@ impl serde_utils::InlinedPair for Definition {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
@@ -3044,7 +3026,7 @@ impl serde_utils::InlinedPair for Definition {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -3405,7 +3387,6 @@ impl<'py> FromPyObject<'py> for Box<EnumDefinition> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for EnumDefinition {
     type Key   = String;
-        
     type Value = uriorcurie;
     type Error = String;
 
@@ -3427,7 +3408,6 @@ impl serde_utils::InlinedPair for EnumDefinition {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
@@ -3436,7 +3416,7 @@ impl serde_utils::InlinedPair for EnumDefinition {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -5257,7 +5237,6 @@ impl SlotDefinition {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for SlotDefinition {
     type Key   = String;
-        
     type Value = String;
     type Error = String;
 
@@ -5279,7 +5258,6 @@ impl serde_utils::InlinedPair for SlotDefinition {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
@@ -5288,7 +5266,7 @@ impl serde_utils::InlinedPair for SlotDefinition {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -5749,7 +5727,6 @@ impl<'py> FromPyObject<'py> for Box<ClassDefinition> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for ClassDefinition {
     type Key   = String;
-        
     type Value = uriorcurie;
     type Error = String;
 
@@ -5771,7 +5748,6 @@ impl serde_utils::InlinedPair for ClassDefinition {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("name".into()), Value::String(k));
@@ -5780,7 +5756,7 @@ impl serde_utils::InlinedPair for ClassDefinition {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -5992,8 +5968,7 @@ pub mod array_expression_utl {
     pub enum maximum_number_dimensions_range {
         Anything(Anything),
         isize(isize),
-        bool(bool)    
-    }
+        bool(bool)    }
 
     #[cfg(feature = "pyo3")]
     impl<'py> FromPyObject<'py> for maximum_number_dimensions_range {
@@ -6625,7 +6600,6 @@ impl<'py> FromPyObject<'py> for Box<Setting> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Setting {
     type Key   = ncname;
-        
     type Value = String;
     type Error = String;
 
@@ -6647,7 +6621,6 @@ impl serde_utils::InlinedPair for Setting {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("setting_key".into()), Value::String(k));
@@ -6656,7 +6629,7 @@ impl serde_utils::InlinedPair for Setting {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -6704,7 +6677,6 @@ impl<'py> FromPyObject<'py> for Box<Prefix> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for Prefix {
     type Key   = ncname;
-        
     type Value = uri;
     type Error = String;
 
@@ -6726,7 +6698,6 @@ impl serde_utils::InlinedPair for Prefix {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("prefix_prefix".into()), Value::String(k));
@@ -6735,7 +6706,7 @@ impl serde_utils::InlinedPair for Prefix {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -6783,7 +6754,6 @@ impl<'py> FromPyObject<'py> for Box<LocalName> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for LocalName {
     type Key   = ncname;
-        
     type Value = String;
     type Error = String;
 
@@ -6805,7 +6775,6 @@ impl serde_utils::InlinedPair for LocalName {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("local_name_source".into()), Value::String(k));
@@ -6814,7 +6783,7 @@ impl serde_utils::InlinedPair for LocalName {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -6911,7 +6880,6 @@ impl<'py> FromPyObject<'py> for Box<AltDescription> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for AltDescription {
     type Key   = String;
-        
     type Value = String;
     type Error = String;
 
@@ -6933,7 +6901,6 @@ impl serde_utils::InlinedPair for AltDescription {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("alt_description_source".into()), Value::String(k));
@@ -6942,7 +6909,7 @@ impl serde_utils::InlinedPair for AltDescription {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -7090,7 +7057,6 @@ impl<'py> FromPyObject<'py> for Box<PermissibleValue> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for PermissibleValue {
     type Key   = String;
-        
     type Value = String;
     type Error = String;
 
@@ -7112,7 +7078,6 @@ impl serde_utils::InlinedPair for PermissibleValue {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("text".into()), Value::String(k));
@@ -7121,7 +7086,7 @@ impl serde_utils::InlinedPair for PermissibleValue {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -7259,7 +7224,6 @@ impl<'py> FromPyObject<'py> for Box<UniqueKey> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for UniqueKey {
     type Key   = String;
-        
     type Value = bool;
     type Error = String;
 
@@ -7281,7 +7245,6 @@ impl serde_utils::InlinedPair for UniqueKey {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("unique_key_name".into()), Value::String(k));
@@ -7290,7 +7253,7 @@ impl serde_utils::InlinedPair for UniqueKey {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }
@@ -7430,7 +7393,6 @@ impl<'py> FromPyObject<'py> for Box<TypeMapping> {
 #[cfg(feature = "serde")]
 impl serde_utils::InlinedPair for TypeMapping {
     type Key   = String;
-        
     type Value = TypeDefinition;
     type Error = String;
 
@@ -7452,7 +7414,6 @@ impl serde_utils::InlinedPair for TypeMapping {
     }
 
 
-        
     fn from_pair_simple(k: Self::Key, v: Value) -> Result<Self,Self::Error> {
         let mut map:  BTreeMap<Value, Value> = BTreeMap::new();
         map.insert(Value::String("framework_key".into()), Value::String(k));
@@ -7461,7 +7422,7 @@ impl serde_utils::InlinedPair for TypeMapping {
         match serde_path_to_error::deserialize(de) {
             Ok(ok)  => Ok(ok),
             Err(e)  => Err(format!("at `{}`: {}", e.path(), e.inner())),
-        }        
+        }
 
     }
 }

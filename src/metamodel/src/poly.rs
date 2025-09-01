@@ -34,37 +34,25 @@ impl Extension for crate::Extension {
         fn extension_tag<'a>(&'a self) -> &'a crate::uriorcurie {
         return &self.extension_tag;
     }
-
-    
         fn extension_value<'a>(&'a self) -> &'a crate::AnyValue {
         return &self.extension_value;
     }
-
-    
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions
                 .as_ref()
                 .map(poly_containers::MapView::new);
     }
-
-    
 }
 impl Extension for crate::Annotation {
         fn extension_tag<'a>(&'a self) -> &'a crate::uriorcurie {
         return &self.extension_tag;
     }
-
-    
         fn extension_value<'a>(&'a self) -> &'a crate::AnyValue {
         return &self.extension_value;
     }
-
-    
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 
 impl Extension for crate::ExtensionOrSubtype {
@@ -74,24 +62,18 @@ impl Extension for crate::ExtensionOrSubtype {
 
         }
     }
-
-    
         fn extension_value<'a>(&'a self) -> &'a crate::AnyValue {
         match self {
                 ExtensionOrSubtype::Annotation(val) => val.extension_value(),
 
         }
     }
-
-    
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         match self {
                 ExtensionOrSubtype::Annotation(val) => val.extensions().map(|x| x.to_any()),
 
         }
     }
-
-    
 }
 
 pub trait Extensible   {
@@ -107,162 +89,116 @@ impl Extensible for crate::Extensible {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::Element {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::EnumBinding {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::StructuredAlias {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::AnonymousExpression {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::PathExpression {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::ClassRule {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::ArrayExpression {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::DimensionExpression {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::PatternExpression {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::ImportExpression {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::PermissibleValue {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::UniqueKey {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::TypeMapping {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::AnonymousSlotExpression {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::AnonymousClassExpression {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::SchemaDefinition {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::TypeDefinition {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::SubsetDefinition {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::Definition {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::EnumDefinition {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::SlotDefinition {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 impl Extensible for crate::ClassDefinition {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
         return self.extensions.as_ref();
     }
-
-    
 }
 
 impl Extensible for crate::ExtensibleOrSubtype {
@@ -293,8 +229,6 @@ impl Extensible for crate::ExtensibleOrSubtype {
 
         }
     }
-
-    
 }
 impl Extensible for crate::ElementOrSubtype {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
@@ -309,8 +243,6 @@ impl Extensible for crate::ElementOrSubtype {
 
         }
     }
-
-    
 }
 impl Extensible for crate::AnonymousExpressionOrSubtype {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
@@ -320,8 +252,6 @@ impl Extensible for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
 }
 impl Extensible for crate::DefinitionOrSubtype {
         fn extensions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,ExtensionOrSubtype>> {
@@ -332,8 +262,6 @@ impl Extensible for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
 }
 
 pub trait Annotatable   {
@@ -349,8 +277,6 @@ impl Annotatable for crate::Annotatable {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::Annotation {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
@@ -358,162 +284,116 @@ impl Annotatable for crate::Annotation {
                 .as_ref()
                 .map(poly_containers::MapView::new);
     }
-
-    
 }
 impl Annotatable for crate::Element {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::EnumBinding {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::StructuredAlias {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::AnonymousExpression {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::PathExpression {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::ClassRule {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::ArrayExpression {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::DimensionExpression {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::PatternExpression {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::ImportExpression {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::PermissibleValue {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::UniqueKey {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::TypeMapping {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::AnonymousSlotExpression {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::AnonymousClassExpression {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::SchemaDefinition {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::TypeDefinition {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::SubsetDefinition {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::Definition {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::EnumDefinition {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::SlotDefinition {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 impl Annotatable for crate::ClassDefinition {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
         return self.annotations.as_ref();
     }
-
-    
 }
 
 impl Annotatable for crate::AnnotatableOrSubtype {
@@ -545,8 +425,6 @@ impl Annotatable for crate::AnnotatableOrSubtype {
 
         }
     }
-
-    
 }
 impl Annotatable for crate::ElementOrSubtype {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
@@ -561,8 +439,6 @@ impl Annotatable for crate::ElementOrSubtype {
 
         }
     }
-
-    
 }
 impl Annotatable for crate::AnonymousExpressionOrSubtype {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
@@ -572,8 +448,6 @@ impl Annotatable for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
 }
 impl Annotatable for crate::DefinitionOrSubtype {
         fn annotations<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Annotation>> {
@@ -584,8 +458,6 @@ impl Annotatable for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
 }
 
 pub trait Annotation : Extension  +  Annotatable   {
@@ -638,43 +510,27 @@ impl UnitOfMeasure for crate::UnitOfMeasure {
         fn symbol<'a>(&'a self) -> Option<&'a str> {
         return self.symbol.as_deref();
     }
-
-    
         fn abbreviation<'a>(&'a self) -> Option<&'a str> {
         return self.abbreviation.as_deref();
     }
-
-    
         fn descriptive_name<'a>(&'a self) -> Option<&'a str> {
         return self.descriptive_name.as_deref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn ucum_code<'a>(&'a self) -> Option<&'a str> {
         return self.ucum_code.as_deref();
     }
-
-    
         fn derivation<'a>(&'a self) -> Option<&'a str> {
         return self.derivation.as_deref();
     }
-
-    
         fn has_quantity_kind<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.has_quantity_kind.as_ref();
     }
-
-    
         fn iec61360code<'a>(&'a self) -> Option<&'a str> {
         return self.iec61360code.as_deref();
     }
-
-    
 }
 
 
@@ -828,3842 +684,2324 @@ impl CommonMetadata for crate::CommonMetadata {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::Element {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::EnumBinding {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::StructuredAlias {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::AnonymousExpression {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::PathExpression {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::ClassRule {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::ArrayExpression {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::DimensionExpression {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::PatternExpression {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::ImportExpression {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::PermissibleValue {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::UniqueKey {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::TypeMapping {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::AnonymousSlotExpression {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::AnonymousClassExpression {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::SchemaDefinition {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::TypeDefinition {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::SubsetDefinition {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::Definition {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::EnumDefinition {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::SlotDefinition {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 impl CommonMetadata for crate::ClassDefinition {
         fn description<'a>(&'a self) -> Option<&'a str> {
         return self.description.as_deref();
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         return self.alt_descriptions.as_ref();
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         return self.title.as_deref();
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         return self.deprecated.as_deref();
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.todos.as_ref();
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.notes.as_ref();
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.comments.as_ref();
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         return self.examples.as_ref();
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.in_subset.as_ref();
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         return self.from_schema.as_ref();
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         return self.imported_from.as_deref();
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source.as_ref();
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         return self.in_language.as_deref();
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.see_also.as_ref();
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_exact_replacement.as_ref();
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.deprecated_element_has_possible_replacement.as_ref();
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.aliases.as_ref();
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         return self.structured_aliases.as_ref();
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.mappings.as_ref();
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.exact_mappings.as_ref();
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.close_mappings.as_ref();
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.related_mappings.as_ref();
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.narrow_mappings.as_ref();
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.broad_mappings.as_ref();
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.created_by.as_ref();
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.contributors.as_ref();
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.created_on.as_ref();
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.last_updated_on.as_ref();
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.modified_by.as_ref();
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.status.as_ref();
     }
-
-    
         fn rank(&self) -> Option<isize> {
         return self.rank;
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.categories.as_ref();
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.keywords.as_ref();
     }
-
-    
 }
 
 impl CommonMetadata for crate::CommonMetadataOrSubtype {
@@ -4694,8 +3032,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.alt_descriptions().map(|x| x.to_any()),
@@ -4723,8 +3059,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.title(),
@@ -4752,8 +3086,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.deprecated(),
@@ -4781,8 +3113,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.todos().map(|x| x.to_any()),
@@ -4810,8 +3140,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.notes().map(|x| x.to_any()),
@@ -4839,8 +3167,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.comments().map(|x| x.to_any()),
@@ -4868,8 +3194,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.examples().map(|x| x.to_any()),
@@ -4897,8 +3221,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.in_subset().map(|x| x.to_any()),
@@ -4926,8 +3248,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.from_schema(),
@@ -4955,8 +3275,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.imported_from(),
@@ -4984,8 +3302,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.source(),
@@ -5013,8 +3329,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.in_language(),
@@ -5042,8 +3356,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.see_also().map(|x| x.to_any()),
@@ -5071,8 +3383,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.deprecated_element_has_exact_replacement(),
@@ -5100,8 +3410,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.deprecated_element_has_possible_replacement(),
@@ -5129,8 +3437,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.aliases().map(|x| x.to_any()),
@@ -5158,8 +3464,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.structured_aliases().map(|x| x.to_any()),
@@ -5187,8 +3491,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.mappings().map(|x| x.to_any()),
@@ -5216,8 +3518,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.exact_mappings().map(|x| x.to_any()),
@@ -5245,8 +3545,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.close_mappings().map(|x| x.to_any()),
@@ -5274,8 +3572,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.related_mappings().map(|x| x.to_any()),
@@ -5303,8 +3599,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.narrow_mappings().map(|x| x.to_any()),
@@ -5332,8 +3626,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.broad_mappings().map(|x| x.to_any()),
@@ -5361,8 +3653,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.created_by(),
@@ -5390,8 +3680,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.contributors().map(|x| x.to_any()),
@@ -5419,8 +3707,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.created_on(),
@@ -5448,8 +3734,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.last_updated_on(),
@@ -5477,8 +3761,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.modified_by(),
@@ -5506,8 +3788,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.status(),
@@ -5535,8 +3815,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn rank(&self) -> Option<isize> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.rank(),
@@ -5564,8 +3842,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.categories().map(|x| x.to_any()),
@@ -5593,8 +3869,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 CommonMetadataOrSubtype::Element(val) => val.keywords().map(|x| x.to_any()),
@@ -5622,8 +3896,6 @@ impl CommonMetadata for crate::CommonMetadataOrSubtype {
 
         }
     }
-
-    
 }
 impl CommonMetadata for crate::ElementOrSubtype {
         fn description<'a>(&'a self) -> Option<&'a str> {
@@ -5638,8 +3910,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.alt_descriptions().map(|x| x.to_any()),
@@ -5652,8 +3922,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.title(),
@@ -5666,8 +3934,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.deprecated(),
@@ -5680,8 +3946,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.todos().map(|x| x.to_any()),
@@ -5694,8 +3958,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.notes().map(|x| x.to_any()),
@@ -5708,8 +3970,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.comments().map(|x| x.to_any()),
@@ -5722,8 +3982,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.examples().map(|x| x.to_any()),
@@ -5736,8 +3994,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.in_subset().map(|x| x.to_any()),
@@ -5750,8 +4006,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.from_schema(),
@@ -5764,8 +4018,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.imported_from(),
@@ -5778,8 +4030,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.source(),
@@ -5792,8 +4042,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.in_language(),
@@ -5806,8 +4054,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.see_also().map(|x| x.to_any()),
@@ -5820,8 +4066,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.deprecated_element_has_exact_replacement(),
@@ -5834,8 +4078,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.deprecated_element_has_possible_replacement(),
@@ -5848,8 +4090,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.aliases().map(|x| x.to_any()),
@@ -5862,8 +4102,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.structured_aliases().map(|x| x.to_any()),
@@ -5876,8 +4114,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.mappings().map(|x| x.to_any()),
@@ -5890,8 +4126,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.exact_mappings().map(|x| x.to_any()),
@@ -5904,8 +4138,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.close_mappings().map(|x| x.to_any()),
@@ -5918,8 +4150,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.related_mappings().map(|x| x.to_any()),
@@ -5932,8 +4162,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.narrow_mappings().map(|x| x.to_any()),
@@ -5946,8 +4174,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.broad_mappings().map(|x| x.to_any()),
@@ -5960,8 +4186,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.created_by(),
@@ -5974,8 +4198,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.contributors().map(|x| x.to_any()),
@@ -5988,8 +4210,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.created_on(),
@@ -6002,8 +4222,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.last_updated_on(),
@@ -6016,8 +4234,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.modified_by(),
@@ -6030,8 +4246,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.status(),
@@ -6044,8 +4258,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn rank(&self) -> Option<isize> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.rank(),
@@ -6058,8 +4270,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.categories().map(|x| x.to_any()),
@@ -6072,8 +4282,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.keywords().map(|x| x.to_any()),
@@ -6086,8 +4294,6 @@ impl CommonMetadata for crate::ElementOrSubtype {
 
         }
     }
-
-    
 }
 impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
         fn description<'a>(&'a self) -> Option<&'a str> {
@@ -6097,8 +4303,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.alt_descriptions().map(|x| x.to_any()),
@@ -6106,8 +4310,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.title(),
@@ -6115,8 +4317,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.deprecated(),
@@ -6124,8 +4324,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.todos().map(|x| x.to_any()),
@@ -6133,8 +4331,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.notes().map(|x| x.to_any()),
@@ -6142,8 +4338,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.comments().map(|x| x.to_any()),
@@ -6151,8 +4345,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.examples().map(|x| x.to_any()),
@@ -6160,8 +4352,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.in_subset().map(|x| x.to_any()),
@@ -6169,8 +4359,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.from_schema(),
@@ -6178,8 +4366,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.imported_from(),
@@ -6187,8 +4373,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.source(),
@@ -6196,8 +4380,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.in_language(),
@@ -6205,8 +4387,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.see_also().map(|x| x.to_any()),
@@ -6214,8 +4394,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.deprecated_element_has_exact_replacement(),
@@ -6223,8 +4401,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.deprecated_element_has_possible_replacement(),
@@ -6232,8 +4408,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.aliases().map(|x| x.to_any()),
@@ -6241,8 +4415,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.structured_aliases().map(|x| x.to_any()),
@@ -6250,8 +4422,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.mappings().map(|x| x.to_any()),
@@ -6259,8 +4429,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.exact_mappings().map(|x| x.to_any()),
@@ -6268,8 +4436,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.close_mappings().map(|x| x.to_any()),
@@ -6277,8 +4443,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.related_mappings().map(|x| x.to_any()),
@@ -6286,8 +4450,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.narrow_mappings().map(|x| x.to_any()),
@@ -6295,8 +4457,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.broad_mappings().map(|x| x.to_any()),
@@ -6304,8 +4464,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.created_by(),
@@ -6313,8 +4471,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.contributors().map(|x| x.to_any()),
@@ -6322,8 +4478,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.created_on(),
@@ -6331,8 +4485,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.last_updated_on(),
@@ -6340,8 +4492,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.modified_by(),
@@ -6349,8 +4499,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.status(),
@@ -6358,8 +4506,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn rank(&self) -> Option<isize> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.rank(),
@@ -6367,8 +4513,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.categories().map(|x| x.to_any()),
@@ -6376,8 +4520,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 AnonymousExpressionOrSubtype::AnonymousSlotExpression(val) => val.keywords().map(|x| x.to_any()),
@@ -6385,8 +4527,6 @@ impl CommonMetadata for crate::AnonymousExpressionOrSubtype {
 
         }
     }
-
-    
 }
 impl CommonMetadata for crate::DefinitionOrSubtype {
         fn description<'a>(&'a self) -> Option<&'a str> {
@@ -6397,8 +4537,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn alt_descriptions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::AltDescription>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.alt_descriptions().map(|x| x.to_any()),
@@ -6407,8 +4545,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn title<'a>(&'a self) -> Option<&'a str> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.title(),
@@ -6417,8 +4553,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn deprecated<'a>(&'a self) -> Option<&'a str> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.deprecated(),
@@ -6427,8 +4561,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn todos<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.todos().map(|x| x.to_any()),
@@ -6437,8 +4569,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn notes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.notes().map(|x| x.to_any()),
@@ -6447,8 +4577,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn comments<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.comments().map(|x| x.to_any()),
@@ -6457,8 +4585,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn examples<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::Example>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.examples().map(|x| x.to_any()),
@@ -6467,8 +4593,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn in_subset<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.in_subset().map(|x| x.to_any()),
@@ -6477,8 +4601,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn from_schema<'a>(&'a self) -> Option<&'a crate::uri> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.from_schema(),
@@ -6487,8 +4609,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn imported_from<'a>(&'a self) -> Option<&'a str> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.imported_from(),
@@ -6497,8 +4617,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn source<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.source(),
@@ -6507,8 +4625,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn in_language<'a>(&'a self) -> Option<&'a str> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.in_language(),
@@ -6517,8 +4633,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn see_also<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.see_also().map(|x| x.to_any()),
@@ -6527,8 +4641,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn deprecated_element_has_exact_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.deprecated_element_has_exact_replacement(),
@@ -6537,8 +4649,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn deprecated_element_has_possible_replacement<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.deprecated_element_has_possible_replacement(),
@@ -6547,8 +4657,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.aliases().map(|x| x.to_any()),
@@ -6557,8 +4665,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn structured_aliases<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::StructuredAlias>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.structured_aliases().map(|x| x.to_any()),
@@ -6567,8 +4673,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.mappings().map(|x| x.to_any()),
@@ -6577,8 +4681,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn exact_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.exact_mappings().map(|x| x.to_any()),
@@ -6587,8 +4689,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn close_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.close_mappings().map(|x| x.to_any()),
@@ -6597,8 +4697,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn related_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.related_mappings().map(|x| x.to_any()),
@@ -6607,8 +4705,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn narrow_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.narrow_mappings().map(|x| x.to_any()),
@@ -6617,8 +4713,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn broad_mappings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.broad_mappings().map(|x| x.to_any()),
@@ -6627,8 +4721,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn created_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.created_by(),
@@ -6637,8 +4729,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn contributors<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.contributors().map(|x| x.to_any()),
@@ -6647,8 +4737,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn created_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.created_on(),
@@ -6657,8 +4745,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn last_updated_on<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.last_updated_on(),
@@ -6667,8 +4753,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn modified_by<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.modified_by(),
@@ -6677,8 +4761,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn status<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.status(),
@@ -6687,8 +4769,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn rank(&self) -> Option<isize> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.rank(),
@@ -6697,8 +4777,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn categories<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.categories().map(|x| x.to_any()),
@@ -6707,8 +4785,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn keywords<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.keywords().map(|x| x.to_any()),
@@ -6717,8 +4793,6 @@ impl CommonMetadata for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
 }
 
 pub trait Element : Extensible  +  Annotatable  +  CommonMetadata   {
@@ -6762,337 +4836,209 @@ impl Element for crate::Element {
         fn name(&self) -> element_utl::name_range {
             element_utl::name_range::String(self.name.clone())
     }
-
-    
         fn id_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         return self.id_prefixes.as_ref();
     }
-
-    
         fn id_prefixes_are_closed(&self) -> Option<bool> {
         return self.id_prefixes_are_closed;
     }
-
-    
         fn definition_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.definition_uri.as_ref();
     }
-
-    
         fn local_names<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::LocalName>> {
         return self.local_names.as_ref();
     }
-
-    
         fn conforms_to<'a>(&'a self) -> Option<&'a str> {
         return self.conforms_to.as_deref();
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.implements.as_ref();
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.instantiates.as_ref();
     }
-
-    
 }
 impl Element for crate::SchemaDefinition {
         fn name(&self) -> element_utl::name_range {
             element_utl::name_range::ncname(self.name.clone())
     }
-
-    
         fn id_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         return self.id_prefixes.as_ref();
     }
-
-    
         fn id_prefixes_are_closed(&self) -> Option<bool> {
         return self.id_prefixes_are_closed;
     }
-
-    
         fn definition_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.definition_uri.as_ref();
     }
-
-    
         fn local_names<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::LocalName>> {
         return self.local_names.as_ref();
     }
-
-    
         fn conforms_to<'a>(&'a self) -> Option<&'a str> {
         return self.conforms_to.as_deref();
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.implements.as_ref();
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.instantiates.as_ref();
     }
-
-    
 }
 impl Element for crate::TypeDefinition {
         fn name(&self) -> element_utl::name_range {
             element_utl::name_range::String(self.name.clone())
     }
-
-    
         fn id_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         return self.id_prefixes.as_ref();
     }
-
-    
         fn id_prefixes_are_closed(&self) -> Option<bool> {
         return self.id_prefixes_are_closed;
     }
-
-    
         fn definition_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.definition_uri.as_ref();
     }
-
-    
         fn local_names<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::LocalName>> {
         return self.local_names.as_ref();
     }
-
-    
         fn conforms_to<'a>(&'a self) -> Option<&'a str> {
         return self.conforms_to.as_deref();
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.implements.as_ref();
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.instantiates.as_ref();
     }
-
-    
 }
 impl Element for crate::SubsetDefinition {
         fn name(&self) -> element_utl::name_range {
             element_utl::name_range::String(self.name.clone())
     }
-
-    
         fn id_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         return self.id_prefixes.as_ref();
     }
-
-    
         fn id_prefixes_are_closed(&self) -> Option<bool> {
         return self.id_prefixes_are_closed;
     }
-
-    
         fn definition_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.definition_uri.as_ref();
     }
-
-    
         fn local_names<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::LocalName>> {
         return self.local_names.as_ref();
     }
-
-    
         fn conforms_to<'a>(&'a self) -> Option<&'a str> {
         return self.conforms_to.as_deref();
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.implements.as_ref();
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.instantiates.as_ref();
     }
-
-    
 }
 impl Element for crate::Definition {
         fn name(&self) -> element_utl::name_range {
             element_utl::name_range::String(self.name.clone())
     }
-
-    
         fn id_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         return self.id_prefixes.as_ref();
     }
-
-    
         fn id_prefixes_are_closed(&self) -> Option<bool> {
         return self.id_prefixes_are_closed;
     }
-
-    
         fn definition_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.definition_uri.as_ref();
     }
-
-    
         fn local_names<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::LocalName>> {
         return self.local_names.as_ref();
     }
-
-    
         fn conforms_to<'a>(&'a self) -> Option<&'a str> {
         return self.conforms_to.as_deref();
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.implements.as_ref();
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.instantiates.as_ref();
     }
-
-    
 }
 impl Element for crate::EnumDefinition {
         fn name(&self) -> element_utl::name_range {
             element_utl::name_range::String(self.name.clone())
     }
-
-    
         fn id_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         return self.id_prefixes.as_ref();
     }
-
-    
         fn id_prefixes_are_closed(&self) -> Option<bool> {
         return self.id_prefixes_are_closed;
     }
-
-    
         fn definition_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.definition_uri.as_ref();
     }
-
-    
         fn local_names<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::LocalName>> {
         return self.local_names.as_ref();
     }
-
-    
         fn conforms_to<'a>(&'a self) -> Option<&'a str> {
         return self.conforms_to.as_deref();
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.implements.as_ref();
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.instantiates.as_ref();
     }
-
-    
 }
 impl Element for crate::SlotDefinition {
         fn name(&self) -> element_utl::name_range {
             element_utl::name_range::String(self.name.clone())
     }
-
-    
         fn id_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         return self.id_prefixes.as_ref();
     }
-
-    
         fn id_prefixes_are_closed(&self) -> Option<bool> {
         return self.id_prefixes_are_closed;
     }
-
-    
         fn definition_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.definition_uri.as_ref();
     }
-
-    
         fn local_names<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::LocalName>> {
         return self.local_names.as_ref();
     }
-
-    
         fn conforms_to<'a>(&'a self) -> Option<&'a str> {
         return self.conforms_to.as_deref();
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.implements.as_ref();
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.instantiates.as_ref();
     }
-
-    
 }
 impl Element for crate::ClassDefinition {
         fn name(&self) -> element_utl::name_range {
             element_utl::name_range::String(self.name.clone())
     }
-
-    
         fn id_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         return self.id_prefixes.as_ref();
     }
-
-    
         fn id_prefixes_are_closed(&self) -> Option<bool> {
         return self.id_prefixes_are_closed;
     }
-
-    
         fn definition_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.definition_uri.as_ref();
     }
-
-    
         fn local_names<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::LocalName>> {
         return self.local_names.as_ref();
     }
-
-    
         fn conforms_to<'a>(&'a self) -> Option<&'a str> {
         return self.conforms_to.as_deref();
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.implements.as_ref();
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.instantiates.as_ref();
     }
-
-    
 }
 
 impl Element for crate::ElementOrSubtype {
@@ -7108,8 +5054,6 @@ impl Element for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn id_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.id_prefixes().map(|x| x.to_any()),
@@ -7122,8 +5066,6 @@ impl Element for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn id_prefixes_are_closed(&self) -> Option<bool> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.id_prefixes_are_closed(),
@@ -7136,8 +5078,6 @@ impl Element for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn definition_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.definition_uri(),
@@ -7150,8 +5090,6 @@ impl Element for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn local_names<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::LocalName>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.local_names().map(|x| x.to_any()),
@@ -7164,8 +5102,6 @@ impl Element for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn conforms_to<'a>(&'a self) -> Option<&'a str> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.conforms_to(),
@@ -7178,8 +5114,6 @@ impl Element for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.implements().map(|x| x.to_any()),
@@ -7192,8 +5126,6 @@ impl Element for crate::ElementOrSubtype {
 
         }
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 ElementOrSubtype::SchemaDefinition(val) => val.instantiates().map(|x| x.to_any()),
@@ -7206,8 +5138,6 @@ impl Element for crate::ElementOrSubtype {
 
         }
     }
-
-    
 }
 impl Element for crate::DefinitionOrSubtype {
         fn name(&self) -> element_utl::name_range {
@@ -7218,8 +5148,6 @@ impl Element for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn id_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.id_prefixes().map(|x| x.to_any()),
@@ -7228,8 +5156,6 @@ impl Element for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn id_prefixes_are_closed(&self) -> Option<bool> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.id_prefixes_are_closed(),
@@ -7238,8 +5164,6 @@ impl Element for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn definition_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.definition_uri(),
@@ -7248,8 +5172,6 @@ impl Element for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn local_names<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::LocalName>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.local_names().map(|x| x.to_any()),
@@ -7258,8 +5180,6 @@ impl Element for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn conforms_to<'a>(&'a self) -> Option<&'a str> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.conforms_to(),
@@ -7268,8 +5188,6 @@ impl Element for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.implements().map(|x| x.to_any()),
@@ -7278,8 +5196,6 @@ impl Element for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.instantiates().map(|x| x.to_any()),
@@ -7288,8 +5204,6 @@ impl Element for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
 }
 
 pub trait SchemaDefinition : Element   {
@@ -7389,113 +5303,69 @@ impl SchemaDefinition for crate::SchemaDefinition {
         fn id<'a>(&'a self) -> &'a crate::uri {
         return &self.id;
     }
-
-    
         fn version<'a>(&'a self) -> Option<&'a str> {
         return self.version.as_deref();
     }
-
-    
         fn imports<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.imports.as_ref();
     }
-
-    
         fn license<'a>(&'a self) -> Option<&'a str> {
         return self.license.as_deref();
     }
-
-    
         fn prefixes<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Prefix>> {
         return self.prefixes.as_ref();
     }
-
-    
         fn emit_prefixes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ncname>> {
         return self.emit_prefixes.as_ref();
     }
-
-    
         fn default_curi_maps<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.default_curi_maps.as_ref();
     }
-
-    
         fn default_prefix<'a>(&'a self) -> Option<&'a str> {
         return self.default_prefix.as_deref();
     }
-
-    
         fn default_range<'a>(&'a self) -> Option<&'a str> {
         return self.default_range.as_deref();
     }
-
-    
         fn subsets<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::SubsetDefinition>> {
         return self.subsets.as_ref();
     }
-
-    
         fn types<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::TypeDefinition>> {
         return self.types.as_ref();
     }
-
-    
         fn enums<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::EnumDefinition>> {
         return self.enums.as_ref();
     }
-
-    
         fn slot_definitions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::SlotDefinition>> {
         return self.slot_definitions.as_ref();
     }
-
-    
         fn classes<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::ClassDefinition>> {
         return self.classes.as_ref();
     }
-
-    
         fn metamodel_version<'a>(&'a self) -> Option<&'a str> {
         return self.metamodel_version.as_deref();
     }
-
-    
         fn source_file<'a>(&'a self) -> Option<&'a str> {
         return self.source_file.as_deref();
     }
-
-    
         fn source_file_date<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.source_file_date.as_ref();
     }
-
-    
         fn source_file_size(&self) -> Option<isize> {
         return self.source_file_size;
     }
-
-    
         fn generation_date<'a>(&'a self) -> Option<&'a crate::NaiveDateTime> {
         return self.generation_date.as_ref();
     }
-
-    
         fn slot_names_unique(&self) -> Option<bool> {
         return self.slot_names_unique;
     }
-
-    
         fn settings<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Setting>> {
         return self.settings.as_ref();
     }
-
-    
         fn bindings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::EnumBinding>> {
         return self.bindings.as_ref();
     }
-
-    
 }
 
 
@@ -7537,28 +5407,18 @@ impl TypeDefinition for crate::TypeDefinition {
         fn typeof_<'a>(&'a self) -> Option<&'a str> {
         return self.typeof_.as_deref();
     }
-
-    
         fn base<'a>(&'a self) -> Option<&'a str> {
         return self.base.as_deref();
     }
-
-    
         fn type_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.type_uri.as_ref();
     }
-
-    
         fn repr<'a>(&'a self) -> Option<&'a str> {
         return self.repr.as_deref();
     }
-
-    
         fn union_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.union_of.as_ref();
     }
-
-    
 }
 
 
@@ -7608,149 +5468,93 @@ impl Definition for crate::Definition {
         fn is_a<'a>(&'a self) -> Option<&'a str> {
         return self.is_a.as_deref();
     }
-
-    
         fn abstract_(&self) -> Option<bool> {
         return self.abstract_;
     }
-
-    
         fn mixin(&self) -> Option<bool> {
         return self.mixin;
     }
-
-    
         fn mixins<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.mixins.as_ref();
     }
-
-    
         fn apply_to<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.apply_to.as_ref();
     }
-
-    
         fn values_from<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.values_from.as_ref();
     }
-
-    
         fn string_serialization<'a>(&'a self) -> Option<&'a str> {
         return self.string_serialization.as_deref();
     }
-
-    
 }
 impl Definition for crate::EnumDefinition {
         fn is_a<'a>(&'a self) -> Option<&'a str> {
         return self.is_a.as_deref();
     }
-
-    
         fn abstract_(&self) -> Option<bool> {
         return self.abstract_;
     }
-
-    
         fn mixin(&self) -> Option<bool> {
         return self.mixin;
     }
-
-    
         fn mixins<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.mixins.as_ref();
     }
-
-    
         fn apply_to<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.apply_to.as_ref();
     }
-
-    
         fn values_from<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.values_from.as_ref();
     }
-
-    
         fn string_serialization<'a>(&'a self) -> Option<&'a str> {
         return self.string_serialization.as_deref();
     }
-
-    
 }
 impl Definition for crate::SlotDefinition {
         fn is_a<'a>(&'a self) -> Option<&'a str> {
         return self.is_a.as_deref();
     }
-
-    
         fn abstract_(&self) -> Option<bool> {
         return self.abstract_;
     }
-
-    
         fn mixin(&self) -> Option<bool> {
         return self.mixin;
     }
-
-    
         fn mixins<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.mixins.as_ref();
     }
-
-    
         fn apply_to<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.apply_to.as_ref();
     }
-
-    
         fn values_from<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.values_from.as_ref();
     }
-
-    
         fn string_serialization<'a>(&'a self) -> Option<&'a str> {
         return self.string_serialization.as_deref();
     }
-
-    
 }
 impl Definition for crate::ClassDefinition {
         fn is_a<'a>(&'a self) -> Option<&'a str> {
         return self.is_a.as_deref();
     }
-
-    
         fn abstract_(&self) -> Option<bool> {
         return self.abstract_;
     }
-
-    
         fn mixin(&self) -> Option<bool> {
         return self.mixin;
     }
-
-    
         fn mixins<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.mixins.as_ref();
     }
-
-    
         fn apply_to<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.apply_to.as_ref();
     }
-
-    
         fn values_from<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.values_from.as_ref();
     }
-
-    
         fn string_serialization<'a>(&'a self) -> Option<&'a str> {
         return self.string_serialization.as_deref();
     }
-
-    
 }
 
 impl Definition for crate::DefinitionOrSubtype {
@@ -7762,8 +5566,6 @@ impl Definition for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn abstract_(&self) -> Option<bool> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.abstract_(),
@@ -7772,8 +5574,6 @@ impl Definition for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn mixin(&self) -> Option<bool> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.mixin(),
@@ -7782,8 +5582,6 @@ impl Definition for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn mixins<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.mixins().map(|x| x.to_any()),
@@ -7792,8 +5590,6 @@ impl Definition for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn apply_to<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.apply_to().map(|x| x.to_any()),
@@ -7802,8 +5598,6 @@ impl Definition for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn values_from<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.values_from().map(|x| x.to_any()),
@@ -7812,8 +5606,6 @@ impl Definition for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
         fn string_serialization<'a>(&'a self) -> Option<&'a str> {
         match self {
                 DefinitionOrSubtype::EnumDefinition(val) => val.string_serialization(),
@@ -7822,8 +5614,6 @@ impl Definition for crate::DefinitionOrSubtype {
 
         }
     }
-
-    
 }
 
 pub trait AnonymousEnumExpression : EnumExpression   {
@@ -7848,8 +5638,6 @@ impl EnumDefinition for crate::EnumDefinition {
         fn enum_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.enum_uri.as_ref();
     }
-
-    
 }
 
 
@@ -7878,23 +5666,15 @@ impl EnumBinding for crate::EnumBinding {
         fn range<'a>(&'a self) -> Option<&'a str> {
         return self.range.as_deref();
     }
-
-    
         fn obligation_level<'a>(&'a self) -> Option<&'a crate::ObligationLevelEnum> {
         return self.obligation_level.as_ref();
     }
-
-    
         fn binds_value_of<'a>(&'a self) -> Option<&'a str> {
         return self.binds_value_of.as_deref();
     }
-
-    
         fn pv_formula<'a>(&'a self) -> Option<&'a crate::PvFormulaOptions> {
         return self.pv_formula.as_ref();
     }
-
-    
 }
 
 
@@ -7915,13 +5695,9 @@ impl MatchQuery for crate::MatchQuery {
         fn identifier_pattern<'a>(&'a self) -> Option<&'a str> {
         return self.identifier_pattern.as_deref();
     }
-
-    
         fn source_ontology<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source_ontology.as_ref();
     }
-
-    
 }
 
 
@@ -7958,33 +5734,21 @@ impl ReachabilityQuery for crate::ReachabilityQuery {
         fn source_ontology<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.source_ontology.as_ref();
     }
-
-    
         fn source_nodes<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.source_nodes.as_ref();
     }
-
-    
         fn relationship_types<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.relationship_types.as_ref();
     }
-
-    
         fn is_direct(&self) -> Option<bool> {
         return self.is_direct;
     }
-
-    
         fn include_self(&self) -> Option<bool> {
         return self.include_self;
     }
-
-    
         fn traverse_up(&self) -> Option<bool> {
         return self.traverse_up;
     }
-
-    
 }
 
 
@@ -8009,18 +5773,12 @@ impl StructuredAlias for crate::StructuredAlias {
         fn literal_form<'a>(&'a self) -> &'a str {
         return &self.literal_form[..];
     }
-
-    
         fn alias_predicate<'a>(&'a self) -> Option<&'a crate::AliasPredicateEnum> {
         return self.alias_predicate.as_ref();
     }
-
-    
         fn alias_contexts<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uri>> {
         return self.alias_contexts.as_ref();
     }
-
-    
 }
 
 
@@ -8130,202 +5888,124 @@ impl TypeExpression for crate::TypeExpression {
         fn pattern<'a>(&'a self) -> Option<&'a str> {
         return self.pattern.as_deref();
     }
-
-    
         fn structured_pattern<'a>(&'a self) -> Option<&'a crate::PatternExpression> {
         return self.structured_pattern.as_ref();
     }
-
-    
         fn unit<'a>(&'a self) -> Option<&'a crate::UnitOfMeasure> {
         return self.unit.as_ref();
     }
-
-    
         fn implicit_prefix<'a>(&'a self) -> Option<&'a str> {
         return self.implicit_prefix.as_deref();
     }
-
-    
         fn equals_string<'a>(&'a self) -> Option<&'a str> {
         return self.equals_string.as_deref();
     }
-
-    
         fn equals_string_in<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.equals_string_in.as_ref();
     }
-
-    
         fn equals_number(&self) -> Option<isize> {
         return self.equals_number;
     }
-
-    
         fn minimum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.minimum_value.as_ref();
     }
-
-    
         fn maximum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.maximum_value.as_ref();
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.none_of.as_ref();
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.exactly_one_of.as_ref();
     }
-
-    
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.any_of.as_ref();
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.all_of.as_ref();
     }
-
-    
 }
 impl TypeExpression for crate::AnonymousTypeExpression {
         fn pattern<'a>(&'a self) -> Option<&'a str> {
         return self.pattern.as_deref();
     }
-
-    
         fn structured_pattern<'a>(&'a self) -> Option<&'a crate::PatternExpression> {
         return self.structured_pattern.as_ref();
     }
-
-    
         fn unit<'a>(&'a self) -> Option<&'a crate::UnitOfMeasure> {
         return self.unit.as_ref();
     }
-
-    
         fn implicit_prefix<'a>(&'a self) -> Option<&'a str> {
         return self.implicit_prefix.as_deref();
     }
-
-    
         fn equals_string<'a>(&'a self) -> Option<&'a str> {
         return self.equals_string.as_deref();
     }
-
-    
         fn equals_string_in<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.equals_string_in.as_ref();
     }
-
-    
         fn equals_number(&self) -> Option<isize> {
         return self.equals_number;
     }
-
-    
         fn minimum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.minimum_value.as_ref();
     }
-
-    
         fn maximum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.maximum_value.as_ref();
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.none_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.exactly_one_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.any_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.all_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
 }
 impl TypeExpression for crate::TypeDefinition {
         fn pattern<'a>(&'a self) -> Option<&'a str> {
         return self.pattern.as_deref();
     }
-
-    
         fn structured_pattern<'a>(&'a self) -> Option<&'a crate::PatternExpression> {
         return self.structured_pattern.as_ref();
     }
-
-    
         fn unit<'a>(&'a self) -> Option<&'a crate::UnitOfMeasure> {
         return self.unit.as_ref();
     }
-
-    
         fn implicit_prefix<'a>(&'a self) -> Option<&'a str> {
         return self.implicit_prefix.as_deref();
     }
-
-    
         fn equals_string<'a>(&'a self) -> Option<&'a str> {
         return self.equals_string.as_deref();
     }
-
-    
         fn equals_string_in<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.equals_string_in.as_ref();
     }
-
-    
         fn equals_number(&self) -> Option<isize> {
         return self.equals_number;
     }
-
-    
         fn minimum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.minimum_value.as_ref();
     }
-
-    
         fn maximum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.maximum_value.as_ref();
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.none_of.as_ref();
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.exactly_one_of.as_ref();
     }
-
-    
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.any_of.as_ref();
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         return self.all_of.as_ref();
     }
-
-    
 }
 
 impl TypeExpression for crate::TypeExpressionOrSubtype {
@@ -8336,8 +6016,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn structured_pattern<'a>(&'a self) -> Option<&'a crate::PatternExpression> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.structured_pattern(),
@@ -8345,8 +6023,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn unit<'a>(&'a self) -> Option<&'a crate::UnitOfMeasure> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.unit(),
@@ -8354,8 +6030,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn implicit_prefix<'a>(&'a self) -> Option<&'a str> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.implicit_prefix(),
@@ -8363,8 +6037,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn equals_string<'a>(&'a self) -> Option<&'a str> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.equals_string(),
@@ -8372,8 +6044,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn equals_string_in<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.equals_string_in().map(|x| x.to_any()),
@@ -8381,8 +6051,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn equals_number(&self) -> Option<isize> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.equals_number(),
@@ -8390,8 +6058,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn minimum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.minimum_value(),
@@ -8399,8 +6065,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn maximum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.maximum_value(),
@@ -8408,8 +6072,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.none_of().map(|x| x.to_any()),
@@ -8417,8 +6079,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.exactly_one_of().map(|x| x.to_any()),
@@ -8426,8 +6086,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.any_of().map(|x| x.to_any()),
@@ -8435,8 +6093,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousTypeExpression>> {
         match self {
                 TypeExpressionOrSubtype::AnonymousTypeExpression(val) => val.all_of().map(|x| x.to_any()),
@@ -8444,8 +6100,6 @@ impl TypeExpression for crate::TypeExpressionOrSubtype {
 
         }
     }
-
-    
 }
 
 pub trait EnumExpression : Expression   {
@@ -8501,172 +6155,106 @@ impl EnumExpression for crate::EnumExpression {
         fn code_set<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.code_set.as_ref();
     }
-
-    
         fn code_set_tag<'a>(&'a self) -> Option<&'a str> {
         return self.code_set_tag.as_deref();
     }
-
-    
         fn code_set_version<'a>(&'a self) -> Option<&'a str> {
         return self.code_set_version.as_deref();
     }
-
-    
         fn pv_formula<'a>(&'a self) -> Option<&'a crate::PvFormulaOptions> {
         return self.pv_formula.as_ref();
     }
-
-    
         fn permissible_values<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::PermissibleValue>> {
         return self.permissible_values.as_ref();
     }
-
-    
         fn include<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousEnumExpression>> {
         return self.include.as_ref();
     }
-
-    
         fn minus<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousEnumExpression>> {
         return self.minus.as_ref();
     }
-
-    
         fn inherits<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.inherits.as_ref();
     }
-
-    
         fn reachable_from<'a>(&'a self) -> Option<&'a crate::ReachabilityQuery> {
         return self.reachable_from.as_ref();
     }
-
-    
         fn matches<'a>(&'a self) -> Option<&'a crate::MatchQuery> {
         return self.matches.as_ref();
     }
-
-    
         fn concepts<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.concepts.as_ref();
     }
-
-    
 }
 impl EnumExpression for crate::AnonymousEnumExpression {
         fn code_set<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.code_set.as_ref();
     }
-
-    
         fn code_set_tag<'a>(&'a self) -> Option<&'a str> {
         return self.code_set_tag.as_deref();
     }
-
-    
         fn code_set_version<'a>(&'a self) -> Option<&'a str> {
         return self.code_set_version.as_deref();
     }
-
-    
         fn pv_formula<'a>(&'a self) -> Option<&'a crate::PvFormulaOptions> {
         return self.pv_formula.as_ref();
     }
-
-    
         fn permissible_values<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::PermissibleValue>> {
         return self.permissible_values.as_ref();
     }
-
-    
         fn include<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousEnumExpression>> {
         return self.include.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn minus<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousEnumExpression>> {
         return self.minus.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn inherits<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.inherits.as_ref();
     }
-
-    
         fn reachable_from<'a>(&'a self) -> Option<&'a crate::ReachabilityQuery> {
         return self.reachable_from.as_ref();
     }
-
-    
         fn matches<'a>(&'a self) -> Option<&'a crate::MatchQuery> {
         return self.matches.as_ref();
     }
-
-    
         fn concepts<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.concepts.as_ref();
     }
-
-    
 }
 impl EnumExpression for crate::EnumDefinition {
         fn code_set<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.code_set.as_ref();
     }
-
-    
         fn code_set_tag<'a>(&'a self) -> Option<&'a str> {
         return self.code_set_tag.as_deref();
     }
-
-    
         fn code_set_version<'a>(&'a self) -> Option<&'a str> {
         return self.code_set_version.as_deref();
     }
-
-    
         fn pv_formula<'a>(&'a self) -> Option<&'a crate::PvFormulaOptions> {
         return self.pv_formula.as_ref();
     }
-
-    
         fn permissible_values<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::PermissibleValue>> {
         return self.permissible_values.as_ref();
     }
-
-    
         fn include<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousEnumExpression>> {
         return self.include.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn minus<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousEnumExpression>> {
         return self.minus.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn inherits<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.inherits.as_ref();
     }
-
-    
         fn reachable_from<'a>(&'a self) -> Option<&'a crate::ReachabilityQuery> {
         return self.reachable_from.as_ref();
     }
-
-    
         fn matches<'a>(&'a self) -> Option<&'a crate::MatchQuery> {
         return self.matches.as_ref();
     }
-
-    
         fn concepts<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.concepts.as_ref();
     }
-
-    
 }
 
 impl EnumExpression for crate::EnumExpressionOrSubtype {
@@ -8677,8 +6265,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
         fn code_set_tag<'a>(&'a self) -> Option<&'a str> {
         match self {
                 EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.code_set_tag(),
@@ -8686,8 +6272,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
         fn code_set_version<'a>(&'a self) -> Option<&'a str> {
         match self {
                 EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.code_set_version(),
@@ -8695,8 +6279,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
         fn pv_formula<'a>(&'a self) -> Option<&'a crate::PvFormulaOptions> {
         match self {
                 EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.pv_formula(),
@@ -8704,8 +6286,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
         fn permissible_values<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::PermissibleValue>> {
         match self {
                 EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.permissible_values().map(|x| x.to_any()),
@@ -8713,8 +6293,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
         fn include<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousEnumExpression>> {
         match self {
                 EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.include().map(|x| x.to_any()),
@@ -8722,8 +6300,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
         fn minus<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousEnumExpression>> {
         match self {
                 EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.minus().map(|x| x.to_any()),
@@ -8731,8 +6307,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
         fn inherits<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.inherits().map(|x| x.to_any()),
@@ -8740,8 +6314,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
         fn reachable_from<'a>(&'a self) -> Option<&'a crate::ReachabilityQuery> {
         match self {
                 EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.reachable_from(),
@@ -8749,8 +6321,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
         fn matches<'a>(&'a self) -> Option<&'a crate::MatchQuery> {
         match self {
                 EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.matches(),
@@ -8758,8 +6328,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
         fn concepts<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         match self {
                 EnumExpressionOrSubtype::AnonymousEnumExpression(val) => val.concepts().map(|x| x.to_any()),
@@ -8767,8 +6335,6 @@ impl EnumExpression for crate::EnumExpressionOrSubtype {
 
         }
     }
-
-    
 }
 
 pub trait AnonymousExpression : Expression  +  Extensible  +  Annotatable  +  CommonMetadata   {
@@ -8827,43 +6393,27 @@ impl PathExpression for crate::PathExpression {
         fn followed_by<'a>(&'a self) -> Option<&'a crate::PathExpression> {
         return self.followed_by.as_deref();
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::PathExpression>> {
         return self.none_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::PathExpression>> {
         return self.any_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::PathExpression>> {
         return self.all_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::PathExpression>> {
         return self.exactly_one_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn reversed(&self) -> Option<bool> {
         return self.reversed;
     }
-
-    
         fn traverse<'a>(&'a self) -> Option<&'a str> {
         return self.traverse.as_deref();
     }
-
-    
         fn range_expression<'a>(&'a self) -> Option<&'a crate::AnonymousClassExpression> {
         return self.range_expression.as_deref();
     }
-
-    
 }
 
 
@@ -8992,442 +6542,268 @@ impl SlotExpression for crate::SlotExpression {
         fn range<'a>(&'a self) -> Option<&'a str> {
         return self.range.as_deref();
     }
-
-    
         fn range_expression<'a>(&'a self) -> Option<&'a crate::AnonymousClassExpression> {
         return self.range_expression.as_ref();
     }
-
-    
         fn enum_range<'a>(&'a self) -> Option<&'a EnumExpressionOrSubtype> {
         return self.enum_range.as_ref();
     }
-
-    
         fn bindings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::EnumBinding>> {
         return self.bindings.as_ref();
     }
-
-    
         fn required(&self) -> Option<bool> {
         return self.required;
     }
-
-    
         fn recommended(&self) -> Option<bool> {
         return self.recommended;
     }
-
-    
         fn multivalued(&self) -> Option<bool> {
         return self.multivalued;
     }
-
-    
         fn inlined(&self) -> Option<bool> {
         return self.inlined;
     }
-
-    
         fn inlined_as_list(&self) -> Option<bool> {
         return self.inlined_as_list;
     }
-
-    
         fn minimum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.minimum_value.as_ref();
     }
-
-    
         fn maximum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.maximum_value.as_ref();
     }
-
-    
         fn pattern<'a>(&'a self) -> Option<&'a str> {
         return self.pattern.as_deref();
     }
-
-    
         fn structured_pattern<'a>(&'a self) -> Option<&'a crate::PatternExpression> {
         return self.structured_pattern.as_ref();
     }
-
-    
         fn unit<'a>(&'a self) -> Option<&'a crate::UnitOfMeasure> {
         return self.unit.as_ref();
     }
-
-    
         fn implicit_prefix<'a>(&'a self) -> Option<&'a str> {
         return self.implicit_prefix.as_deref();
     }
-
-    
         fn value_presence<'a>(&'a self) -> Option<&'a crate::PresenceEnum> {
         return self.value_presence.as_ref();
     }
-
-    
         fn equals_string<'a>(&'a self) -> Option<&'a str> {
         return self.equals_string.as_deref();
     }
-
-    
         fn equals_string_in<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.equals_string_in.as_ref();
     }
-
-    
         fn equals_number(&self) -> Option<isize> {
         return self.equals_number;
     }
-
-    
         fn equals_expression<'a>(&'a self) -> Option<&'a str> {
         return self.equals_expression.as_deref();
     }
-
-    
         fn exact_cardinality(&self) -> Option<isize> {
         return self.exact_cardinality;
     }
-
-    
         fn minimum_cardinality(&self) -> Option<isize> {
         return self.minimum_cardinality;
     }
-
-    
         fn maximum_cardinality(&self) -> Option<isize> {
         return self.maximum_cardinality;
     }
-
-    
         fn has_member<'a>(&'a self) -> Option<&'a crate::AnonymousSlotExpression> {
         return self.has_member.as_ref();
     }
-
-    
         fn all_members<'a>(&'a self) -> Option<&'a crate::AnonymousSlotExpression> {
         return self.all_members.as_ref();
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.none_of.as_ref();
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.exactly_one_of.as_ref();
     }
-
-    
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.any_of.as_ref();
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.all_of.as_ref();
     }
-
-    
 }
 impl SlotExpression for crate::AnonymousSlotExpression {
         fn range<'a>(&'a self) -> Option<&'a str> {
         return self.range.as_deref();
     }
-
-    
         fn range_expression<'a>(&'a self) -> Option<&'a crate::AnonymousClassExpression> {
         return self.range_expression.as_deref();
     }
-
-    
         fn enum_range<'a>(&'a self) -> Option<&'a EnumExpressionOrSubtype> {
         return self.enum_range.as_ref();
     }
-
-    
         fn bindings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::EnumBinding>> {
         return self.bindings.as_ref();
     }
-
-    
         fn required(&self) -> Option<bool> {
         return self.required;
     }
-
-    
         fn recommended(&self) -> Option<bool> {
         return self.recommended;
     }
-
-    
         fn multivalued(&self) -> Option<bool> {
         return self.multivalued;
     }
-
-    
         fn inlined(&self) -> Option<bool> {
         return self.inlined;
     }
-
-    
         fn inlined_as_list(&self) -> Option<bool> {
         return self.inlined_as_list;
     }
-
-    
         fn minimum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.minimum_value.as_ref();
     }
-
-    
         fn maximum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.maximum_value.as_ref();
     }
-
-    
         fn pattern<'a>(&'a self) -> Option<&'a str> {
         return self.pattern.as_deref();
     }
-
-    
         fn structured_pattern<'a>(&'a self) -> Option<&'a crate::PatternExpression> {
         return self.structured_pattern.as_ref();
     }
-
-    
         fn unit<'a>(&'a self) -> Option<&'a crate::UnitOfMeasure> {
         return self.unit.as_ref();
     }
-
-    
         fn implicit_prefix<'a>(&'a self) -> Option<&'a str> {
         return self.implicit_prefix.as_deref();
     }
-
-    
         fn value_presence<'a>(&'a self) -> Option<&'a crate::PresenceEnum> {
         return self.value_presence.as_ref();
     }
-
-    
         fn equals_string<'a>(&'a self) -> Option<&'a str> {
         return self.equals_string.as_deref();
     }
-
-    
         fn equals_string_in<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.equals_string_in.as_ref();
     }
-
-    
         fn equals_number(&self) -> Option<isize> {
         return self.equals_number;
     }
-
-    
         fn equals_expression<'a>(&'a self) -> Option<&'a str> {
         return self.equals_expression.as_deref();
     }
-
-    
         fn exact_cardinality(&self) -> Option<isize> {
         return self.exact_cardinality;
     }
-
-    
         fn minimum_cardinality(&self) -> Option<isize> {
         return self.minimum_cardinality;
     }
-
-    
         fn maximum_cardinality(&self) -> Option<isize> {
         return self.maximum_cardinality;
     }
-
-    
         fn has_member<'a>(&'a self) -> Option<&'a crate::AnonymousSlotExpression> {
         return self.has_member.as_deref();
     }
-
-    
         fn all_members<'a>(&'a self) -> Option<&'a crate::AnonymousSlotExpression> {
         return self.all_members.as_deref();
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.none_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.exactly_one_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.any_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.all_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
 }
 impl SlotExpression for crate::SlotDefinition {
         fn range<'a>(&'a self) -> Option<&'a str> {
         return self.range.as_deref();
     }
-
-    
         fn range_expression<'a>(&'a self) -> Option<&'a crate::AnonymousClassExpression> {
         return self.range_expression.as_deref();
     }
-
-    
         fn enum_range<'a>(&'a self) -> Option<&'a EnumExpressionOrSubtype> {
         return self.enum_range.as_ref();
     }
-
-    
         fn bindings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::EnumBinding>> {
         return self.bindings.as_ref();
     }
-
-    
         fn required(&self) -> Option<bool> {
         return self.required;
     }
-
-    
         fn recommended(&self) -> Option<bool> {
         return self.recommended;
     }
-
-    
         fn multivalued(&self) -> Option<bool> {
         return self.multivalued;
     }
-
-    
         fn inlined(&self) -> Option<bool> {
         return self.inlined;
     }
-
-    
         fn inlined_as_list(&self) -> Option<bool> {
         return self.inlined_as_list;
     }
-
-    
         fn minimum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.minimum_value.as_ref();
     }
-
-    
         fn maximum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.maximum_value.as_ref();
     }
-
-    
         fn pattern<'a>(&'a self) -> Option<&'a str> {
         return self.pattern.as_deref();
     }
-
-    
         fn structured_pattern<'a>(&'a self) -> Option<&'a crate::PatternExpression> {
         return self.structured_pattern.as_ref();
     }
-
-    
         fn unit<'a>(&'a self) -> Option<&'a crate::UnitOfMeasure> {
         return self.unit.as_ref();
     }
-
-    
         fn implicit_prefix<'a>(&'a self) -> Option<&'a str> {
         return self.implicit_prefix.as_deref();
     }
-
-    
         fn value_presence<'a>(&'a self) -> Option<&'a crate::PresenceEnum> {
         return self.value_presence.as_ref();
     }
-
-    
         fn equals_string<'a>(&'a self) -> Option<&'a str> {
         return self.equals_string.as_deref();
     }
-
-    
         fn equals_string_in<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.equals_string_in.as_ref();
     }
-
-    
         fn equals_number(&self) -> Option<isize> {
         return self.equals_number;
     }
-
-    
         fn equals_expression<'a>(&'a self) -> Option<&'a str> {
         return self.equals_expression.as_deref();
     }
-
-    
         fn exact_cardinality(&self) -> Option<isize> {
         return self.exact_cardinality;
     }
-
-    
         fn minimum_cardinality(&self) -> Option<isize> {
         return self.minimum_cardinality;
     }
-
-    
         fn maximum_cardinality(&self) -> Option<isize> {
         return self.maximum_cardinality;
     }
-
-    
         fn has_member<'a>(&'a self) -> Option<&'a crate::AnonymousSlotExpression> {
         return self.has_member.as_deref();
     }
-
-    
         fn all_members<'a>(&'a self) -> Option<&'a crate::AnonymousSlotExpression> {
         return self.all_members.as_deref();
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.none_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.exactly_one_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.any_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         return self.all_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
 }
 
 impl SlotExpression for crate::SlotExpressionOrSubtype {
@@ -9438,8 +6814,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn range_expression<'a>(&'a self) -> Option<&'a crate::AnonymousClassExpression> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.range_expression(),
@@ -9447,8 +6821,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn enum_range<'a>(&'a self) -> Option<&'a EnumExpressionOrSubtype> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.enum_range(),
@@ -9456,8 +6828,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn bindings<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::EnumBinding>> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.bindings().map(|x| x.to_any()),
@@ -9465,8 +6835,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn required(&self) -> Option<bool> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.required(),
@@ -9474,8 +6842,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn recommended(&self) -> Option<bool> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.recommended(),
@@ -9483,8 +6849,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn multivalued(&self) -> Option<bool> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.multivalued(),
@@ -9492,8 +6856,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn inlined(&self) -> Option<bool> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.inlined(),
@@ -9501,8 +6863,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn inlined_as_list(&self) -> Option<bool> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.inlined_as_list(),
@@ -9510,8 +6870,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn minimum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.minimum_value(),
@@ -9519,8 +6877,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn maximum_value<'a>(&'a self) -> Option<&'a crate::Anything> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.maximum_value(),
@@ -9528,8 +6884,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn pattern<'a>(&'a self) -> Option<&'a str> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.pattern(),
@@ -9537,8 +6891,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn structured_pattern<'a>(&'a self) -> Option<&'a crate::PatternExpression> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.structured_pattern(),
@@ -9546,8 +6898,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn unit<'a>(&'a self) -> Option<&'a crate::UnitOfMeasure> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.unit(),
@@ -9555,8 +6905,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn implicit_prefix<'a>(&'a self) -> Option<&'a str> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.implicit_prefix(),
@@ -9564,8 +6912,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn value_presence<'a>(&'a self) -> Option<&'a crate::PresenceEnum> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.value_presence(),
@@ -9573,8 +6919,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn equals_string<'a>(&'a self) -> Option<&'a str> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.equals_string(),
@@ -9582,8 +6926,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn equals_string_in<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.equals_string_in().map(|x| x.to_any()),
@@ -9591,8 +6933,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn equals_number(&self) -> Option<isize> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.equals_number(),
@@ -9600,8 +6940,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn equals_expression<'a>(&'a self) -> Option<&'a str> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.equals_expression(),
@@ -9609,8 +6947,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn exact_cardinality(&self) -> Option<isize> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.exact_cardinality(),
@@ -9618,8 +6954,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn minimum_cardinality(&self) -> Option<isize> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.minimum_cardinality(),
@@ -9627,8 +6961,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn maximum_cardinality(&self) -> Option<isize> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.maximum_cardinality(),
@@ -9636,8 +6968,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn has_member<'a>(&'a self) -> Option<&'a crate::AnonymousSlotExpression> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.has_member(),
@@ -9645,8 +6975,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn all_members<'a>(&'a self) -> Option<&'a crate::AnonymousSlotExpression> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.all_members(),
@@ -9654,8 +6982,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.none_of().map(|x| x.to_any()),
@@ -9663,8 +6989,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.exactly_one_of().map(|x| x.to_any()),
@@ -9672,8 +6996,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.any_of().map(|x| x.to_any()),
@@ -9681,8 +7003,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousSlotExpression>> {
         match self {
                 SlotExpressionOrSubtype::AnonymousSlotExpression(val) => val.all_of().map(|x| x.to_any()),
@@ -9690,8 +7010,6 @@ impl SlotExpression for crate::SlotExpressionOrSubtype {
 
         }
     }
-
-    
 }
 
 pub trait AnonymousSlotExpression : AnonymousExpression  +  SlotExpression   {
@@ -9864,193 +7182,117 @@ impl SlotDefinition for crate::SlotDefinition {
         fn singular_name<'a>(&'a self) -> Option<&'a str> {
         return self.singular_name.as_deref();
     }
-
-    
         fn domain<'a>(&'a self) -> Option<&'a str> {
         return self.domain.as_deref();
     }
-
-    
         fn slot_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.slot_uri.as_ref();
     }
-
-    
         fn array<'a>(&'a self) -> Option<&'a crate::ArrayExpression> {
         return self.array.as_ref();
     }
-
-    
         fn inherited(&self) -> Option<bool> {
         return self.inherited;
     }
-
-    
         fn readonly<'a>(&'a self) -> Option<&'a str> {
         return self.readonly.as_deref();
     }
-
-    
         fn ifabsent<'a>(&'a self) -> Option<&'a str> {
         return self.ifabsent.as_deref();
     }
-
-    
         fn list_elements_unique(&self) -> Option<bool> {
         return self.list_elements_unique;
     }
-
-    
         fn list_elements_ordered(&self) -> Option<bool> {
         return self.list_elements_ordered;
     }
-
-    
         fn shared(&self) -> Option<bool> {
         return self.shared;
     }
-
-    
         fn key(&self) -> Option<bool> {
         return self.key;
     }
-
-    
         fn identifier(&self) -> Option<bool> {
         return self.identifier;
     }
-
-    
         fn designates_type(&self) -> Option<bool> {
         return self.designates_type;
     }
-
-    
         fn alias<'a>(&'a self) -> Option<&'a str> {
         return self.alias.as_deref();
     }
-
-    
         fn owner<'a>(&'a self) -> Option<&'a str> {
         return self.owner.as_deref();
     }
-
-    
         fn domain_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.domain_of.as_ref();
     }
-
-    
         fn subproperty_of<'a>(&'a self) -> Option<&'a str> {
         return self.subproperty_of.as_deref();
     }
-
-    
         fn symmetric(&self) -> Option<bool> {
         return self.symmetric;
     }
-
-    
         fn reflexive(&self) -> Option<bool> {
         return self.reflexive;
     }
-
-    
         fn locally_reflexive(&self) -> Option<bool> {
         return self.locally_reflexive;
     }
-
-    
         fn irreflexive(&self) -> Option<bool> {
         return self.irreflexive;
     }
-
-    
         fn asymmetric(&self) -> Option<bool> {
         return self.asymmetric;
     }
-
-    
         fn transitive(&self) -> Option<bool> {
         return self.transitive;
     }
-
-    
         fn inverse<'a>(&'a self) -> Option<&'a str> {
         return self.inverse.as_deref();
     }
-
-    
         fn is_class_field(&self) -> Option<bool> {
         return self.is_class_field;
     }
-
-    
         fn transitive_form_of<'a>(&'a self) -> Option<&'a str> {
         return self.transitive_form_of.as_deref();
     }
-
-    
         fn reflexive_transitive_form_of<'a>(&'a self) -> Option<&'a str> {
         return self.reflexive_transitive_form_of.as_deref();
     }
-
-    
         fn role<'a>(&'a self) -> Option<&'a str> {
         return self.role.as_deref();
     }
-
-    
         fn is_usage_slot(&self) -> Option<bool> {
         return self.is_usage_slot;
     }
-
-    
         fn usage_slot_name<'a>(&'a self) -> Option<&'a str> {
         return self.usage_slot_name.as_deref();
     }
-
-    
         fn relational_role<'a>(&'a self) -> Option<&'a crate::RelationalRoleEnum> {
         return self.relational_role.as_ref();
     }
-
-    
         fn slot_group<'a>(&'a self) -> Option<&'a str> {
         return self.slot_group.as_deref();
     }
-
-    
         fn is_grouping_slot(&self) -> Option<bool> {
         return self.is_grouping_slot;
     }
-
-    
         fn path_rule<'a>(&'a self) -> Option<&'a crate::PathExpression> {
         return self.path_rule.as_deref();
     }
-
-    
         fn disjoint_with<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.disjoint_with.as_ref();
     }
-
-    
         fn children_are_mutually_disjoint(&self) -> Option<bool> {
         return self.children_are_mutually_disjoint;
     }
-
-    
         fn union_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.union_of.as_ref();
     }
-
-    
         fn type_mappings<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::TypeMapping>> {
         return self.type_mappings.as_ref();
     }
-
-    
 }
 
 
@@ -10083,86 +7325,56 @@ impl ClassExpression for crate::ClassExpression {
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.any_of.as_ref();
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.exactly_one_of.as_ref();
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.none_of.as_ref();
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.all_of.as_ref();
     }
-
-    
         fn slot_conditions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::SlotDefinition>> {
         return self.slot_conditions.as_ref();
     }
-
-    
 }
 impl ClassExpression for crate::AnonymousClassExpression {
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.any_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.exactly_one_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.none_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.all_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn slot_conditions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::SlotDefinition>> {
         return self.slot_conditions
                 .as_ref()
                 .map(poly_containers::MapView::new);
     }
-
-    
 }
 impl ClassExpression for crate::ClassDefinition {
         fn any_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.any_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.exactly_one_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.none_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.all_of.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn slot_conditions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::SlotDefinition>> {
         return self.slot_conditions
                 .as_ref()
                 .map(poly_containers::MapView::new);
     }
-
-    
 }
 
 impl ClassExpression for crate::ClassExpressionOrSubtype {
@@ -10173,8 +7385,6 @@ impl ClassExpression for crate::ClassExpressionOrSubtype {
 
         }
     }
-
-    
         fn exactly_one_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         match self {
                 ClassExpressionOrSubtype::AnonymousClassExpression(val) => val.exactly_one_of().map(|x| x.to_any()),
@@ -10182,8 +7392,6 @@ impl ClassExpression for crate::ClassExpressionOrSubtype {
 
         }
     }
-
-    
         fn none_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         match self {
                 ClassExpressionOrSubtype::AnonymousClassExpression(val) => val.none_of().map(|x| x.to_any()),
@@ -10191,8 +7399,6 @@ impl ClassExpression for crate::ClassExpressionOrSubtype {
 
         }
     }
-
-    
         fn all_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         match self {
                 ClassExpressionOrSubtype::AnonymousClassExpression(val) => val.all_of().map(|x| x.to_any()),
@@ -10200,8 +7406,6 @@ impl ClassExpression for crate::ClassExpressionOrSubtype {
 
         }
     }
-
-    
         fn slot_conditions<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::SlotDefinition>> {
         match self {
                 ClassExpressionOrSubtype::AnonymousClassExpression(val) => val.slot_conditions().map(|x| x.to_any()),
@@ -10209,8 +7413,6 @@ impl ClassExpression for crate::ClassExpressionOrSubtype {
 
         }
     }
-
-    
 }
 
 pub trait AnonymousClassExpression : AnonymousExpression  +  ClassExpression   {
@@ -10226,8 +7428,6 @@ impl AnonymousClassExpression for crate::AnonymousClassExpression {
         fn is_a<'a>(&'a self) -> Option<&'a str> {
         return self.is_a.as_deref();
     }
-
-    
 }
 
 
@@ -10300,84 +7500,54 @@ impl ClassDefinition for crate::ClassDefinition {
         fn slots<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.slots.as_ref();
     }
-
-    
         fn slot_usage<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::SlotDefinition>> {
         return self.slot_usage
                 .as_ref()
                 .map(poly_containers::MapView::new);
     }
-
-    
         fn attributes<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::SlotDefinition>> {
         return self.attributes
                 .as_ref()
                 .map(poly_containers::MapView::new);
     }
-
-    
         fn class_uri<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.class_uri.as_ref();
     }
-
-    
         fn subclass_of<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.subclass_of.as_ref();
     }
-
-    
         fn union_of<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.union_of.as_ref();
     }
-
-    
         fn defining_slots<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.defining_slots.as_ref();
     }
-
-    
         fn tree_root(&self) -> Option<bool> {
         return self.tree_root;
     }
-
-    
         fn unique_keys<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::UniqueKey>> {
         return self.unique_keys
                 .as_ref()
                 .map(poly_containers::MapView::new);
     }
-
-    
         fn rules<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::ClassRule>> {
         return self.rules.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn classification_rules<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::AnonymousClassExpression>> {
         return self.classification_rules.as_ref().map(|x| poly_containers::ListView::new(x));
     }
-
-    
         fn slot_names_unique(&self) -> Option<bool> {
         return self.slot_names_unique;
     }
-
-    
         fn represents_relationship(&self) -> Option<bool> {
         return self.represents_relationship;
     }
-
-    
         fn disjoint_with<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.disjoint_with.as_ref();
     }
-
-    
         fn children_are_mutually_disjoint(&self) -> Option<bool> {
         return self.children_are_mutually_disjoint;
     }
-
-    
 }
 
 
@@ -10427,33 +7597,21 @@ impl ClassRule for crate::ClassRule {
         fn preconditions<'a>(&'a self) -> Option<&'a crate::AnonymousClassExpression> {
         return self.preconditions.as_deref();
     }
-
-    
         fn postconditions<'a>(&'a self) -> Option<&'a crate::AnonymousClassExpression> {
         return self.postconditions.as_deref();
     }
-
-    
         fn elseconditions<'a>(&'a self) -> Option<&'a crate::AnonymousClassExpression> {
         return self.elseconditions.as_deref();
     }
-
-    
         fn bidirectional(&self) -> Option<bool> {
         return self.bidirectional;
     }
-
-    
         fn open_world(&self) -> Option<bool> {
         return self.open_world;
     }
-
-    
         fn deactivated(&self) -> Option<bool> {
         return self.deactivated;
     }
-
-    
 }
 
 
@@ -10482,23 +7640,15 @@ impl ArrayExpression for crate::ArrayExpression {
         fn exact_number_dimensions(&self) -> Option<isize> {
         return self.exact_number_dimensions;
     }
-
-    
         fn minimum_number_dimensions(&self) -> Option<isize> {
         return self.minimum_number_dimensions;
     }
-
-    
         fn maximum_number_dimensions(&self) -> Option<array_expression_utl::maximum_number_dimensions_range> {
                 self.maximum_number_dimensions.as_ref().cloned()
     }
-
-    
         fn dimensions<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::DimensionExpression>> {
         return self.dimensions.as_ref();
     }
-
-    
 }
 
 
@@ -10527,23 +7677,15 @@ impl DimensionExpression for crate::DimensionExpression {
         fn alias<'a>(&'a self) -> Option<&'a str> {
         return self.alias.as_deref();
     }
-
-    
         fn maximum_cardinality(&self) -> Option<isize> {
         return self.maximum_cardinality;
     }
-
-    
         fn minimum_cardinality(&self) -> Option<isize> {
         return self.minimum_cardinality;
     }
-
-    
         fn exact_cardinality(&self) -> Option<isize> {
         return self.exact_cardinality;
     }
-
-    
 }
 
 
@@ -10568,18 +7710,12 @@ impl PatternExpression for crate::PatternExpression {
         fn syntax<'a>(&'a self) -> Option<&'a str> {
         return self.syntax.as_deref();
     }
-
-    
         fn interpolated(&self) -> Option<bool> {
         return self.interpolated;
     }
-
-    
         fn partial_match(&self) -> Option<bool> {
         return self.partial_match;
     }
-
-    
 }
 
 
@@ -10604,18 +7740,12 @@ impl ImportExpression for crate::ImportExpression {
         fn import_from<'a>(&'a self) -> &'a crate::uriorcurie {
         return &self.import_from;
     }
-
-    
         fn import_as<'a>(&'a self) -> Option<&'a crate::ncname> {
         return self.import_as.as_ref();
     }
-
-    
         fn import_map<'a>(&'a self) -> Option<impl poly_containers::MapRef<'a, String,crate::Setting>> {
         return self.import_map.as_ref();
     }
-
-    
 }
 
 
@@ -10636,13 +7766,9 @@ impl Setting for crate::Setting {
         fn setting_key<'a>(&'a self) -> &'a crate::ncname {
         return &self.setting_key;
     }
-
-    
         fn setting_value<'a>(&'a self) -> &'a str {
         return &self.setting_value[..];
     }
-
-    
 }
 
 
@@ -10663,13 +7789,9 @@ impl Prefix for crate::Prefix {
         fn prefix_prefix<'a>(&'a self) -> &'a crate::ncname {
         return &self.prefix_prefix;
     }
-
-    
         fn prefix_reference<'a>(&'a self) -> &'a crate::uri {
         return &self.prefix_reference;
     }
-
-    
 }
 
 
@@ -10690,13 +7812,9 @@ impl LocalName for crate::LocalName {
         fn local_name_source<'a>(&'a self) -> &'a crate::ncname {
         return &self.local_name_source;
     }
-
-    
         fn local_name_value<'a>(&'a self) -> &'a str {
         return &self.local_name_value[..];
     }
-
-    
 }
 
 
@@ -10721,18 +7839,12 @@ impl Example for crate::Example {
         fn value<'a>(&'a self) -> Option<&'a str> {
         return self.value.as_deref();
     }
-
-    
         fn value_description<'a>(&'a self) -> Option<&'a str> {
         return self.value_description.as_deref();
     }
-
-    
         fn value_object<'a>(&'a self) -> Option<&'a crate::Anything> {
         return self.value_object.as_ref();
     }
-
-    
 }
 
 
@@ -10753,13 +7865,9 @@ impl AltDescription for crate::AltDescription {
         fn alt_description_source<'a>(&'a self) -> &'a str {
         return &self.alt_description_source[..];
     }
-
-    
         fn alt_description_text<'a>(&'a self) -> &'a str {
         return &self.alt_description_text[..];
     }
-
-    
 }
 
 
@@ -10800,38 +7908,24 @@ impl PermissibleValue for crate::PermissibleValue {
         fn text<'a>(&'a self) -> &'a str {
         return &self.text[..];
     }
-
-    
         fn meaning<'a>(&'a self) -> Option<&'a crate::uriorcurie> {
         return self.meaning.as_ref();
     }
-
-    
         fn unit<'a>(&'a self) -> Option<&'a crate::UnitOfMeasure> {
         return self.unit.as_ref();
     }
-
-    
         fn instantiates<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.instantiates.as_ref();
     }
-
-    
         fn implements<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, crate::uriorcurie>> {
         return self.implements.as_ref();
     }
-
-    
         fn is_a<'a>(&'a self) -> Option<&'a str> {
         return self.is_a.as_deref();
     }
-
-    
         fn mixins<'a>(&'a self) -> Option<impl poly_containers::SeqRef<'a, String>> {
         return self.mixins.as_ref();
     }
-
-    
 }
 
 
@@ -10856,18 +7950,12 @@ impl UniqueKey for crate::UniqueKey {
         fn unique_key_name<'a>(&'a self) -> &'a str {
         return &self.unique_key_name[..];
     }
-
-    
         fn unique_key_slots<'a>(&'a self) -> impl poly_containers::SeqRef<'a, String> {
         return &self.unique_key_slots;
     }
-
-    
         fn consider_nulls_inequal(&self) -> Option<bool> {
         return self.consider_nulls_inequal;
     }
-
-    
 }
 
 
@@ -10892,18 +7980,12 @@ impl TypeMapping for crate::TypeMapping {
         fn framework_key<'a>(&'a self) -> &'a str {
         return &self.framework_key[..];
     }
-
-    
         fn mapped_type<'a>(&'a self) -> Option<&'a str> {
         return self.mapped_type.as_deref();
     }
-
-    
         fn string_serialization<'a>(&'a self) -> Option<&'a str> {
         return self.string_serialization.as_deref();
     }
-
-    
 }
 
 
