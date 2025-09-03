@@ -7987,5 +7987,3 @@ impl TypeMapping for crate::TypeMapping {
         return self.string_serialization.as_deref();
     }
 }
-
-
