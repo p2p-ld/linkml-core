@@ -153,7 +153,12 @@ jobs:
         run: |
           $ver = $env:GITHUB_REF -replace '^refs/tags/', '' -replace '^v',''
           Write-Host "Setting src/python/Cargo.toml version to $ver"
-          (Get-Content -Raw src/python/Cargo.toml) -replace 'version = \"[^\"]+\"', "version = \"$ver\"" | Set-Content src/python/Cargo.toml
+          $path = "src/python/Cargo.toml"
+          $content = Get-Content -Raw $path
+          $pattern = '^version\s*=\s*".*"$'
+          $replacement = "version = `"$ver`""
+          $new = [regex]::Replace($content, $pattern, $replacement, 'Multiline')
+          Set-Content -NoNewline -Path $path -Value $new
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
