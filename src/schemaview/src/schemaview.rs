@@ -11,6 +11,7 @@ use crate::curie::curie2uri;
 // re-export views from submodules
 pub use crate::classview::ClassView;
 pub use crate::slotview::{SlotContainerMode, SlotInlineMode, SlotView};
+pub use crate::enumview::EnumView;
 
 #[derive(Debug)]
 pub enum SchemaViewError {
@@ -46,6 +47,8 @@ pub(crate) struct SchemaViewCache {
     pub(crate) slot_uri_index: HashMap<String, (String, String)>,
     pub(crate) slot_name_index: HashMap<String, (String, String)>,
     pub(crate) clas_view_cache: HashMap<(String, String), ClassView>,
+    pub(crate) enum_uri_index: HashMap<String, (String, String)>,
+    pub(crate) enum_name_index: HashMap<String, (String, String)>,
 }
 
 impl SchemaViewCache {
@@ -56,6 +59,8 @@ impl SchemaViewCache {
             slot_uri_index: HashMap::new(),
             clas_view_cache: HashMap::new(),
             slot_name_index: HashMap::new(),
+            enum_uri_index: HashMap::new(),
+            enum_name_index: HashMap::new(),
         }
     }
 }
@@ -180,6 +185,8 @@ impl SchemaView {
             .map_err(|e| format!("{:?}", e))?;
         self.index_schema_slots(&schema_uri, &schema, &conv)
             .map_err(|e| format!("{:?}", e))?;
+        self.index_schema_enums(&schema_uri, &schema, &conv)
+            .map_err(|e| format!("{:?}", e))?;
         let d = Arc::make_mut(&mut self.data);      // &mut SchemaViewData
         d.converters.insert(schema_uri.to_string(), conv.clone());
         import_reference.map(|x| d.resolved_schema_imports.insert((x.0, x.1), schema.id.clone()));
@@ -222,8 +229,45 @@ impl SchemaView {
         &self,
         _identifier: &Identifier,
     ) -> Option<linkml_meta::EnumDefinition> {
-        // TODO implement this
-        None
+        match _identifier {
+            Identifier::Name(name) => {
+                // try by name (with simple alt names)
+                let candidates = vec![name.clone()];
+                for n in candidates {
+                    if let Some((schema_uri, enum_name)) =
+                        self.cache().enum_name_index.get(&n).cloned()
+                    {
+                        if let Some(schema) = self.data.schema_definitions.get(&schema_uri) {
+                            if let Some(enums) = &schema.enums {
+                                if let Some(e) = enums.get(&enum_name) {
+                                    return Some(e.clone());
+                                }
+                            }
+                        }
+                    }
+                }
+                None
+            }
+            Identifier::Curie(_) | Identifier::Uri(_) => {
+                let conv = match self.converter_for_primary_schema() {
+                    Some(c) => c,
+                    None => return None,
+                };
+                let target_uri = _identifier.to_uri(conv).ok()?;
+                if let Some((schema_uri, enum_name)) =
+                    self.cache().enum_uri_index.get(&target_uri.0).cloned()
+                {
+                    if let Some(schema) = self.data.schema_definitions.get(&schema_uri) {
+                        if let Some(enums) = &schema.enums {
+                            if let Some(e) = enums.get(&enum_name) {
+                                return Some(e.clone());
+                            }
+                        }
+                    }
+                }
+                None
+            }
+        }
     }
 
     fn index_schema_classes(
@@ -315,6 +359,85 @@ impl SchemaView {
             }
         }
         Ok(())
+    }
+
+    fn index_schema_enums(
+        &mut self,
+        schema_uri: &str,
+        schema: &SchemaDefinition,
+        conv: &Converter,
+    ) -> Result<(), IdentifierError> {
+        let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
+        if let Some(definitions) = &schema.enums {
+            for (enum_name, enum_def) in definitions {
+                let default_id = if enum_name.contains(':') && enum_def.enum_uri.is_none() {
+                    Identifier::new(enum_name)
+                } else {
+                    Identifier::new(&format!("{}:{}", default_prefix, enum_name))
+                };
+                let default_uri = default_id.to_uri(conv).map(|u| u.0).unwrap_or_else(|_| {
+                    format!("{}/{}", schema.id.trim_end_matches('/'), enum_name)
+                });
+                self.write_cache().enum_name_index
+                    .entry(enum_name.clone())
+                    .or_insert_with(|| (schema_uri.to_string(), enum_name.clone()));
+
+                if let Some(euri) = &enum_def.enum_uri {
+                    let explicit_uri = Identifier::new(euri).to_uri(conv)?.0;
+                    self.write_cache().enum_uri_index
+                        .entry(explicit_uri.clone())
+                        .or_insert_with(|| (schema_uri.to_string(), enum_name.clone()));
+                    if explicit_uri != default_uri {
+                        self.write_cache().enum_uri_index
+                            .entry(default_uri.clone())
+                            .or_insert_with(|| (schema_uri.to_string(), enum_name.clone()));
+                    }
+                } else {
+                    self.write_cache().enum_uri_index
+                        .entry(default_uri)
+                        .or_insert_with(|| (schema_uri.to_string(), enum_name.clone()));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub fn get_enum(
+        &self,
+        id: &Identifier,
+        conv: &Converter,
+    ) -> Result<Option<EnumView>, IdentifierError> {
+        match id {
+            Identifier::Name(name) => {
+                if let Some((schema_uri, enum_name)) =
+                    self.cache().enum_name_index.get(name).cloned()
+                {
+                    if let Some(schema) = self.data.schema_definitions.get(&schema_uri) {
+                        if let Some(enums) = &schema.enums {
+                            if let Some(def) = enums.get(&enum_name) {
+                                return Ok(Some(EnumView::new(def, self, &schema.id)));
+                            }
+                        }
+                    }
+                }
+                Ok(None)
+            }
+            Identifier::Curie(_) | Identifier::Uri(_) => {
+                let target_uri = id.to_uri(conv)?;
+                if let Some((schema_uri, enum_name)) =
+                    self.cache().enum_uri_index.get(&target_uri.0).cloned()
+                {
+                    if let Some(schema) = self.data.schema_definitions.get(&schema_uri) {
+                        if let Some(enums) = &schema.enums {
+                            if let Some(def) = enums.get(&enum_name) {
+                                return Ok(Some(EnumView::new(def, self, &schema.id)));
+                            }
+                        }
+                    }
+                }
+                Ok(None)
+            }
+        }
     }
 
     pub fn get_resolution_uri_of_schema(&self, schema_id: &str) -> Option<String> {

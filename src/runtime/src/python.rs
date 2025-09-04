@@ -5,7 +5,7 @@ use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinit
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io;
 use linkml_schemaview::schemaview::SchemaView;
-use linkml_schemaview::{classview::ClassView, slotview::SlotView};
+use linkml_schemaview::{classview::ClassView, enumview::EnumView, slotview::SlotView};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 use pyo3::types::PyAnyMethods;
@@ -74,6 +74,18 @@ pub struct PySlotView {
 
 impl PySlotView {
     pub fn as_rust(&self) -> &SlotView {
+        &self.inner
+    }
+}
+
+#[pyclass(name = "EnumView")]
+#[derive(Clone)]
+pub struct PyEnumView {
+    inner: EnumView,
+}
+
+impl PyEnumView {
+    pub fn as_rust(&self) -> &EnumView {
         &self.inner
     }
 }
@@ -185,6 +197,15 @@ impl PySchemaView {
             .get_slot(&Identifier::new(id), &conv)
             .map_err(|e| PyException::new_err(format!("{:?}", e)))?
             .map(|svw| PySlotView { inner: svw }))
+    }
+
+    fn get_enum_view(&self, id: &str) -> PyResult<Option<PyEnumView>> {
+        let conv = self.inner.converter();
+        Ok(self
+            .inner
+            .get_enum(&Identifier::new(id), &conv)
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))?
+            .map(|ev| PyEnumView { inner: ev }))
     }
 
     fn schema_ids(&self) -> Vec<String> {
@@ -322,8 +343,8 @@ impl PySlotView {
             .map(|cv| PyClassView { inner: cv })
     }
 
-    fn range_enum(&self) -> Option<EnumDefinition> {
-        self.inner.get_range_enum()
+    fn range_enum(&self) -> Option<PyEnumView> {
+        self.inner.get_range_enum().map(|ev| PyEnumView { inner: ev })
     }
 
     fn is_range_scalar(&self) -> bool {
@@ -357,12 +378,49 @@ impl PySlotView {
     }
 }
 
+#[pymethods]
+impl PyEnumView {
+    #[getter]
+    pub fn name(&self) -> String {
+        self.inner.name().to_string()
+    }
+
+    #[getter]
+    pub fn definition(&self) -> EnumDefinition {
+        self.inner.definition().clone()
+    }
+
+    fn permissible_value_keys(&self) -> PyResult<Vec<String>> {
+        self.inner
+            .permissible_value_keys()
+            .map(|v| v.clone())
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))
+    }
+
+    fn schema_id(&self) -> String {
+        self.inner.schema_id().to_string()
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!(
+            "EnumView(name='{}', n_values={})",
+            self.inner.name(),
+            self.inner.permissible_value_keys().map(|v| v.len()).unwrap_or(0)
+        ))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        self.__repr__()
+    }
+}
+
 #[pymodule(name = "linkml_schemaview")]
 pub fn schemaview_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
     m.add_class::<PySchemaView>()?;
     m.add_class::<PyClassView>()?;
     m.add_class::<PySlotView>()?;
+    m.add_class::<PyEnumView>()?;
     m.add_class::<SchemaDefinition>()?;
     m.add_class::<ClassDefinition>()?;
     m.add_class::<SlotDefinition>()?;

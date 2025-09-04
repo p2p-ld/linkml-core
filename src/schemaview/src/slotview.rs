@@ -1,11 +1,11 @@
 use std::sync::{Arc, OnceLock};
 
 
-use linkml_meta::{EnumDefinition, SlotDefinition, SlotExpressionOrSubtype};
+use linkml_meta::{SlotDefinition, SlotExpressionOrSubtype};
 use linkml_meta::poly::SlotExpression;
 use crate::classview::ClassView;
 use crate::identifier::Identifier;
-use crate::schemaview::SchemaView;
+use crate::schemaview::{EnumView, SchemaView};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SlotContainerMode {
@@ -27,7 +27,7 @@ pub struct RangeInfo{
     pub e: SlotExpressionOrSubtype,
     pub slotview: SlotView,
     pub range_class: Option<ClassView>,
-    pub range_enum: Option<EnumDefinition>,
+    pub range_enum: Option<EnumView>,
     pub is_range_scalar: bool,
     pub slot_container_mode: SlotContainerMode,
     pub slot_inline_mode: SlotInlineMode,}
@@ -48,9 +48,10 @@ impl RangeInfo {
             .and_then(|r| slotview.sv.get_class(&Identifier::new(r), &conv).ok().flatten())
     }
 
-    fn determine_range_enum(e: &SlotExpressionOrSubtype, slotview: &SlotView) -> Option<EnumDefinition> {
+    fn determine_range_enum(e: &SlotExpressionOrSubtype, slotview: &SlotView) -> Option<EnumView> {
+        let conv = slotview.sv.converter_for_schema(&slotview.schema_uri)?;
         e.range()
-            .and_then(|r| slotview.sv.get_enum_definition(&Identifier::new(r)))
+            .and_then(|r| slotview.sv.get_enum(&Identifier::new(r), conv).ok().flatten())
     }
 
     fn determine_range_scalar(range_class: &Option<ClassView>) -> bool {
@@ -204,7 +205,7 @@ impl SlotView {
         return self.get_range_info().first().and_then(|ri| ri.range_class.clone());
     }
 
-    pub fn get_range_enum(&self) -> Option<EnumDefinition> {
+    pub fn get_range_enum(&self) -> Option<EnumView> {
         return self.get_range_info().first().and_then(|ri| ri.range_enum.clone());
     }
 

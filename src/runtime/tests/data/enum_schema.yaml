@@ -1,0 +1,17 @@
+id: https://example.com/enum-test
+name: enum-test
+prefixes:
+  ex: https://example.com/enum-test/
+default_prefix: ex
+enums:
+  StatusEnum:
+    permissible_values:
+      new: {}
+      active: {}
+      retired: {}
+classes:
+  Item:
+    attributes:
+      status:
+        range: StatusEnum
+

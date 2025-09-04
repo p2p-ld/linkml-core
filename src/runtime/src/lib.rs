@@ -560,7 +560,33 @@ pub fn load_json_str<'a>(
 
 fn validate_inner(value: &LinkMLValue) -> std::result::Result<(), String> {
     match value {
-        LinkMLValue::Scalar { .. } => Ok(()),
+        LinkMLValue::Scalar { value: jv, slot, .. } => {
+            if let Some(ev) = slot.get_range_enum() {
+                // For now, enforce that enum-backed slots take string values that
+                // are among the permissible value keys.
+                let s = match jv {
+                    JsonValue::String(s) => s,
+                    other => {
+                        return Err(format!(
+                            "expected string for enum '{}' in slot '{}', found {:?}",
+                            ev.name(),
+                            slot.name,
+                            other
+                        ))
+                    }
+                };
+                let keys = ev
+                    .permissible_value_keys()
+                    .map_err(|e| format!("{:?}", e))?;
+                if !keys.contains(s) {
+                    return Err(format!(
+                        "invalid enum value '{}' for slot '{}' (allowed: {:?})",
+                        s, slot.name, keys
+                    ));
+                }
+            }
+            Ok(())
+        }
         LinkMLValue::List { values, .. } => {
             for v in values {
                 validate_inner(v)?;

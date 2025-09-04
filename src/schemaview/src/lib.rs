@@ -6,4 +6,5 @@ pub mod io;
 pub mod resolve;
 pub mod schemaview;
 pub mod slotview;
+pub mod enumview;
 extern crate linkml_meta;
