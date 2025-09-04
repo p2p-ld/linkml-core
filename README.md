@@ -39,4 +39,4 @@ Now the `linkml_runtime_rust` module should be accessible.
 - Build all crates: `cargo build --workspace`
 - Run all tests: `cargo test --workspace`
 - Format: `cargo fmt --all` (check: `cargo fmt --all -- --check`)
-- Lint: `cargo clippy --workspace --all-targets --all-features -- -D warnings`
+- Lint: `cargo clippy --workspace --all-targets --all-features --exclude linkml_meta -- -D warnings`
