@@ -151,8 +151,9 @@ impl SchemaView {
                 .get(schema_id)
                 .and_then(|s| s.prefixes.clone());
             match prefixes {
-                Some(prefixes) => not_expanded
-                    .and_then(|n| prefixes.get(&n).map(|p| p.prefix_reference.clone())),
+                Some(prefixes) => {
+                    not_expanded.and_then(|n| prefixes.get(&n).map(|p| p.prefix_reference.clone()))
+                }
                 None => {
                     // if we don't have a converter, just return the not expanded prefix
                     not_expanded
@@ -722,11 +723,7 @@ impl SchemaView {
             }
             Identifier::Curie(_) | Identifier::Uri(_) => {
                 let target_uri = id.to_uri(conv)?;
-                let index = self
-                    .cache()
-                    .slot_uri_index
-                    .get(&target_uri.0)
-                    .cloned();
+                let index = self.cache().slot_uri_index.get(&target_uri.0).cloned();
                 if let Some((schema_uri, slot_name)) = index {
                     if let Some(schema) = self.data.schema_definitions.get(&schema_uri) {
                         if let Some(defs) = &schema.slot_definitions {

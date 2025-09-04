@@ -121,9 +121,7 @@ impl PySchemaView {
         let schema =
             io::from_yaml(Path::new(path)).map_err(|e| PyException::new_err(e.to_string()))?;
         if let Some(inner) = std::sync::Arc::get_mut(&mut self.inner) {
-            inner
-                .add_schema(schema)
-                .map_err(PyException::new_err)
+            inner.add_schema(schema).map_err(PyException::new_err)
         } else {
             Err(PyException::new_err("SchemaView already shared"))
         }
@@ -134,9 +132,7 @@ impl PySchemaView {
         let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
             .map_err(|e| PyException::new_err(e.to_string()))?;
         if let Some(inner) = std::sync::Arc::get_mut(&mut self.inner) {
-            inner
-                .add_schema(schema)
-                .map_err(PyException::new_err)
+            inner.add_schema(schema).map_err(PyException::new_err)
         } else {
             Err(PyException::new_err("SchemaView already shared"))
         }
@@ -230,16 +226,16 @@ impl PySchemaView {
     }
 
     fn get_slot_ids(&self) -> Vec<String> {
-        self.inner.get_slot_ids()/*
-                                          let mut ids: HashSet<String> = HashSet::new();
-                                          for (_, schema) in self.inner.iter_schemas() {
-                                              if let Some(slots) = &schema.slot_definitions {
-                                                  slots.iter().map(|c| self.inner.get_uri(&schema.id, c.0)).for_each(|uri| {
-                                                      ids.insert(uri.to_string());
-                                                  });
-                                              }
-                                          }
-                                          ids.into_iter().collect()*/
+        self.inner.get_slot_ids() /*
+                                  let mut ids: HashSet<String> = HashSet::new();
+                                  for (_, schema) in self.inner.iter_schemas() {
+                                      if let Some(slots) = &schema.slot_definitions {
+                                          slots.iter().map(|c| self.inner.get_uri(&schema.id, c.0)).for_each(|uri| {
+                                              ids.insert(uri.to_string());
+                                          });
+                                      }
+                                  }
+                                  ids.into_iter().collect()*/
     }
 
     fn __repr__(&self) -> PyResult<String> {

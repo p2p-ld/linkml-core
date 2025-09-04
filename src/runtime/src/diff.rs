@@ -69,11 +69,7 @@ impl LinkMLValue {
     }
 }
 
-pub fn diff(
-    source: &LinkMLValue,
-    target: &LinkMLValue,
-    ignore_missing_target: bool,
-) -> Vec<Delta> {
+pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: bool) -> Vec<Delta> {
     fn inner(
         path: &mut Vec<String>,
         slot: Option<&SlotView>,

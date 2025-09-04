@@ -192,15 +192,13 @@ impl SlotView {
     }
 
     pub fn definition(&self) -> &SlotDefinition {
-        self.data
-            .cached_definition
-            .get_or_init(|| {
-                let mut b = self.data.definitions[0].clone();
-                for d in self.data.definitions.iter().skip(1) {
-                    b.merge_with(d);
-                }
-                b
-            })
+        self.data.cached_definition.get_or_init(|| {
+            let mut b = self.data.definitions[0].clone();
+            for d in self.data.definitions.iter().skip(1) {
+                b.merge_with(d);
+            }
+            b
+        })
     }
 
     pub fn definitions(&self) -> &Vec<SlotDefinition> {
@@ -208,31 +206,26 @@ impl SlotView {
     }
 
     pub fn get_range_info(&self) -> &Vec<RangeInfo> {
-        self.data
-            .cached_range_info
-            .get_or_init(|| {
-                let def = self.definition();
-                if let Some(any_of) = def.any_of.clone() {
-                    if !any_of.is_empty() {
-                        let sv = self.clone();
-                        let iter = any_of
-                            .clone()
-                            .into_iter()
-                            .map(move |expr| -> RangeInfo {
-                                RangeInfo::new(
-                                    SlotExpressionOrSubtype::from(expr.as_ref().clone()),
-                                    sv.clone(),
-                                )
-                            });
-                        return iter.collect();
-                    }
+        self.data.cached_range_info.get_or_init(|| {
+            let def = self.definition();
+            if let Some(any_of) = def.any_of.clone() {
+                if !any_of.is_empty() {
+                    let sv = self.clone();
+                    let iter = any_of.clone().into_iter().map(move |expr| -> RangeInfo {
+                        RangeInfo::new(
+                            SlotExpressionOrSubtype::from(expr.as_ref().clone()),
+                            sv.clone(),
+                        )
+                    });
+                    return iter.collect();
                 }
-                std::iter::once(RangeInfo::new(
-                    SlotExpressionOrSubtype::from(def.clone()),
-                    self.clone(),
-                ))
-                .collect()
-            })
+            }
+            std::iter::once(RangeInfo::new(
+                SlotExpressionOrSubtype::from(def.clone()),
+                self.clone(),
+            ))
+            .collect()
+        })
     }
 
     pub fn get_range_class(&self) -> Option<ClassView> {
