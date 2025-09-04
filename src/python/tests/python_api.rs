@@ -4,11 +4,18 @@ use pyo3::types::PyDict;
 use std::path::PathBuf;
 
 fn meta_path() -> PathBuf {
-    let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    p.push("tests");
-    p.push("data");
-    p.push("meta.yaml");
-    p
+    let base = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let candidates = [
+        base.join("../schemaview/tests/data/meta.yaml"),
+        base.join("../runtime/tests/data/meta.yaml"),
+        base.join("tests/data/meta.yaml"),
+    ];
+    for c in candidates {
+        if c.exists() {
+            return c;
+        }
+    }
+    panic!("meta.yaml not found in known locations relative to python crate");
 }
 
 #[test]

@@ -4,11 +4,18 @@ use pyo3::types::PyDict;
 use std::path::PathBuf;
 
 fn data_path(name: &str) -> PathBuf {
-    let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    p.push("tests");
-    p.push("data");
-    p.push(name);
-    p
+    let base = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let candidates = [
+        base.join("../runtime/tests/data").join(name),
+        base.join("../schemaview/tests/data").join(name),
+        base.join("tests/data").join(name),
+    ];
+    for c in candidates {
+        if c.exists() {
+            return c;
+        }
+    }
+    panic!("test data not found: {}", name);
 }
 
 #[test]
