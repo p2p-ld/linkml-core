@@ -4,8 +4,7 @@ use std::path::PathBuf;
 
 fn data_path(name: &str) -> PathBuf {
     let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    p.push("tests");
-    p.push("data");
+    p.push("../runtime/tests/data");
     p.push(name);
     p
 }

@@ -1,6 +1,6 @@
-use crate::diff::{diff as diff_internal, patch as patch_internal, Delta};
-use crate::turtle::{turtle_to_string, TurtleOptions};
-use crate::{load_json_str, load_yaml_str, LinkMLValue};
+use linkml_runtime::diff::{diff as diff_internal, patch as patch_internal, Delta};
+use linkml_runtime::turtle::{turtle_to_string, TurtleOptions};
+use linkml_runtime::{load_json_str, load_yaml_str, LinkMLValue};
 use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io;
@@ -120,7 +120,7 @@ impl PySchemaView {
     fn add_schema_from_path(&mut self, path: &str) -> PyResult<bool> {
         let schema =
             io::from_yaml(Path::new(path)).map_err(|e| PyException::new_err(e.to_string()))?;
-        if let Some(inner) = Arc::get_mut(&mut self.inner) {
+        if let Some(inner) = std::sync::Arc::get_mut(&mut self.inner) {
             inner
                 .add_schema(schema)
                 .map_err(|e| PyException::new_err(e))
@@ -133,7 +133,7 @@ impl PySchemaView {
         let deser = serde_yml::Deserializer::from_str(data);
         let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
             .map_err(|e| PyException::new_err(e.to_string()))?;
-        if let Some(inner) = Arc::get_mut(&mut self.inner) {
+        if let Some(inner) = std::sync::Arc::get_mut(&mut self.inner) {
             inner
                 .add_schema(schema)
                 .map_err(|e| PyException::new_err(e))
@@ -167,7 +167,7 @@ impl PySchemaView {
         let deser = serde_yml::Deserializer::from_str(data);
         let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
             .map_err(|e| PyException::new_err(e.to_string()))?;
-        if let Some(inner) = Arc::get_mut(&mut self.inner) {
+        if let Some(inner) = std::sync::Arc::get_mut(&mut self.inner) {
             inner
                 .add_schema_with_import_ref(schema, Some((schema_id.to_string(), uri.to_string())))
                 .map_err(PyException::new_err)?;

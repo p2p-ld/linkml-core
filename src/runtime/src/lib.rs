@@ -7,12 +7,8 @@ use std::fs;
 use std::path::Path;
 
 pub mod diff;
-#[cfg(feature = "python")]
-pub mod python;
 pub mod turtle;
 pub use diff::{diff, patch, Delta};
-#[cfg(feature = "python")]
-pub use python::*;
 #[derive(Debug)]
 pub struct LinkMLError(pub String);
 

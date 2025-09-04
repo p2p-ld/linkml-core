@@ -879,14 +879,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "linkml-core"
-version = "0.1.0"
-dependencies = [
- "linkml_runtime",
- "pyo3",
-]
-
-[[package]]
 name = "linkml_meta"
 version = "0.0.0"
 dependencies = [
@@ -911,7 +903,42 @@ dependencies = [
  "oxttl",
  "percent-encoding",
  "predicates 2.1.5",
+ "regex",
+ "schemaview",
+ "serde",
+ "serde_json",
+ "serde_path_to_error",
+ "serde_yaml",
+ "serde_yml",
+ "tempfile",
+]
+
+[[package]]
+name = "linkml_runtime_python"
+version = "0.1.0"
+dependencies = [
+ "linkml_meta",
+ "linkml_runtime",
  "pyo3",
+ "schemaview",
+ "serde_json",
+ "serde_path_to_error",
+ "serde_yml",
+]
+
+[[package]]
+name = "linkml_tools"
+version = "0.1.0"
+dependencies = [
+ "assert_cmd",
+ "clap",
+ "curies",
+ "linkml_meta",
+ "linkml_runtime",
+ "oxrdf",
+ "oxttl",
+ "percent-encoding",
+ "predicates 2.1.5",
  "regex",
  "schemaview",
  "serde",

@@ -1,6 +1,6 @@
 #![cfg(feature = "python")]
 
-use linkml_runtime::runtime_module;
+use crate::runtime_module;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 

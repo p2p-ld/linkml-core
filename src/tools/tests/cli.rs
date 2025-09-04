@@ -2,8 +2,7 @@ use assert_cmd::Command;
 
 fn data_path(name: &str) -> std::path::PathBuf {
     let mut p = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    p.push("tests");
-    p.push("data");
+    p.push("../runtime/tests/data");
     p.push(name);
     p
 }
