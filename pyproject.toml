@@ -1,0 +1,41 @@
+# Root-level pyproject for the monorepo.
+#
+# This file does not define an installable Python package at the root.
+# It centralizes tooling config (format/lint/type-check), and documents
+# Python package members for editors and monorepo-aware tools.
+
+[tool.monorepo]
+# Python package members in this workspace (informational only)
+members = [
+  "src/python",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+include = "\.(py|pyi)$"
+
+[tool.ruff]
+line-length = 100
+select = [
+  "E",  # pycodestyle
+  "F",  # pyflakes
+  "I",  # isort
+  "UP", # pyupgrade
+]
+ignore = [
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["linkml_runtime_rust"]
+combine-as-imports = true
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+addopts = "-q"
