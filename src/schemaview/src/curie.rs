@@ -24,4 +24,3 @@ pub fn curie2uri<'a>(
         return None;
     }
 }
-

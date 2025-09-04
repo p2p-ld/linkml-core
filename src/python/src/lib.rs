@@ -1,7 +1,7 @@
+use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
 use linkml_runtime::diff::{diff as diff_internal, patch as patch_internal, Delta};
 use linkml_runtime::turtle::{turtle_to_string, TurtleOptions};
 use linkml_runtime::{load_json_str, load_yaml_str, LinkMLValue};
-use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io;
 use linkml_schemaview::schemaview::SchemaView;
@@ -344,7 +344,9 @@ impl PySlotView {
     }
 
     fn range_enum(&self) -> Option<PyEnumView> {
-        self.inner.get_range_enum().map(|ev| PyEnumView { inner: ev })
+        self.inner
+            .get_range_enum()
+            .map(|ev| PyEnumView { inner: ev })
     }
 
     fn is_range_scalar(&self) -> bool {
@@ -405,7 +407,10 @@ impl PyEnumView {
         Ok(format!(
             "EnumView(name='{}', n_values={})",
             self.inner.name(),
-            self.inner.permissible_value_keys().map(|v| v.len()).unwrap_or(0)
+            self.inner
+                .permissible_value_keys()
+                .map(|v| v.len())
+                .unwrap_or(0)
         ))
     }
 

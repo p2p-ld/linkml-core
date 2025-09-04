@@ -22,7 +22,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let schema_path = args.schema.to_str().ok_or("Invalid schema path")?;
     let schema = from_yaml(&args.schema)?;
     let mut sv = SchemaView::new();
-    sv.add_schema_with_import_ref(schema.clone(), Some(("".to_owned(), schema_path.to_owned()))).map_err(|e| format!("{e}"))?;
+    sv.add_schema_with_import_ref(
+        schema.clone(),
+        Some(("".to_owned(), schema_path.to_owned())),
+    )
+    .map_err(|e| format!("{e}"))?;
     #[cfg(feature = "resolve")]
     resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
     let conv = sv.converter();

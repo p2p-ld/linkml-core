@@ -10,7 +10,10 @@ fn slot_is_ignored(slot: &SlotView) -> bool {
         return false;
     }
     slot.definition()
-        .annotations.as_ref().map(|a| a.contains_key(IGNORE_ANNOTATION)).unwrap_or(false)
+        .annotations
+        .as_ref()
+        .map(|a| a.contains_key(IGNORE_ANNOTATION))
+        .unwrap_or(false)
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -24,9 +27,7 @@ impl LinkMLValue {
     pub fn to_json(&self) -> JsonValue {
         match self {
             LinkMLValue::Scalar { value, .. } => value.clone(),
-            LinkMLValue::List {
-                values, slot, ..
-            } => match slot.determine_slot_container_mode() {
+            LinkMLValue::List { values, slot, .. } => match slot.determine_slot_container_mode() {
                 SlotContainerMode::Mapping => {
                     let range_cv = slot
                         .get_range_class()
@@ -141,9 +142,7 @@ pub fn diff<'a>(
             }
             (
                 LinkMLValue::List {
-                    values: sl,
-                    slot,
-                    ..
+                    values: sl, slot, ..
                 },
                 LinkMLValue::List { values: tl, .. },
             ) => match slot.determine_slot_container_mode() {
@@ -248,11 +247,7 @@ pub fn diff<'a>(
     out
 }
 
-pub fn patch(
-    source: &LinkMLValue,
-    deltas: &[Delta],
-    sv: &SchemaView,
-) -> LinkMLValue {
+pub fn patch(source: &LinkMLValue, deltas: &[Delta], sv: &SchemaView) -> LinkMLValue {
     let mut json = source.to_json();
     for d in deltas {
         apply_delta(&mut json, d);
@@ -260,9 +255,7 @@ pub fn patch(
     let json_str = serde_json::to_string(&json).unwrap();
     let conv = sv.converter();
     match source {
-        LinkMLValue::Map { class: ref c, .. } => {
-            load_json_str(&json_str, sv, c, &conv).unwrap()
-        }
+        LinkMLValue::Map { class: ref c, .. } => load_json_str(&json_str, sv, c, &conv).unwrap(),
         _ => load_json_str(&json_str, sv, None.unwrap(), &conv).unwrap(),
     }
 }

@@ -113,7 +113,8 @@ impl LinkMLValue {
         if let Some(td_slot) = base
             .slots()
             .iter()
-            .find(|s| s.definition().designates_type.unwrap_or(false)).map(|s| s.definition())
+            .find(|s| s.definition().designates_type.unwrap_or(false))
+            .map(|s| s.definition())
         {
             if let Some(JsonValue::String(tv)) = map.get(&td_slot.name) {
                 for c in &cand_refs {
@@ -124,8 +125,8 @@ impl LinkMLValue {
                         }
                     }
                 }
-            } 
-        } 
+            }
+        }
         if let Some(p) = preferred {
             return p.clone();
         }
@@ -362,7 +363,11 @@ impl LinkMLValue {
         path: Vec<String>,
     ) -> LResult<Self> {
         let sl = slot.ok_or_else(|| {
-            LinkMLError(format!("list requires slot at {} for class={}", path_to_string(&path), class.name()))
+            LinkMLError(format!(
+                "list requires slot at {} for class={}",
+                path_to_string(&path),
+                class.name()
+            ))
         })?;
         let class_range: Option<ClassView> = sl.get_range_class();
         let slot_for_item = if class_range.is_some() {
@@ -556,7 +561,9 @@ pub fn load_json_str<'a>(
 
 fn validate_inner(value: &LinkMLValue) -> std::result::Result<(), String> {
     match value {
-        LinkMLValue::Scalar { value: jv, slot, .. } => {
+        LinkMLValue::Scalar {
+            value: jv, slot, ..
+        } => {
             if let Some(ev) = slot.get_range_enum() {
                 // For now, enforce that enum-backed slots take string values that
                 // are among the permissible value keys.

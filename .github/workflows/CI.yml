@@ -21,6 +21,25 @@ permissions:
   contents: read
 
 jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Format (check)
+        run: cargo fmt --all -- --check
+      - name: Lint (clippy)
+        run: cargo clippy --workspace --all-targets --all-features -D warnings
+      - name: Build
+        run: cargo build --workspace
+      - name: Test
+        run: cargo test --workspace
   linux:
     runs-on: ${{ matrix.platform.runner }}
     strategy:
@@ -46,7 +65,7 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          working-directory: src/runtime
+          working-directory: src/python
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
           sccache: 'true'
@@ -55,7 +74,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-linux-${{ matrix.platform.target }}
-          path: src/runtime/dist
+          path: src/python/dist
 
   musllinux:
     runs-on: ${{ matrix.platform.runner }}
@@ -78,7 +97,7 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          working-directory: src/runtime
+          working-directory: src/python
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
           sccache: 'true'
@@ -87,7 +106,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-musllinux-${{ matrix.platform.target }}
-          path: src/runtime/dist
+          path: src/python/dist
 
   windows:
     runs-on: ${{ matrix.platform.runner }}
@@ -107,7 +126,7 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          working-directory: src/runtime
+          working-directory: src/python
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
           sccache: 'true'
@@ -115,7 +134,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-windows-${{ matrix.platform.target }}
-          path: src/runtime/dist
+          path: src/python/dist
 
   macos:
     runs-on: ${{ matrix.platform.runner }}
@@ -132,7 +151,7 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          working-directory: src/runtime
+          working-directory: src/python
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
           sccache: 'true'
@@ -140,7 +159,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-macos-${{ matrix.platform.target }}
-          path: src/runtime/dist
+          path: src/python/dist
 
   sdist:
     runs-on: ubuntu-latest
@@ -149,14 +168,14 @@ jobs:
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
-          working-directory: src/runtime
+          working-directory: src/python
           command: sdist
           args: --out dist
       - name: Upload sdist
         uses: actions/upload-artifact@v4
         with:
           name: wheels-sdist
-          path: src/runtime/dist
+          path: src/python/dist
 
   release:
     name: Release
@@ -182,7 +201,7 @@ jobs:
         env:
           MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         with:
-          working-directory: src/runtime
+          working-directory: src/python
           command: upload
           args: --non-interactive --skip-existing wheels-*/*
       - name: Upload release assets

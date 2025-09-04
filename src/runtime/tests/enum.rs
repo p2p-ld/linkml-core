@@ -57,8 +57,13 @@ fn enum_invalid_value() {
         .unwrap()
         .expect("class not found");
 
-    let v = load_yaml_file(Path::new(&data_path("enum_invalid.yaml")), &sv, &class, &conv)
-        .expect("failed to load invalid enum instance (parsing should still succeed)");
+    let v = load_yaml_file(
+        Path::new(&data_path("enum_invalid.yaml")),
+        &sv,
+        &class,
+        &conv,
+    )
+    .expect("failed to load invalid enum instance (parsing should still succeed)");
 
     // This assertion is expected to FAIL until enum enforcement is implemented.
     assert!(
@@ -66,4 +71,3 @@ fn enum_invalid_value() {
         "expected enum validation to fail for non-permissible value"
     );
 }
-

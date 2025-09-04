@@ -1,10 +1,10 @@
 pub mod classview;
 pub mod curie;
+pub mod enumview;
 pub mod identifier;
 pub mod io;
 #[cfg(feature = "resolve")]
 pub mod resolve;
 pub mod schemaview;
 pub mod slotview;
-pub mod enumview;
 extern crate linkml_meta;

@@ -19,8 +19,12 @@ fn cross_schema_descendants() {
     sv.add_schema(geo_schema.clone()).unwrap();
     sv.add_schema(era_schema.clone()).unwrap();
     let conv = converter_from_schemas([&geo_schema, &era_schema]);
-    let base_class = sv.get_class(&Identifier::new("geo:Geometry"), &conv).unwrap().unwrap();
+    let base_class = sv
+        .get_class(&Identifier::new("geo:Geometry"), &conv)
+        .unwrap()
+        .unwrap();
     let descendants = base_class.get_descendants(false, false).unwrap();
-    assert!(descendants.iter().any(|cv| cv.get_uri(&conv, false, false).unwrap().to_string() == "era:Geometry"));
+    assert!(descendants
+        .iter()
+        .any(|cv| cv.get_uri(&conv, false, false).unwrap().to_string() == "era:Geometry"));
 }
-

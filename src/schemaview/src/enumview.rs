@@ -59,11 +59,7 @@ impl EnumView {
             // Basic inheritance: merge permissible values from inherited enums by name.
             if let Some(inherits) = &self.data.enum_def.inherits {
                 for e in inherits {
-                    if let Some(def) = self
-                        .data
-                        .sv
-                        .get_enum_definition(&Identifier::new(e))
-                    {
+                    if let Some(def) = self.data.sv.get_enum_definition(&Identifier::new(e)) {
                         if let Some(pv_map) = def.permissible_values {
                             for k in pv_map.keys() {
                                 keys.insert(k.clone());
@@ -78,4 +74,3 @@ impl EnumView {
         }))
     }
 }
-

@@ -7,11 +7,11 @@ use linkml_schemaview::slotview::{SlotInlineMode, SlotView};
 use serde_json::Value as JsonValue;
 use std::io::{Result as IoResult, Write};
 
-use regex::Regex;
-use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use oxrdf::{BlankNode, Literal, NamedNode, Subject, Term, Triple};
-use oxttl::TurtleSerializer;
 use oxttl::turtle::WriterTurtleSerializer;
+use oxttl::TurtleSerializer;
+use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
+use regex::Regex;
 
 use crate::LinkMLValue;
 
@@ -118,20 +118,18 @@ fn identifier_node(
     }
     if state.skolem {
         if let Some(p) = parent {
-            let part_opt = class
-                .key_or_identifier_slot()
-                .and_then(|ks| {
-                    map.get(&ks.name).and_then(|v| match v {
-                        LinkMLValue::Scalar { value, .. } => {
-                            if let JsonValue::String(s) = value {
-                                Some(encode_path_part(s))
-                            } else {
-                                Some(encode_path_part(&literal_value(value)))
-                            }
+            let part_opt = class.key_or_identifier_slot().and_then(|ks| {
+                map.get(&ks.name).and_then(|v| match v {
+                    LinkMLValue::Scalar { value, .. } => {
+                        if let JsonValue::String(s) = value {
+                            Some(encode_path_part(s))
+                        } else {
+                            Some(encode_path_part(&literal_value(value)))
                         }
-                        _ => None,
-                    })
-                });
+                    }
+                    _ => None,
+                })
+            });
             let part = part_opt
                 .or_else(|| index.map(|i| i.to_string()))
                 .unwrap_or_else(|| {
@@ -216,7 +214,7 @@ fn serialize_map<W: Write>(
                         };
                         formatter.serialize_triple(triple.as_ref())?;
                     } else {
-                    let object = Term::Literal(Literal::new_simple_literal(lit.clone()));
+                        let object = Term::Literal(Literal::new_simple_literal(lit.clone()));
                         let triple = Triple {
                             subject: subject.as_subject(),
                             predicate: predicate.clone(),
@@ -278,7 +276,8 @@ fn serialize_map<W: Write>(
                                     };
                                     formatter.serialize_triple(triple.as_ref())?;
                                 } else {
-                                    let object = Term::Literal(Literal::new_simple_literal(lit.clone()));
+                                    let object =
+                                        Term::Literal(Literal::new_simple_literal(lit.clone()));
                                     let triple = Triple {
                                         subject: subject.as_subject(),
                                         predicate: predicate.clone(),
@@ -336,12 +335,17 @@ pub fn write_turtle<W: Write>(
 ) -> IoResult<()> {
     let mut header = String::new();
     if let Some(prefixes) = &schema.prefixes {
-    for (pfx, pref) in prefixes {
-        header.push_str(&format!("@prefix {}: <{}> .\n", pfx, pref.prefix_reference));
-    }
+        for (pfx, pref) in prefixes {
+            header.push_str(&format!("@prefix {}: <{}> .\n", pfx, pref.prefix_reference));
+        }
     }
     header.push_str("@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n");
-    if !schema.prefixes.as_ref().map(|x| x.contains_key("xsd")).unwrap_or(false) {
+    if !schema
+        .prefixes
+        .as_ref()
+        .map(|x| x.contains_key("xsd"))
+        .unwrap_or(false)
+    {
         header.push_str("@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n");
     }
     header.push_str("\n");

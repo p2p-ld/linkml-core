@@ -68,29 +68,13 @@ impl ClassView {
 
             if let Some(parent) = &class_def.is_a {
                 if let Some(cv) = sv.get_classdefinition(&Identifier::new(parent), conv)? {
-                    gather(
-                        &cv,
-                        schema_uri,
-                        sv,
-                        conv,
-                        visited,
-                        schema_definition,
-                        acc,
-                    )?;
+                    gather(&cv, schema_uri, sv, conv, visited, schema_definition, acc)?;
                 }
             }
             if let Some(mixins) = &class_def.mixins {
                 for mixin in mixins {
                     if let Some(cv) = sv.get_classdefinition(&Identifier::new(mixin), conv)? {
-                        gather(
-                            &cv,
-                            schema_uri,
-                            sv,
-                            conv,
-                            visited,
-                            schema_definition,
-                            acc,
-                        )?;
+                        gather(&cv, schema_uri, sv, conv, visited, schema_definition, acc)?;
                     }
                 }
             }
@@ -110,12 +94,7 @@ impl ClassView {
                     }
                     acc.insert(
                         slot_ref.clone(),
-                        SlotView::new(
-                            slot_ref.clone(),
-                            defs,
-                            &slot_schema_uri,
-                            sv,
-                        ),
+                        SlotView::new(slot_ref.clone(), defs, &slot_schema_uri, sv),
                     );
                 }
             }
@@ -183,9 +162,15 @@ impl ClassView {
             return Ok(self.canonical_uri());
         }
         let schema = self
-            .data.sv
+            .data
+            .sv
             .get_schema(&self.data.schema_uri)
-            .ok_or_else(|| IdentifierError::NameNotResolvable(format!("cannot find schema for {}", self.data.schema_uri)))?;
+            .ok_or_else(|| {
+                IdentifierError::NameNotResolvable(format!(
+                    "cannot find schema for {}",
+                    self.data.schema_uri
+                ))
+            })?;
         let default_prefix = schema.default_prefix.as_deref().unwrap_or(&schema.name);
         let base = if native || self.data.class.class_uri.is_none() {
             if self.data.class.name.contains(":") {
@@ -213,7 +198,7 @@ impl ClassView {
     pub fn get_type_designator_slot(&self) -> Option<&SlotDefinition> {
         self.data.slots.iter().find_map(|s| {
             if s.definition().designates_type.unwrap_or(false) {
-                return Some(s.definition())
+                return Some(s.definition());
             } else {
                 None
             }
@@ -266,13 +251,11 @@ impl ClassView {
         Ok(vals)
     }
 
-    pub fn canonical_uri(
-        &self,
-    ) -> Identifier {
-        return self.data.sv.get_uri(
-               &self.data.schema_uri,
-            &self.data.class.name,
-        );
+    pub fn canonical_uri(&self) -> Identifier {
+        return self
+            .data
+            .sv
+            .get_uri(&self.data.schema_uri, &self.data.class.name);
     }
 
     fn compute_descendant_identifiers(
@@ -285,7 +268,8 @@ impl ClassView {
         result: &mut Vec<(String, String)>,
     ) -> Result<(), SchemaViewError> {
         let conv = self
-            .data.sv
+            .data
+            .sv
             .converter_for_schema(schema_uri)
             .ok_or_else(|| SchemaViewError::NotFound)?;
         for (_, schema) in self.data.sv.all_schema_definitions() {
@@ -297,18 +281,24 @@ impl ClassView {
                             if parent == class_name {
                                 is_descendant = true;
                             }
-                        } else if self.data.sv.identifier_equals(&self.data.sv.get_uri(&schema.id, parent), class_uri, &conv)? {
+                        } else if self.data.sv.identifier_equals(
+                            &self.data.sv.get_uri(&schema.id, parent),
+                            class_uri,
+                            &conv,
+                        )? {
                             is_descendant = true;
                         }
-
                     }
                     if !is_descendant && include_mixins {
                         if let Some(mixins) = &cls_def.mixins {
                             for mixin in mixins {
-                                if self.data.sv.identifier_equals(&self.data.sv.get_uri(&schema.id, mixin), class_uri, &conv)?
-                                {
-                                        is_descendant = true;
-                                        break;
+                                if self.data.sv.identifier_equals(
+                                    &self.data.sv.get_uri(&schema.id, mixin),
+                                    class_uri,
+                                    &conv,
+                                )? {
+                                    is_descendant = true;
+                                    break;
                                 }
                             }
                         }
@@ -318,9 +308,15 @@ impl ClassView {
                         if !result.contains(&tpl) {
                             result.push(tpl);
                             if recurse {
-                                let _ = self.compute_descendant_identifiers(recurse, include_mixins, &schema.id, &self.data.sv.get_uri(&schema.id, cls_name), cls_name, result)?;
+                                let _ = self.compute_descendant_identifiers(
+                                    recurse,
+                                    include_mixins,
+                                    &schema.id,
+                                    &self.data.sv.get_uri(&schema.id, cls_name),
+                                    cls_name,
+                                    result,
+                                )?;
                             }
-
                         }
                     }
                 }
@@ -335,17 +331,27 @@ impl ClassView {
         include_mixins: bool,
     ) -> Result<Vec<ClassView>, SchemaViewError> {
         let idx = self
-            .data.descendants_index
+            .data
+            .descendants_index
             .get(&(recurse, include_mixins))
             .unwrap()
             .get_or_init(|| {
-                let mut  res = Vec::new();
-                self.compute_descendant_identifiers(recurse, include_mixins, &self.data.schema_uri, &self.canonical_uri(), &self.name(), &mut res).unwrap(); // fix this with try_get_or_init once stable!
+                let mut res = Vec::new();
+                self.compute_descendant_identifiers(
+                    recurse,
+                    include_mixins,
+                    &self.data.schema_uri,
+                    &self.canonical_uri(),
+                    &self.name(),
+                    &mut res,
+                )
+                .unwrap(); // fix this with try_get_or_init once stable!
                 res
             });
         idx.iter()
             .map(|(schema_uri, class_name)| {
-                self.data.sv
+                self.data
+                    .sv
                     .get_class_by_schema(schema_uri, class_name)
                     .and_then(|opt| opt.ok_or(SchemaViewError::NotFound))
             })
@@ -371,7 +377,8 @@ impl ClassView {
     }
 
     pub fn identifier_slot(&self) -> Option<&SlotView> {
-        self.data.slots
+        self.data
+            .slots
             .iter()
             .find(|s| s.definition().identifier.unwrap_or(false))
     }
