@@ -69,9 +69,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let schema = from_yaml(&args.schema)?;
     let mut sv = SchemaView::new();
-    sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
+    sv.add_schema(schema.clone()).map_err(|e| e.to_string())?;
     #[cfg(feature = "resolve")]
-    resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
+    resolve_schemas(&mut sv).map_err(|e| e.to_string())?;
     let conv = sv.converter();
     let class_view = sv.get_tree_root_or(args.class.as_deref()).ok_or_else(|| {
         format!(

@@ -39,11 +39,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             args.schema.to_str().unwrap_or("unknown").to_owned(),
         )),
     )
-    .map_err(|e| format!("{e}"))?;
+    .map_err(|e| e.to_string())?;
     #[cfg(feature = "resolve")]
     {
         eprintln!("Resolving schemas...");
-        resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
+        resolve_schemas(&mut sv).map_err(|e| e.to_string())?;
         eprintln!("Schemas resolved");
     }
     let conv = sv.converter();

@@ -1,4 +1,4 @@
-use crate::runtime_module;
+use linkml_runtime_python::runtime_module;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use std::path::PathBuf;

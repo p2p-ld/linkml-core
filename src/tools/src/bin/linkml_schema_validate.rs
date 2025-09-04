@@ -2,7 +2,6 @@ use clap::{Parser, ValueEnum};
 #[cfg(feature = "resolve")]
 use linkml_schemaview::resolve::resolve_schemas;
 use linkml_schemaview::{identifier::Identifier, io::from_yaml, schemaview::SchemaView};
-use serde_json;
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -111,7 +110,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let schema = from_yaml(&args.schema)?;
     let mut sv = SchemaView::new();
-    sv.add_schema(schema.clone()).map_err(|e| format!("{e}"))?;
+    sv.add_schema(schema.clone()).map_err(|e| e.to_string())?;
     #[cfg(feature = "resolve")]
     if let Err(e) = resolve_schemas(&mut sv) {
         eprintln!("{e}");

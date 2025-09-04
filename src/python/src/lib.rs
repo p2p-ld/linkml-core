@@ -102,7 +102,7 @@ impl PySchemaView {
             let schema: SchemaDefinition = serde_path_to_error::deserialize(deser)
                 .map_err(|e| PyException::new_err(e.to_string()))?;
             sv.add_schema_with_import_ref(schema, uri.map(|u| ("".to_owned(), u)))
-                .map_err(|e| PyException::new_err(e))?;
+                .map_err(PyException::new_err)?;
         }
         Ok(Self {
             inner: Arc::new(sv),
@@ -123,7 +123,7 @@ impl PySchemaView {
         if let Some(inner) = std::sync::Arc::get_mut(&mut self.inner) {
             inner
                 .add_schema(schema)
-                .map_err(|e| PyException::new_err(e))
+                .map_err(PyException::new_err)
         } else {
             Err(PyException::new_err("SchemaView already shared"))
         }
@@ -136,7 +136,7 @@ impl PySchemaView {
         if let Some(inner) = std::sync::Arc::get_mut(&mut self.inner) {
             inner
                 .add_schema(schema)
-                .map_err(|e| PyException::new_err(e))
+                .map_err(PyException::new_err)
         } else {
             Err(PyException::new_err("SchemaView already shared"))
         }
@@ -216,7 +216,7 @@ impl PySchemaView {
     }
 
     fn get_class_ids(&self) -> Vec<String> {
-        return self.inner.get_class_ids();
+        self.inner.get_class_ids()
         /*
         let mut ids: HashSet<String> = HashSet::new();
         for (_, schema) in self.inner.iter_schemas() {
@@ -230,7 +230,7 @@ impl PySchemaView {
     }
 
     fn get_slot_ids(&self) -> Vec<String> {
-        return self.inner.get_slot_ids(); /*
+        self.inner.get_slot_ids()/*
                                           let mut ids: HashSet<String> = HashSet::new();
                                           for (_, schema) in self.inner.iter_schemas() {
                                               if let Some(slots) = &schema.slot_definitions {
@@ -395,7 +395,7 @@ impl PyEnumView {
     fn permissible_value_keys(&self) -> PyResult<Vec<String>> {
         self.inner
             .permissible_value_keys()
-            .map(|v| v.clone())
+            .cloned()
             .map_err(|e| PyException::new_err(format!("{:?}", e)))
     }
 

@@ -12,15 +12,13 @@ pub fn curie2uri<'a>(
     // check if it is of form prefix:ext
     if let Some((prefix, ext)) = curie_or_uri.split_once(':') {
         if let Some(prefixes) = prefixes {
-            if let Some(prefix) = prefixes.get(&prefix.to_string()) {
-                return Some(format!("{}{}", prefix.prefix_reference, ext));
-            } else {
-                return None;
-            }
+            prefixes
+                .get(&prefix.to_string())
+                .map(|prefix| format!("{}{}", prefix.prefix_reference, ext))
         } else {
-            return None;
+            None
         }
     } else {
-        return None;
+        None
     }
 }

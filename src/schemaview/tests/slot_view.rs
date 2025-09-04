@@ -23,10 +23,10 @@ fn slot_lookup_and_class_slots() {
 
     let conv = converter_from_schemas([&units_schema, &mappings_schema]);
 
-    assert!(!sv
+    assert!(sv
         .get_slot(&Identifier::new("abbreviation"), &conv)
         .unwrap()
-        .is_none());
+        .is_some());
 
     // class slots with slot_usage
     let class = sv

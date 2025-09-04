@@ -57,7 +57,7 @@ impl RangeInfo {
         e.range().and_then(|r| {
             slotview
                 .sv
-                .get_class(&Identifier::new(r), &conv)
+                .get_class(&Identifier::new(r), conv)
                 .ok()
                 .flatten()
         })
@@ -184,7 +184,7 @@ impl SlotView {
             schema_uri: schema_uri.to_owned(),
             sv: schemaview.clone(),
             data: Arc::new(SlotViewData {
-                definitions: definitions,
+                definitions,
                 cached_definition: OnceLock::new(),
                 cached_range_info: OnceLock::new(),
             }),
@@ -192,13 +192,15 @@ impl SlotView {
     }
 
     pub fn definition(&self) -> &SlotDefinition {
-        self.data.cached_definition.get_or_init(|| {
-            let mut b = self.data.definitions[0].clone();
-            for d in self.data.definitions.iter().skip(1) {
-                b.merge_with(d);
-            }
-            return b;
-        })
+        self.data
+            .cached_definition
+            .get_or_init(|| {
+                let mut b = self.data.definitions[0].clone();
+                for d in self.data.definitions.iter().skip(1) {
+                    b.merge_with(d);
+                }
+                b
+            })
     }
 
     pub fn definitions(&self) -> &Vec<SlotDefinition> {
@@ -206,60 +208,60 @@ impl SlotView {
     }
 
     pub fn get_range_info(&self) -> &Vec<RangeInfo> {
-        self.data.cached_range_info.get_or_init(|| {
-            let def = self.definition();
-            if let Some(any_of) = def.any_of.clone() {
-                if !any_of.is_empty() {
-                    let sv = self.clone();
-                    let iter = any_of.clone().into_iter().map(move |expr| -> RangeInfo {
-                        RangeInfo::new(
-                            SlotExpressionOrSubtype::from(expr.as_ref().clone()),
-                            sv.clone(),
-                        )
-                    });
-                    return iter.collect();
+        self.data
+            .cached_range_info
+            .get_or_init(|| {
+                let def = self.definition();
+                if let Some(any_of) = def.any_of.clone() {
+                    if !any_of.is_empty() {
+                        let sv = self.clone();
+                        let iter = any_of
+                            .clone()
+                            .into_iter()
+                            .map(move |expr| -> RangeInfo {
+                                RangeInfo::new(
+                                    SlotExpressionOrSubtype::from(expr.as_ref().clone()),
+                                    sv.clone(),
+                                )
+                            });
+                        return iter.collect();
+                    }
                 }
-            }
-            return std::iter::once(RangeInfo::new(
-                SlotExpressionOrSubtype::from(def.clone()),
-                self.clone(),
-            ))
-            .collect();
-        })
+                std::iter::once(RangeInfo::new(
+                    SlotExpressionOrSubtype::from(def.clone()),
+                    self.clone(),
+                ))
+                .collect()
+            })
     }
 
     pub fn get_range_class(&self) -> Option<ClassView> {
-        return self
-            .get_range_info()
+        self.get_range_info()
             .first()
-            .and_then(|ri| ri.range_class.clone());
+            .and_then(|ri| ri.range_class.clone())
     }
 
     pub fn get_range_enum(&self) -> Option<EnumView> {
-        return self
-            .get_range_info()
+        self.get_range_info()
             .first()
-            .and_then(|ri| ri.range_enum.clone());
+            .and_then(|ri| ri.range_enum.clone())
     }
 
     pub fn is_range_scalar(&self) -> bool {
-        return self
-            .get_range_info()
+        self.get_range_info()
             .first()
-            .map_or(true, |ri| ri.is_range_scalar);
+            .is_none_or(|ri| ri.is_range_scalar)
     }
 
     pub fn determine_slot_container_mode(&self) -> SlotContainerMode {
-        return self
-            .get_range_info()
+        self.get_range_info()
             .first()
-            .map_or(SlotContainerMode::SingleValue, |ri| ri.slot_container_mode);
+            .map_or(SlotContainerMode::SingleValue, |ri| ri.slot_container_mode)
     }
 
     pub fn determine_slot_inline_mode(&self) -> SlotInlineMode {
-        return self
-            .get_range_info()
+        self.get_range_info()
             .first()
-            .map_or(SlotInlineMode::Primitive, |ri| ri.slot_inline_mode);
+            .map_or(SlotInlineMode::Primitive, |ri| ri.slot_inline_mode)
     }
 }

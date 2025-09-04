@@ -26,9 +26,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         schema.clone(),
         Some(("".to_owned(), schema_path.to_owned())),
     )
-    .map_err(|e| format!("{e}"))?;
+    .map_err(|e| e.to_string())?;
     #[cfg(feature = "resolve")]
-    resolve_schemas(&mut sv).map_err(|e| format!("{e}"))?;
+    resolve_schemas(&mut sv).map_err(|e| e.to_string())?;
     let conv = sv.converter();
     let class_view = sv
         .get_class(&Identifier::new(&args.class), &conv)

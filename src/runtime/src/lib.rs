@@ -42,7 +42,7 @@ fn alt_names(name: &str) -> Vec<String> {
 }
 
 fn slot_matches_key(slot: &SlotView, key: &str) -> bool {
-    if slot.name == key || alt_names(key).iter().any(|a| slot.name == *a) {
+    if slot.name == key || alt_names(key).contains(&slot.name) {
         return true;
     }
     if let Some(alias) = &slot.definition().alias {
@@ -100,10 +100,7 @@ impl LinkMLValue {
         sv: &SchemaView,
         conv: &Converter,
     ) -> ClassView {
-        let descendants = match base.get_descendants(true, false) {
-            Ok(d) => d,
-            Err(_) => Vec::new(),
-        };
+        let descendants = base.get_descendants(true, false).unwrap_or_default();
         let mut cand_refs: Vec<&ClassView> = vec![base];
         for d in &descendants {
             cand_refs.push(d);
@@ -132,7 +129,7 @@ impl LinkMLValue {
         }
 
         for c in &cand_refs {
-            if let Ok(tmp) = Self::parse_object_fixed_class(map.clone(), *c, sv, conv, Vec::new()) {
+            if let Ok(tmp) = Self::parse_object_fixed_class(map.clone(), c, sv, conv, Vec::new()) {
                 if validate(&tmp).is_ok() {
                     return (*c).clone();
                 }
@@ -516,7 +513,7 @@ impl LinkMLValue {
     }
 }
 
-pub fn load_yaml_file<'a>(
+pub fn load_yaml_file(
     path: &Path,
     sv: &SchemaView,
     class: &ClassView,
@@ -526,7 +523,7 @@ pub fn load_yaml_file<'a>(
     load_yaml_str(&text, sv, class, conv)
 }
 
-pub fn load_yaml_str<'a>(
+pub fn load_yaml_str(
     data: &str,
     sv: &SchemaView,
     class: &ClassView,
@@ -538,9 +535,9 @@ pub fn load_yaml_str<'a>(
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
-pub fn load_json_file<'a>(
+pub fn load_json_file(
     path: &Path,
-    sv: &'a SchemaView,
+    sv: &SchemaView,
     class: &ClassView,
     conv: &Converter,
 ) -> std::result::Result<LinkMLValue, Box<dyn std::error::Error>> {
@@ -548,9 +545,9 @@ pub fn load_json_file<'a>(
     load_json_str(&text, sv, class, conv)
 }
 
-pub fn load_json_str<'a>(
+pub fn load_json_str(
     data: &str,
-    sv: &'a SchemaView,
+    sv: &SchemaView,
     class: &ClassView,
     conv: &Converter,
 ) -> std::result::Result<LinkMLValue, Box<dyn std::error::Error>> {

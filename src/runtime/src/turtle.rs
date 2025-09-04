@@ -143,12 +143,13 @@ fn identifier_node(
     (state.next_subject(), None)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn serialize_map<W: Write>(
     subject: &Node,
     map: &std::collections::HashMap<String, LinkMLValue>,
     class: Option<&ClassView>,
     formatter: &mut WriterTurtleSerializer<W>,
-    sv: &SchemaView,
+    _sv: &SchemaView,
     conv: &Converter,
     state: &mut State,
     id_slot: Option<&str>,
@@ -239,7 +240,7 @@ fn serialize_map<W: Write>(
                     values,
                     Some(class_ref),
                     formatter,
-                    sv,
+                    _sv,
                     conv,
                     state,
                     child_id.as_deref(),
@@ -310,7 +311,7 @@ fn serialize_map<W: Write>(
                                 mv,
                                 Some(class_ref),
                                 formatter,
-                                sv,
+                                _sv,
                                 conv,
                                 state,
                                 child_id.as_deref(),
@@ -348,7 +349,7 @@ pub fn write_turtle<W: Write>(
     {
         header.push_str("@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n");
     }
-    header.push_str("\n");
+    header.push('\n');
     let base = schema.id.trim_end_matches('#').to_string();
     let mut state = State {
         counter: 0,

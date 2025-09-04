@@ -69,12 +69,12 @@ impl LinkMLValue {
     }
 }
 
-pub fn diff<'a>(
+pub fn diff(
     source: &LinkMLValue,
     target: &LinkMLValue,
     ignore_missing_target: bool,
 ) -> Vec<Delta> {
-    fn inner<'b>(
+    fn inner(
         path: &mut Vec<String>,
         slot: Option<&SlotView>,
         s: &LinkMLValue,
@@ -110,7 +110,7 @@ pub fn diff<'a>(
                     match tm.get(k) {
                         Some(tv) => inner(path, slot_view, sv, tv, ignore_missing, out),
                         None => {
-                            if !ignore_missing && !slot_view.map_or(false, slot_is_ignored) {
+                            if !ignore_missing && !slot_view.is_some_and(slot_is_ignored) {
                                 out.push(Delta {
                                     path: path.clone(),
                                     old: Some(sv.to_json()),
@@ -128,7 +128,7 @@ pub fn diff<'a>(
                             .iter()
                             .find(|s| s.name == *k)
                             .or_else(|| tc.slots().iter().find(|s| s.name == *k));
-                        if !slot_view.map_or(false, slot_is_ignored) {
+                        if !slot_view.is_some_and(slot_is_ignored) {
                             path.push(k.clone());
                             out.push(Delta {
                                 path: path.clone(),
@@ -256,7 +256,7 @@ pub fn patch(source: &LinkMLValue, deltas: &[Delta], sv: &SchemaView) -> LinkMLV
     let conv = sv.converter();
     match source {
         LinkMLValue::Map { class: ref c, .. } => load_json_str(&json_str, sv, c, &conv).unwrap(),
-        _ => load_json_str(&json_str, sv, None.unwrap(), &conv).unwrap(),
+        _ => panic!("patching non-map values is not supported here"),
     }
 }
 
