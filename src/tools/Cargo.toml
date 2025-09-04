@@ -43,3 +43,7 @@ serde_path_to_error = "0.1.17"
 assert_cmd = "2"
 predicates = "2"
 tempfile = "3"
+
+[features]
+default = ["resolve"]
+resolve = ["linkml_schemaview/resolve"]
