@@ -72,6 +72,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
+      - name: Set python crate version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          VER="${GITHUB_REF#refs/tags/}"
+          VER="${VER#v}"
+          echo "Setting src/python/Cargo.toml version to ${VER}"
+          sed -i -E "s/^version = \".*\"/version = \"${VER}\"/" src/python/Cargo.toml
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -104,6 +112,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
+      - name: Set python crate version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          VER="${GITHUB_REF#refs/tags/}"
+          VER="${VER#v}"
+          echo "Setting src/python/Cargo.toml version to ${VER}"
+          sed -i -E "s/^version = \".*\"/version = \"${VER}\"/" src/python/Cargo.toml
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -133,6 +149,13 @@ jobs:
         with:
           python-version: 3.x
           architecture: ${{ matrix.platform.target }}
+      - name: Set python crate version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          $ver = $env:GITHUB_REF -replace '^refs/tags/', '' -replace '^v',''
+          Write-Host "Setting src/python/Cargo.toml version to $ver"
+          (Get-Content -Raw src/python/Cargo.toml) -replace 'version = \"[^\"]+\"', "version = \"$ver\"" | Set-Content src/python/Cargo.toml
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -158,6 +181,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
+      - name: Set python crate version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          VER="${GITHUB_REF#refs/tags/}"
+          VER="${VER#v}"
+          echo "Setting src/python/Cargo.toml version to ${VER}"
+          sed -i '' -E "s/^version = \".*\"/version = \"${VER}\"/" src/python/Cargo.toml
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -175,6 +206,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set python crate version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          VER="${GITHUB_REF#refs/tags/}"
+          VER="${VER#v}"
+          echo "Setting src/python/Cargo.toml version to ${VER}"
+          sed -i -E "s/^version = \".*\"/version = \"${VER}\"/" src/python/Cargo.toml
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
