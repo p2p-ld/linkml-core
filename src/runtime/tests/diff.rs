@@ -47,6 +47,15 @@ fn diff_and_patch_person() {
 
     let deltas = diff(&src, &tgt, false);
     assert_eq!(deltas.len(), 1);
+    // Ensure delta paths are navigable on respective values
+    for d in &deltas {
+        if d.old.is_some() {
+            assert!(src.navigate_path(&d.path).is_some());
+        }
+        if d.new.is_some() {
+            assert!(tgt.navigate_path(&d.path).is_some());
+        }
+    }
 
     let patched = patch(&src, &deltas, &sv);
     let patched_json = patched.to_json();
@@ -117,6 +126,15 @@ fn diff_and_patch_personinfo() {
 
     let deltas = diff(&src, &tgt, false);
     assert!(!deltas.is_empty());
+    // Ensure delta paths are navigable on respective values, including mapping-list keys
+    for d in &deltas {
+        if d.old.is_some() {
+            assert!(src.navigate_path(&d.path).is_some());
+        }
+        if d.new.is_some() {
+            assert!(tgt.navigate_path(&d.path).is_some());
+        }
+    }
     let patched = patch(&src, &deltas, &sv);
     assert_eq!(patched.to_json(), tgt.to_json());
 }

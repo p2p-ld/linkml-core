@@ -33,7 +33,7 @@ fn enum_valid_value() {
     assert!(validate(&v).is_ok());
 
     // Sanity check parsed value shape
-    if let LinkMLValue::Map { values, .. } = v {
+    if let LinkMLValue::Object { values, .. } = v {
         let status = values.get("status").expect("status not found");
         match status {
             LinkMLValue::Scalar { value, .. } => {

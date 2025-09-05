@@ -33,9 +33,9 @@ fn parse_alias_fields() {
         println!("JSON: {:?}", v.to_json());
         panic!("validation failed: {}", e);
     }
-    if let linkml_runtime::LinkMLValue::Map { values, .. } = &v {
+    if let linkml_runtime::LinkMLValue::Object { values, .. } = &v {
         let desc = values.get("description").expect("desc");
-        if let linkml_runtime::LinkMLValue::Map { values: item, .. } = desc {
+        if let linkml_runtime::LinkMLValue::Object { values: item, .. } = desc {
             println!("json: {:?}", v.to_json());
             let desc_v = item.get("alt_description_text");
             assert!(desc_v.is_some(), "desc field missing");

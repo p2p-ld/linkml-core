@@ -105,20 +105,20 @@ fn array_polymorphism() {
         .expect("class not found");
     let v = load_yaml_file(Path::new(&data_path("poly_array.yaml")), &sv, &class, &conv).unwrap();
     assert!(validate(&v).is_ok());
-    if let LinkMLValue::Map { values, .. } = v {
+    if let LinkMLValue::Object { values, .. } = v {
         let objs = values.get("objs").expect("objs not found");
         if let LinkMLValue::List { values: arr, .. } = objs {
             assert_eq!(arr.len(), 3);
             match &arr[0] {
-                LinkMLValue::Map { class, .. } => assert_eq!(class.name(), "Child"),
+                LinkMLValue::Object { class, .. } => assert_eq!(class.name(), "Child"),
                 _ => panic!("expected map"),
             }
             match &arr[1] {
-                LinkMLValue::Map { class, .. } => assert_eq!(class.name(), "Child"),
+                LinkMLValue::Object { class, .. } => assert_eq!(class.name(), "Child"),
                 _ => panic!("expected map"),
             }
             match &arr[2] {
-                LinkMLValue::Map { class, .. } => assert_eq!(class.name(), "Parent"),
+                LinkMLValue::Object { class, .. } => assert_eq!(class.name(), "Parent"),
                 _ => panic!("expected map"),
             }
         } else {

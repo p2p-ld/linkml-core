@@ -225,7 +225,7 @@ fn serialize_map<W: Write>(
                     }
                 }
             }
-            LinkMLValue::Map { values, class, .. } => {
+            LinkMLValue::Object { values, class, .. } => {
                 let class_ref = &class;
                 let (obj, child_id) =
                     identifier_node(values, class_ref, conv, state, Some(subject), None);
@@ -288,7 +288,7 @@ fn serialize_map<W: Write>(
                                 }
                             }
                         }
-                        LinkMLValue::Map {
+                        LinkMLValue::Object {
                             values: mv, class, ..
                         } => {
                             let class_ref = &class;
@@ -318,6 +318,83 @@ fn serialize_map<W: Write>(
                             )?;
                         }
                         LinkMLValue::List { .. } => {}
+                        LinkMLValue::Mapping { .. } => {}
+                    }
+                }
+            }
+            LinkMLValue::Mapping { values, .. } => {
+                for (idx, item) in values.values().enumerate() {
+                    match item {
+                        LinkMLValue::Scalar { value: v, slot, .. } => {
+                            let inline_mode = slot.determine_slot_inline_mode();
+                            if inline_mode == SlotInlineMode::Reference {
+                                let lit = literal_value(v);
+                                let iri = Identifier::new(&lit)
+                                    .to_uri(conv)
+                                    .map(|u| u.0)
+                                    .unwrap_or(lit);
+                                let triple = Triple {
+                                    subject: subject.as_subject(),
+                                    predicate: predicate.clone(),
+                                    object: Term::NamedNode(NamedNode::new_unchecked(iri)),
+                                };
+                                formatter.serialize_triple(triple.as_ref())?;
+                            } else {
+                                let (lit, dt_opt) = literal_and_type(v, slot);
+                                if let Some(dt) = dt_opt {
+                                    let object = Term::Literal(Literal::new_typed_literal(
+                                        lit.clone(),
+                                        NamedNode::new_unchecked(dt.clone()),
+                                    ));
+                                    let triple = Triple {
+                                        subject: subject.as_subject(),
+                                        predicate: predicate.clone(),
+                                        object,
+                                    };
+                                    formatter.serialize_triple(triple.as_ref())?;
+                                } else {
+                                    let object =
+                                        Term::Literal(Literal::new_simple_literal(lit.clone()));
+                                    let triple = Triple {
+                                        subject: subject.as_subject(),
+                                        predicate: predicate.clone(),
+                                        object,
+                                    };
+                                    formatter.serialize_triple(triple.as_ref())?;
+                                }
+                            }
+                        }
+                        LinkMLValue::Object {
+                            values: mv, class, ..
+                        } => {
+                            let class_ref = class;
+                            let (obj, child_id) = identifier_node(
+                                mv,
+                                class_ref,
+                                conv,
+                                state,
+                                Some(subject),
+                                Some(idx),
+                            );
+                            let triple = Triple {
+                                subject: subject.as_subject(),
+                                predicate: predicate.clone(),
+                                object: obj.as_term(),
+                            };
+                            formatter.serialize_triple(triple.as_ref())?;
+                            serialize_map(
+                                &obj,
+                                mv,
+                                Some(class_ref),
+                                formatter,
+                                _sv,
+                                conv,
+                                state,
+                                child_id.as_deref(),
+                            )?;
+                        }
+                        LinkMLValue::List { .. } => {}
+                        LinkMLValue::Mapping { .. } => {}
                     }
                 }
             }
@@ -367,7 +444,7 @@ pub fn write_turtle<W: Write>(
     };
     let mut formatter = TurtleSerializer::new().for_writer(Vec::new());
     match value {
-        LinkMLValue::Map { values, class, .. } => {
+        LinkMLValue::Object { values, class, .. } => {
             let cv = &class;
             let mut id_slot_name = None;
             let subj = if let Some(id_slot) = cv.identifier_slot() {
@@ -396,6 +473,61 @@ pub fn write_turtle<W: Write>(
                 id_slot_name.as_deref(),
             )?;
         }
+        LinkMLValue::Mapping { values, .. } => {
+            for (idx, item) in values.values().enumerate() {
+                let subj = if options.skolem {
+                    Node::Named(format!("{}root/{}", state.base, idx))
+                } else {
+                    state.next_subject()
+                };
+                match item {
+                    LinkMLValue::Object {
+                        values: mv, class, ..
+                    } => {
+                        let class = Some(class);
+                        serialize_map(
+                            &subj,
+                            mv,
+                            class,
+                            &mut formatter,
+                            sv,
+                            conv,
+                            &mut state,
+                            None,
+                        )?;
+                    }
+                    LinkMLValue::Scalar { value: v, slot, .. } => {
+                        let (lit, dt_opt) = literal_and_type(v, slot);
+                        if let Some(dt) = dt_opt {
+                            let object = Term::Literal(Literal::new_typed_literal(
+                                lit.clone(),
+                                NamedNode::new_unchecked(dt.clone()),
+                            ));
+                            let triple = Triple {
+                                subject: subj.as_subject(),
+                                predicate: NamedNode::new_unchecked(
+                                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#value".to_string(),
+                                ),
+                                object,
+                            };
+                            formatter.serialize_triple(triple.as_ref())?;
+                        } else {
+                            let object = Term::Literal(Literal::new_simple_literal(lit.clone()));
+                            let triple = Triple {
+                                subject: subj.as_subject(),
+                                predicate: NamedNode::new_unchecked(
+                                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#value".to_string(),
+                                ),
+                                object,
+                            };
+                            formatter.serialize_triple(triple.as_ref())?;
+                        }
+                    }
+                    LinkMLValue::List { .. } => {}
+                    LinkMLValue::Mapping { .. } => {}
+                }
+            }
+        }
         LinkMLValue::List { values, .. } => {
             for (idx, item) in values.iter().enumerate() {
                 let subj = if options.skolem {
@@ -404,7 +536,7 @@ pub fn write_turtle<W: Write>(
                     state.next_subject()
                 };
                 match item {
-                    LinkMLValue::Map {
+                    LinkMLValue::Object {
                         values: mv, class, ..
                     } => {
                         let class = Some(class);
@@ -447,6 +579,7 @@ pub fn write_turtle<W: Write>(
                         }
                     }
                     LinkMLValue::List { .. } => {}
+                    LinkMLValue::Mapping { .. } => {}
                 }
             }
         }

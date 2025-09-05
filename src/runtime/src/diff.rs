@@ -1,5 +1,5 @@
 use crate::{load_json_str, LinkMLValue};
-use linkml_schemaview::schemaview::{SchemaView, SlotContainerMode, SlotView};
+use linkml_schemaview::schemaview::{SchemaView, SlotView};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value as JsonValue};
 
@@ -27,39 +27,16 @@ impl LinkMLValue {
     pub fn to_json(&self) -> JsonValue {
         match self {
             LinkMLValue::Scalar { value, .. } => value.clone(),
-            LinkMLValue::List { values, slot, .. } => match slot.determine_slot_container_mode() {
-                SlotContainerMode::Mapping => {
-                    let range_cv = slot
-                        .get_range_class()
-                        .expect("mapping slot must have class range");
-                    let key_slot_name = range_cv
-                        .key_or_identifier_slot()
-                        .expect("mapping slot must have key or identifier")
-                        .name
-                        .clone();
-                    let mut map = serde_json::Map::new();
-                    for v in values {
-                        if let LinkMLValue::Map { values: m, .. } = v {
-                            if let Some(LinkMLValue::Scalar {
-                                value: JsonValue::String(k),
-                                ..
-                            }) = m.get(&key_slot_name)
-                            {
-                                let mut child = serde_json::Map::new();
-                                for (ck, cv) in m {
-                                    if ck != &key_slot_name {
-                                        child.insert(ck.clone(), cv.to_json());
-                                    }
-                                }
-                                map.insert(k.clone(), JsonValue::Object(child));
-                            }
-                        }
-                    }
-                    JsonValue::Object(map)
-                }
-                _ => JsonValue::Array(values.iter().map(|v| v.to_json()).collect()),
-            },
-            LinkMLValue::Map { values, .. } => JsonValue::Object(
+            LinkMLValue::List { values, .. } => {
+                JsonValue::Array(values.iter().map(|v| v.to_json()).collect())
+            }
+            LinkMLValue::Mapping { values, .. } => JsonValue::Object(
+                values
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.to_json()))
+                    .collect(),
+            ),
+            LinkMLValue::Object { values, .. } => JsonValue::Object(
                 values
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_json()))
@@ -85,12 +62,12 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
         }
         match (s, t) {
             (
-                LinkMLValue::Map {
+                LinkMLValue::Object {
                     values: sm,
                     class: sc,
                     ..
                 },
-                LinkMLValue::Map {
+                LinkMLValue::Object {
                     values: tm,
                     class: tc,
                     ..
@@ -136,88 +113,49 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
                     }
                 }
             }
-            (
-                LinkMLValue::List {
-                    values: sl, slot, ..
-                },
-                LinkMLValue::List { values: tl, .. },
-            ) => match slot.determine_slot_container_mode() {
-                SlotContainerMode::Mapping => {
-                    let range_cv = slot
-                        .get_range_class()
-                        .expect("mapping slot must have class range");
-                    let key_slot_name = range_cv
-                        .key_or_identifier_slot()
-                        .expect("mapping slot must have key or identifier")
-                        .name
-                        .clone();
-                    use std::collections::BTreeSet;
-                    let mut smap = std::collections::HashMap::new();
-                    for v in sl {
-                        if let LinkMLValue::Map { values: m, .. } = v {
-                            if let Some(LinkMLValue::Scalar {
-                                value: JsonValue::String(k),
-                                ..
-                            }) = m.get(&key_slot_name)
-                            {
-                                smap.insert(k.clone(), v);
-                            }
-                        }
+            (LinkMLValue::List { values: sl, .. }, LinkMLValue::List { values: tl, .. }) => {
+                let max_len = std::cmp::max(sl.len(), tl.len());
+                for i in 0..max_len {
+                    path.push(i.to_string());
+                    match (sl.get(i), tl.get(i)) {
+                        (Some(sv), Some(tv)) => inner(path, None, sv, tv, ignore_missing, out),
+                        (Some(sv), None) => out.push(Delta {
+                            path: path.clone(),
+                            old: Some(sv.to_json()),
+                            new: None,
+                        }),
+                        (None, Some(tv)) => out.push(Delta {
+                            path: path.clone(),
+                            old: None,
+                            new: Some(tv.to_json()),
+                        }),
+                        (None, None) => {}
                     }
-                    let mut tmap = std::collections::HashMap::new();
-                    for v in tl {
-                        if let LinkMLValue::Map { values: m, .. } = v {
-                            if let Some(LinkMLValue::Scalar {
-                                value: JsonValue::String(k),
-                                ..
-                            }) = m.get(&key_slot_name)
-                            {
-                                tmap.insert(k.clone(), v);
-                            }
-                        }
-                    }
-                    let keys: BTreeSet<_> = smap.keys().chain(tmap.keys()).cloned().collect();
-                    for k in keys {
-                        path.push(k.clone());
-                        match (smap.get(&k), tmap.get(&k)) {
-                            (Some(sv), Some(tv)) => inner(path, None, sv, tv, ignore_missing, out),
-                            (Some(sv), None) => out.push(Delta {
-                                path: path.clone(),
-                                old: Some(sv.to_json()),
-                                new: None,
-                            }),
-                            (None, Some(tv)) => out.push(Delta {
-                                path: path.clone(),
-                                old: None,
-                                new: Some(tv.to_json()),
-                            }),
-                            (None, None) => {}
-                        }
-                        path.pop();
-                    }
+                    path.pop();
                 }
-                _ => {
-                    let max_len = std::cmp::max(sl.len(), tl.len());
-                    for i in 0..max_len {
-                        path.push(i.to_string());
-                        match (sl.get(i), tl.get(i)) {
-                            (Some(sv), Some(tv)) => inner(path, None, sv, tv, ignore_missing, out),
-                            (Some(sv), None) => out.push(Delta {
-                                path: path.clone(),
-                                old: Some(sv.to_json()),
-                                new: None,
-                            }),
-                            (None, Some(tv)) => out.push(Delta {
-                                path: path.clone(),
-                                old: None,
-                                new: Some(tv.to_json()),
-                            }),
-                            (None, None) => {}
-                        }
-                        path.pop();
+            }
+            (LinkMLValue::Mapping { values: sm, .. }, LinkMLValue::Mapping { values: tm, .. }) => {
+                use std::collections::BTreeSet;
+                let keys: BTreeSet<_> = sm.keys().chain(tm.keys()).cloned().collect();
+                for k in keys {
+                    path.push(k.clone());
+                    match (sm.get(&k), tm.get(&k)) {
+                        (Some(sv), Some(tv)) => inner(path, None, sv, tv, ignore_missing, out),
+                        (Some(sv), None) => out.push(Delta {
+                            path: path.clone(),
+                            old: Some(sv.to_json()),
+                            new: None,
+                        }),
+                        (None, Some(tv)) => out.push(Delta {
+                            path: path.clone(),
+                            old: None,
+                            new: Some(tv.to_json()),
+                        }),
+                        (None, None) => {}
                     }
+                    path.pop();
                 }
-            },
+            }
             _ => {
                 let sv = s.to_json();
                 let tv = t.to_json();
@@ -251,7 +189,7 @@ pub fn patch(source: &LinkMLValue, deltas: &[Delta], sv: &SchemaView) -> LinkMLV
     let json_str = serde_json::to_string(&json).unwrap();
     let conv = sv.converter();
     match source {
-        LinkMLValue::Map { class: ref c, .. } => load_json_str(&json_str, sv, c, &conv).unwrap(),
+        LinkMLValue::Object { class: ref c, .. } => load_json_str(&json_str, sv, c, &conv).unwrap(),
         _ => panic!("patching non-map values is not supported here"),
     }
 }

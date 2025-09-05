@@ -492,7 +492,8 @@ impl PyLinkMLValue {
         match &self.value {
             LinkMLValue::Scalar { .. } => "scalar".to_string(),
             LinkMLValue::List { .. } => "list".to_string(),
-            LinkMLValue::Map { .. } => "map".to_string(),
+            LinkMLValue::Mapping { .. } => "mapping".to_string(),
+            LinkMLValue::Object { .. } => "object".to_string(),
         }
     }
 
@@ -508,7 +509,7 @@ impl PyLinkMLValue {
     #[getter]
     fn class_definition(&self) -> Option<ClassDefinition> {
         match &self.value {
-            LinkMLValue::Map { class, .. } => Some(class.def().clone()),
+            LinkMLValue::Object { class, .. } => Some(class.def().clone()),
             LinkMLValue::Scalar { class: Some(c), .. } => Some(c.def().clone()),
             LinkMLValue::List { class: Some(c), .. } => Some(c.def().clone()),
             _ => None,
@@ -518,7 +519,7 @@ impl PyLinkMLValue {
     #[getter]
     fn class_name(&self) -> Option<String> {
         match &self.value {
-            LinkMLValue::Map { class, .. } => Some(class.def().name.clone()),
+            LinkMLValue::Object { class, .. } => Some(class.def().name.clone()),
             LinkMLValue::Scalar { class: Some(c), .. } => Some(c.def().name.clone()),
             LinkMLValue::List { class: Some(c), .. } => Some(c.def().name.clone()),
             _ => None,
@@ -529,7 +530,8 @@ impl PyLinkMLValue {
         Ok(match &self.value {
             LinkMLValue::Scalar { .. } => 0,
             LinkMLValue::List { values, .. } => values.len(),
-            LinkMLValue::Map { values, .. } => values.len(),
+            LinkMLValue::Mapping { values, .. } => values.len(),
+            LinkMLValue::Object { values, .. } => values.len(),
         })
     }
 
@@ -546,7 +548,14 @@ impl PyLinkMLValue {
                     .map(|v| PyLinkMLValue::new(v.clone(), self.sv.clone_ref(py)))
                     .ok_or_else(|| PyException::new_err("index out of range"))
             }
-            LinkMLValue::Map { values, .. } => {
+            LinkMLValue::Object { values, .. } => {
+                let k: String = key.extract()?;
+                values
+                    .get(&k)
+                    .map(|v| PyLinkMLValue::new(v.clone(), self.sv.clone_ref(py)))
+                    .ok_or_else(|| PyException::new_err("key not found"))
+            }
+            LinkMLValue::Mapping { values, .. } => {
                 let k: String = key.extract()?;
                 values
                     .get(&k)
@@ -557,16 +566,44 @@ impl PyLinkMLValue {
         }
     }
 
+    /// Navigate by a path of strings (map keys or list indices).
+    /// Returns a new LinkMLValue if found, otherwise None.
+    #[pyo3(name = "navigate")]
+    fn py_navigate<'py>(
+        &self,
+        py: Python<'py>,
+        path: &Bound<'py, PyAny>,
+    ) -> PyResult<Option<PyLinkMLValue>> {
+        // Expect any iterable of strings
+        let path_vec: Vec<String> = path
+            .extract()
+            .map_err(|_| PyException::new_err("path must be a sequence of strings"))?;
+        if let Some(found) = self.value.navigate_path(&path_vec) {
+            Ok(Some(PyLinkMLValue::new(
+                found.clone(),
+                self.sv.clone_ref(py),
+            )))
+        } else {
+            Ok(None)
+        }
+    }
+
     fn keys(&self) -> PyResult<Vec<String>> {
         match &self.value {
-            LinkMLValue::Map { values, .. } => Ok(values.keys().cloned().collect()),
+            LinkMLValue::Object { values, .. } => Ok(values.keys().cloned().collect()),
+            LinkMLValue::Mapping { values, .. } => Ok(values.keys().cloned().collect()),
             _ => Ok(Vec::new()),
         }
     }
 
     fn values<'py>(&self, py: Python<'py>) -> PyResult<Vec<PyLinkMLValue>> {
         match &self.value {
-            LinkMLValue::Map { values, .. } => Ok(values
+            LinkMLValue::Object { values, .. } => Ok(values
+                .values()
+                .cloned()
+                .map(|v| PyLinkMLValue::new(v, self.sv.clone_ref(py)))
+                .collect()),
+            LinkMLValue::Mapping { values, .. } => Ok(values
                 .values()
                 .cloned()
                 .map(|v| PyLinkMLValue::new(v, self.sv.clone_ref(py)))
@@ -615,10 +652,17 @@ impl PyLinkMLValue {
                     values.len()
                 )
             }
-            LinkMLValue::Map { values, class, .. } => {
+            LinkMLValue::Mapping { values, slot, .. } => {
+                format!(
+                    "LinkMLValue.Mapping(slot='{}', keys={:?})",
+                    slot.name,
+                    values.keys().collect::<Vec<&String>>()
+                )
+            }
+            LinkMLValue::Object { values, class, .. } => {
                 let keys: Vec<&String> = values.keys().collect();
                 format!(
-                    "LinkMLValue.Map(class='{}', keys={:?})",
+                    "LinkMLValue.Object(class='{}', keys={:?})",
                     class.def().name.clone(),
                     keys
                 )
