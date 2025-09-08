@@ -1,0 +1,14 @@
+id: http://example.com/era
+name: era
+prefixes:
+  era: http://example.com/era/
+  geo: http://example.com/geo/
+  linkml: https://w3id.org/linkml/
+imports:
+  - linkml:types
+  - http://example.com/geo
+default_prefix: era
+classes:
+  Geometry:
+    is_a: geo:Geometry
+    description: Extended geometry

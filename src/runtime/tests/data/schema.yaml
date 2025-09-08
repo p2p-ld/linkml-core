@@ -1,0 +1,14 @@
+id: https://example.com/test
+name: test
+prefixes:
+  test: https://example.com/test/
+default_prefix: test
+classes:
+  Person:
+    attributes:
+      name:
+      age:
+      internal_id:
+        annotations:
+          diff.linkml.io/ignore:
+            extension_value: {}

@@ -5,8 +5,9 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "linkml_core"
+name = "linkml_core_py"
 crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.25.0"
+runtime = { package = "linkml_runtime", path = "../runtime", features = ["python"] }

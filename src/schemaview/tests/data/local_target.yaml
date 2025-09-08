@@ -1,0 +1,10 @@
+id: http://example.com/local_target
+name: local_target
+prefixes:
+  local_target: http://example.com/local_target/
+default_prefix: local_target
+classes:
+  TargetThing:
+    attributes:
+      id:
+        identifier: true

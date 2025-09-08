@@ -1,16 +1,41 @@
-[build-system]
-requires = ["maturin>=1.7,<2.0"]
-build-backend = "maturin"
+# Root-level pyproject for the monorepo.
+#
+# This file does not define an installable Python package at the root.
+# It centralizes tooling config (format/lint/type-check), and documents
+# Python package members for editors and monorepo-aware tools.
 
-[project]
-name = "linkml-core"
-requires-python = ">=3.8"
-classifiers = [
-    "Programming Language :: Rust",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
+[tool.monorepo]
+# Python package members in this workspace (informational only)
+members = [
+  "src/python",
 ]
-dynamic = ["version"]
-[tool.maturin]
-features = ["pyo3/extension-module"]
-manifest-path = "src/main/Cargo.toml"
+
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+include = "\.(py|pyi)$"
+
+[tool.ruff]
+line-length = 100
+select = [
+  "E",  # pycodestyle
+  "F",  # pyflakes
+  "I",  # isort
+  "UP", # pyupgrade
+]
+ignore = [
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["linkml_runtime_rust"]
+combine-as-imports = true
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+addopts = "-q"

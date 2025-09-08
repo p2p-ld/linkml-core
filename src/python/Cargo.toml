@@ -1,0 +1,20 @@
+[package]
+name = "linkml_runtime_python"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "linkml_runtime_python"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.25.0" }
+linkml_runtime = { path = "../runtime" }
+linkml_schemaview = { path = "../schemaview", package = "schemaview" }
+linkml_meta = { path = "../metamodel", features = ["pyo3"] }
+serde_json = "1.0"
+serde_yml = "0.0.12"
+serde_path_to_error = "0.1.17"
+
+[features]
+default = []

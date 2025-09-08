@@ -3,7 +3,7 @@ requires = ["maturin>=1.7,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "linkml-schemaview-rs"
+name = "linkml-runtime-rust"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Rust",
@@ -12,6 +12,8 @@ classifiers = [
 ]
 dynamic = ["version"]
 
-
 [tool.maturin]
 features = ["pyo3/extension-module"]
+module-name = "linkml_runtime_rust._native"
+python-source = "python"
+

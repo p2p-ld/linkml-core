@@ -1,0 +1,21 @@
+id: https://w3id.org/linkml/examples/personinfo
+name: personinfo
+prefixes:
+  personinfo: https://w3id.org/linkml/examples/personinfo/
+  alt: https://w3id.org/linkml/examples/personinfo/
+  linkml: https://w3id.org/linkml/
+imports:
+  - linkml:types
+default_prefix: personinfo
+classes:
+  NamedThing:
+    attributes:
+      id:
+  Person:
+    is_a: NamedThing
+    class_uri: linkml:Person
+    attributes:
+      full_name:
+      aliases:
+      phone:
+      age:

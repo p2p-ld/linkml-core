@@ -1,0 +1,11 @@
+id: http://example.com/geo
+name: geo
+prefixes:
+  geo: http://example.com/geo/
+  linkml: https://w3id.org/linkml/
+imports:
+  - linkml:types
+default_prefix: geo
+classes:
+  Geometry:
+    description: Base geometry class
