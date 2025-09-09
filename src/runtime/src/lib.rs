@@ -291,16 +291,18 @@ impl LinkMLValue {
                     })?;
                 let mut values = HashMap::new();
                 for (k, v) in map.into_iter() {
-                    let chosen = sv
+                    let base = sv
                         .get_class(&Identifier::new(range_cv.name()), conv)
                         .ok()
                         .flatten()
                         .unwrap_or_else(|| range_cv.clone());
                     let child = match v {
                         JsonValue::Object(m) => {
+                            // Select the most specific subclass using any type designator in the map
+                            let selected = Self::select_class(&m, &base, sv, conv);
                             let mut child_values = HashMap::new();
                             for (ck, cv) in m.into_iter() {
-                                let slot_tmp = chosen
+                                let slot_tmp = selected
                                     .slots()
                                     .iter()
                                     .find(|s| slot_matches_key(s, &ck))
@@ -315,7 +317,7 @@ impl LinkMLValue {
                                     key_name,
                                     Self::from_json_internal(
                                         cv,
-                                        chosen.clone(),
+                                        selected.clone(),
                                         slot_tmp,
                                         sv,
                                         conv,
@@ -326,14 +328,14 @@ impl LinkMLValue {
                             }
                             LinkMLValue::Object {
                                 values: child_values,
-                                class: chosen.clone(),
+                                class: selected,
                                 sv: sv.clone(),
                             }
                         }
                         other => {
                             // Scalar mapping value: attach it to a chosen scalar slot if any
                             let scalar_slot = Self::find_scalar_slot_for_inlined_map(
-                                &chosen,
+                                &base,
                                 range_cv
                                     .key_or_identifier_slot()
                                     .map(|s| s.name.as_str())
@@ -351,13 +353,13 @@ impl LinkMLValue {
                                 LinkMLValue::Scalar {
                                     value: other,
                                     slot: scalar_slot.clone(),
-                                    class: Some(chosen.clone()),
+                                    class: Some(base.clone()),
                                     sv: sv.clone(),
                                 },
                             );
                             LinkMLValue::Object {
                                 values: child_values,
-                                class: chosen.clone(),
+                                class: base.clone(),
                                 sv: sv.clone(),
                             }
                         }
