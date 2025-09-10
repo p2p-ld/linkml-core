@@ -1,7 +1,8 @@
-use crate::{load_json_str, LinkMLValue, NodeId};
-use linkml_schemaview::schemaview::{SchemaView, SlotView};
+use crate::{LinkMLValue, NodeId};
+use linkml_schemaview::identifier::Identifier;
+use linkml_schemaview::schemaview::{ClassView, SchemaView, SlotView};
 use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value as JsonValue};
+use serde_json::Value as JsonValue;
 
 const IGNORE_ANNOTATION: &str = "diff.linkml.io/ignore";
 
@@ -188,223 +189,252 @@ pub struct PatchTrace {
     pub updated: Vec<NodeId>,
 }
 
-fn collect_ids(value: &LinkMLValue, out: &mut Vec<NodeId>) {
-    out.push(value.node_id());
+pub fn patch(source: &LinkMLValue, deltas: &[Delta], sv: &SchemaView) -> (LinkMLValue, PatchTrace) {
+    let mut out = source.clone();
+    let mut trace = PatchTrace::default();
+    for d in deltas {
+        apply_delta_linkml(&mut out, &d.path, &d.new, sv, &mut trace);
+    }
+    (out, trace)
+}
+
+fn collect_all_ids(value: &LinkMLValue, ids: &mut Vec<NodeId>) {
+    ids.push(value.node_id());
     match value {
         LinkMLValue::Scalar { .. } => {}
         LinkMLValue::List { values, .. } => {
             for v in values {
-                collect_ids(v, out);
+                collect_all_ids(v, ids);
             }
         }
         LinkMLValue::Mapping { values, .. } | LinkMLValue::Object { values, .. } => {
             for v in values.values() {
-                collect_ids(v, out);
+                collect_all_ids(v, ids);
             }
         }
     }
 }
 
-fn reconcile_ids(old: &LinkMLValue, new: &mut LinkMLValue) {
-    match (old, new) {
-        (LinkMLValue::Scalar { node_id: oid, .. }, LinkMLValue::Scalar { node_id: nid, .. }) => {
-            *nid = *oid;
-        }
-        (
-            LinkMLValue::List {
-                node_id: oid,
-                values: ov,
-                ..
-            },
-            LinkMLValue::List {
-                node_id: nid,
-                values: nv,
-                ..
-            },
-        ) => {
-            *nid = *oid;
-            let n = std::cmp::min(ov.len(), nv.len());
-            for i in 0..n {
-                reconcile_ids(&ov[i], &mut nv[i]);
-            }
-        }
-        (
-            LinkMLValue::Mapping {
-                node_id: oid,
-                values: om,
-                ..
-            },
-            LinkMLValue::Mapping {
-                node_id: nid,
-                values: nm,
-                ..
-            },
-        ) => {
-            *nid = *oid;
-            for (k, ov) in om {
-                if let Some(nv) = nm.get_mut(k) {
-                    reconcile_ids(ov, nv);
-                }
-            }
-        }
-        (
-            LinkMLValue::Object {
-                node_id: oid,
-                values: om,
-                ..
-            },
-            LinkMLValue::Object {
-                node_id: nid,
-                values: nm,
-                ..
-            },
-        ) => {
-            *nid = *oid;
-            for (k, ov) in om {
-                if let Some(nv) = nm.get_mut(k) {
-                    reconcile_ids(ov, nv);
-                }
-            }
-        }
-        _ => {}
-    }
+fn mark_added_subtree(v: &LinkMLValue, trace: &mut PatchTrace) {
+    collect_all_ids(v, &mut trace.added);
 }
 
-fn collect_updated(old: &LinkMLValue, new: &LinkMLValue, updated: &mut Vec<NodeId>) {
-    if old.node_id() == new.node_id() && old.to_json() != new.to_json() {
-        updated.push(new.node_id());
-    }
-    match (old, new) {
-        (LinkMLValue::Scalar { .. }, LinkMLValue::Scalar { .. }) => {}
-        (LinkMLValue::List { values: ov, .. }, LinkMLValue::List { values: nv, .. }) => {
-            let n = std::cmp::min(ov.len(), nv.len());
-            for i in 0..n {
-                collect_updated(&ov[i], &nv[i], updated);
-            }
-        }
-        (
-            LinkMLValue::Mapping { values: om, .. },
-            LinkMLValue::Mapping { values: nm, .. },
-        )
-        | (
-            LinkMLValue::Object { values: om, .. },
-            LinkMLValue::Object { values: nm, .. },
-        ) => {
-            for (k, ov) in om {
-                if let Some(nv) = nm.get(k) {
-                    collect_updated(ov, nv, updated);
-                }
-            }
-        }
-        _ => {}
-    }
+fn mark_deleted_subtree(v: &LinkMLValue, trace: &mut PatchTrace) {
+    collect_all_ids(v, &mut trace.deleted);
 }
 
-pub fn patch(source: &LinkMLValue, deltas: &[Delta], sv: &SchemaView) -> (LinkMLValue, PatchTrace) {
-    // Pre-snapshot
-    let mut pre_ids = Vec::new();
-    collect_ids(source, &mut pre_ids);
-
-    let mut json = source.to_json();
-    for d in deltas {
-        apply_delta(&mut json, d);
-    }
-    let json_str = serde_json::to_string(&json).unwrap();
+fn build_for_object_slot(
+    parent_class: &ClassView,
+    key: &str,
+    json: serde_json::Value,
+    sv: &SchemaView,
+) -> LinkMLValue {
     let conv = sv.converter();
-    let mut new_value = match source {
-        LinkMLValue::Object { class: ref c, .. } => load_json_str(&json_str, sv, c, &conv).unwrap(),
-        _ => panic!("patching non-map values is not supported here"),
-    };
-
-    reconcile_ids(source, &mut new_value);
-
-    let mut post_ids = Vec::new();
-    collect_ids(&new_value, &mut post_ids);
-
-    use std::collections::HashSet;
-    let pre: HashSet<NodeId> = pre_ids.into_iter().collect();
-    let post: HashSet<NodeId> = post_ids.into_iter().collect();
-    let added: Vec<NodeId> = post.difference(&pre).copied().collect();
-    let deleted: Vec<NodeId> = pre.difference(&post).copied().collect();
-
-    let mut updated = Vec::new();
-    collect_updated(source, &new_value, &mut updated);
-
-    (
-        new_value,
-        PatchTrace {
-            added,
-            deleted,
-            updated,
-        },
-    )
+    let slot = parent_class
+        .slots()
+        .into_iter()
+        .find(|s| s.name == key)
+        .cloned();
+    let class_for_value = parent_class.clone();
+    LinkMLValue::from_json(json, class_for_value, slot, sv, &conv, false)
+        .expect("failed to parse object slot value")
 }
 
-fn apply_delta(value: &mut JsonValue, delta: &Delta) {
-    apply_delta_inner(value, &delta.path, &delta.new);
+fn build_for_list_item(
+    list_slot: &SlotView,
+    list_class: Option<&ClassView>,
+    json: serde_json::Value,
+    sv: &SchemaView,
+) -> LinkMLValue {
+    let conv = sv.converter();
+    let class_range: Option<ClassView> = list_slot.get_range_class();
+    let slot_for_item = if class_range.is_some() { None } else { Some(list_slot.clone()) };
+    let class_for_item = class_range.as_ref().or(list_class).cloned().expect("list item class context");
+    LinkMLValue::from_json(json, class_for_item, slot_for_item, sv, &conv, true)
+        .expect("failed to parse list item")
 }
 
-fn apply_delta_inner(value: &mut JsonValue, path: &[String], newv: &Option<JsonValue>) {
+fn find_scalar_slot_for_inlined_map(class: &ClassView, key_slot_name: &str) -> Option<SlotView> {
+    for s in class.slots() {
+        if s.name == key_slot_name {
+            continue;
+        }
+        let def = s.definition();
+        if def.multivalued.unwrap_or(false) {
+            continue;
+        }
+        if !s.is_range_scalar() {
+            continue;
+        }
+        return Some(s.clone());
+    }
+    None
+}
+
+fn build_for_mapping_value(
+    map_slot: &SlotView,
+    json: serde_json::Value,
+    sv: &SchemaView,
+) -> LinkMLValue {
+    let conv = sv.converter();
+    let range_cv = map_slot
+        .definition()
+        .range
+        .as_ref()
+        .and_then(|r| sv.get_class(&Identifier::new(r), &conv).ok().flatten())
+        .expect("mapping slot must have class range");
+
+    match json {
+        serde_json::Value::Object(_) => {
+            LinkMLValue::from_json(json, range_cv.clone(), None, sv, &conv, false)
+                .expect("failed to parse mapping object value")
+        }
+        other => {
+            let key_slot_name = range_cv
+                .key_or_identifier_slot()
+                .map(|s| s.name.as_str())
+                .unwrap_or("");
+            let scalar_slot = find_scalar_slot_for_inlined_map(&range_cv, key_slot_name)
+                .expect("no scalar slot available for inlined mapping");
+            let mut m = serde_json::Map::new();
+            m.insert(scalar_slot.name.clone(), other);
+            LinkMLValue::from_json(serde_json::Value::Object(m), range_cv, None, sv, &conv, false)
+                .expect("failed to parse scalar mapping value")
+        }
+    }
+}
+
+fn apply_delta_linkml(
+    current: &mut LinkMLValue,
+    path: &[String],
+    newv: &Option<serde_json::Value>,
+    sv: &SchemaView,
+    trace: &mut PatchTrace,
+) {
     if path.is_empty() {
         if let Some(v) = newv {
-            *value = v.clone();
+            let (class_opt, slot_opt) = match current {
+                LinkMLValue::Object { class, .. } => (Some(class.clone()), None),
+                LinkMLValue::List { class, slot, .. } => (class.clone(), Some(slot.clone())),
+                LinkMLValue::Mapping { class, slot, .. } => (class.clone(), Some(slot.clone())),
+                LinkMLValue::Scalar { class, slot, .. } => (class.clone(), Some(slot.clone())),
+            };
+            let conv = sv.converter();
+            if let Some(cls) = class_opt {
+                let new_node = LinkMLValue::from_json(v.clone(), cls, slot_opt, sv, &conv, false)
+                    .expect("failed to parse replacement value");
+                mark_deleted_subtree(current, trace);
+                mark_added_subtree(&new_node, trace);
+                *current = new_node;
+            }
         }
         return;
     }
-    match value {
-        JsonValue::Object(map) => {
+
+    match current {
+        LinkMLValue::Object { values, class, .. } => {
             let key = &path[0];
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
-                        map.insert(key.clone(), v.clone());
+                        if let Some(old_child) = values.get_mut(key) {
+                            match old_child {
+                                LinkMLValue::Scalar { value, .. } => {
+                                    if !v.is_object() && !v.is_array() {
+                                        *value = v.clone();
+                                        trace.updated.push(old_child.node_id());
+                                        return;
+                                    }
+                                }
+                                _ => {}
+                            }
+                            let new_child = build_for_object_slot(class, key, v.clone(), sv);
+                            let old_snapshot = std::mem::replace(old_child, new_child);
+                            mark_deleted_subtree(&old_snapshot, trace);
+                            mark_added_subtree(values.get(key).unwrap(), trace);
+                            trace.updated.push(current.node_id());
+                        } else {
+                            let new_child = build_for_object_slot(class, key, v.clone(), sv);
+                            values.insert(key.clone(), new_child);
+                            mark_added_subtree(values.get(key).unwrap(), trace);
+                            trace.updated.push(current.node_id());
+                        }
                     }
                     None => {
-                        map.remove(key);
+                        if let Some(old_child) = values.remove(key) {
+                            mark_deleted_subtree(&old_child, trace);
+                            trace.updated.push(current.node_id());
+                        }
                     }
                 }
-            } else {
-                let entry = map
-                    .entry(key.clone())
-                    .or_insert(JsonValue::Object(Map::new()));
-                apply_delta_inner(entry, &path[1..], newv);
+            } else if let Some(child) = values.get_mut(key) {
+                apply_delta_linkml(child, &path[1..], newv, sv, trace);
             }
         }
-        JsonValue::Array(arr) => {
-            let idx: usize = path[0].parse().unwrap();
+        LinkMLValue::Mapping { values, slot, .. } => {
+            let key = &path[0];
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
-                        if idx < arr.len() {
-                            arr[idx] = v.clone();
-                        } else if idx == arr.len() {
-                            arr.push(v.clone());
-                        } else {
-                            while arr.len() < idx {
-                                arr.push(JsonValue::Null);
+                        let new_child = build_for_mapping_value(slot, v.clone(), sv);
+                        if let Some(old_child) = values.get(key) {
+                            mark_deleted_subtree(old_child, trace);
+                        }
+                        values.insert(key.clone(), new_child);
+                        mark_added_subtree(values.get(key).unwrap(), trace);
+                        trace.updated.push(current.node_id());
+                    }
+                    None => {
+                        if let Some(old_child) = values.remove(key) {
+                            mark_deleted_subtree(&old_child, trace);
+                            trace.updated.push(current.node_id());
+                        }
+                    }
+                }
+            } else if let Some(child) = values.get_mut(key) {
+                apply_delta_linkml(child, &path[1..], newv, sv, trace);
+            }
+        }
+        LinkMLValue::List { values, slot, class, .. } => {
+            let idx: usize = path[0].parse().expect("invalid list index in delta path");
+            if path.len() == 1 {
+                match newv {
+                    Some(v) => {
+                        if idx < values.len() {
+                            let is_scalar_target = matches!(values[idx], LinkMLValue::Scalar { .. });
+                            if is_scalar_target && !v.is_object() && !v.is_array() {
+                                if let LinkMLValue::Scalar { value, .. } = &mut values[idx] {
+                                    *value = v.clone();
+                                    trace.updated.push(values[idx].node_id());
+                                }
+                            } else {
+                                let new_child = build_for_list_item(slot, class.as_ref(), v.clone(), sv);
+                                let old = std::mem::replace(&mut values[idx], new_child);
+                                mark_deleted_subtree(&old, trace);
+                                mark_added_subtree(&values[idx], trace);
+                                trace.updated.push(current.node_id());
                             }
-                            arr.push(v.clone());
+                        } else if idx == values.len() {
+                            let new_child = build_for_list_item(slot, class.as_ref(), v.clone(), sv);
+                            values.push(new_child);
+                            mark_added_subtree(values.last().unwrap(), trace);
+                            trace.updated.push(current.node_id());
+                        } else {
+                            panic!("list index out of bounds in add: {} > {}", idx, values.len());
                         }
                     }
                     None => {
-                        if idx < arr.len() {
-                            arr.remove(idx);
+                        if idx < values.len() {
+                            let old = values.remove(idx);
+                            mark_deleted_subtree(&old, trace);
+                            trace.updated.push(current.node_id());
                         }
                     }
                 }
-            } else {
-                if idx >= arr.len() {
-                    arr.resize(idx + 1, JsonValue::Null);
-                }
-                apply_delta_inner(&mut arr[idx], &path[1..], newv);
+            } else if idx < values.len() {
+                apply_delta_linkml(&mut values[idx], &path[1..], newv, sv, trace);
             }
         }
-        _ => {
-            if path.is_empty() {
-                if let Some(v) = newv {
-                    *value = v.clone();
-                }
-            }
-        }
+        LinkMLValue::Scalar { .. } => {}
     }
 }
