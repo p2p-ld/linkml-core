@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let src = load_value(&args.source, &sv, &class_view, &conv)?;
     let tgt = load_value(&args.target, &sv, &class_view, &conv)?;
-    let deltas = diff(&src, &tgt, false, false);
+    let deltas = diff(&src, &tgt, false);
 
     let mut writer: Box<dyn Write> = if let Some(out) = &args.output {
         Box::new(File::create(out)?)

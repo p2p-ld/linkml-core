@@ -45,7 +45,7 @@ fn diff_and_patch_person() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false, false);
+    let deltas = diff(&src, &tgt, false);
     assert_eq!(deltas.len(), 1);
     // Ensure delta paths are navigable on respective values
     for d in &deltas {
@@ -91,7 +91,7 @@ fn diff_ignore_missing_target() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, true, false);
+    let deltas = diff(&src, &tgt, false);
     assert!(deltas.is_empty());
     let patched = patch(&src, &deltas, &sv);
     let patched_json = patched.to_json();
@@ -124,7 +124,7 @@ fn diff_and_patch_personinfo() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false, false);
+    let deltas = diff(&src, &tgt, false);
     assert!(!deltas.is_empty());
     // Ensure delta paths are navigable on respective values, including mapping-list keys
     for d in &deltas {
@@ -159,7 +159,7 @@ fn diff_null_and_missing_semantics() {
     )
     .unwrap();
 
-    // X -> null => removal
+    // X -> null => update to null
     if let LinkMLValue::Object { values, .. } = src.clone() {
         let mut tgt_values = values.clone();
         let age_slot = class
@@ -187,14 +187,13 @@ fn diff_null_and_missing_semantics() {
                 sv: sv.clone(),
             },
             false,
-            false,
         );
         assert!(deltas
             .iter()
-            .any(|d| d.path == vec!["age".to_string()] && d.new.is_none()));
+            .any(|d| d.path == vec!["age".to_string()] && d.new == Some(serde_json::Value::Null)));
     }
 
-    // null -> X => add
+    // null -> X => update from null
     if let LinkMLValue::Object { values, .. } = src.clone() {
         let mut src_values = values.clone();
         let age_slot = class
@@ -222,11 +221,10 @@ fn diff_null_and_missing_semantics() {
                 sv: sv.clone(),
             },
             false,
-            false,
         );
-        assert!(deltas
-            .iter()
-            .any(|d| d.path == vec!["age".to_string()] && d.old.is_none() && d.new.is_some()));
+        assert!(deltas.iter().any(|d| d.path == vec!["age".to_string()]
+            && d.old == Some(serde_json::Value::Null)
+            && d.new.is_some()));
     }
 
     // missing -> X => add
@@ -245,14 +243,13 @@ fn diff_null_and_missing_semantics() {
                 sv: sv.clone(),
             },
             false,
-            false,
         );
         assert!(deltas
             .iter()
             .any(|d| d.path == vec!["age".to_string()] && d.old.is_none() && d.new.is_some()));
     }
 
-    // X -> missing: ignore when ignore_missing_target=true, but produce when treat_missing_as_null=true
+    // X -> missing: ignored by default; produce update-to-null when treat_missing_as_null=true
     if let LinkMLValue::Object { values, .. } = src.clone() {
         let mut tgt_values = values.clone();
         tgt_values.remove("age");
@@ -267,7 +264,6 @@ fn diff_null_and_missing_semantics() {
                 class: class.clone(),
                 sv: sv.clone(),
             },
-            true,
             false,
         );
         assert!(deltas.iter().all(|d| d.path != vec!["age".to_string()]));
@@ -282,12 +278,11 @@ fn diff_null_and_missing_semantics() {
                 class: class.clone(),
                 sv: sv.clone(),
             },
-            false,
             true,
         );
         assert!(deltas2
             .iter()
-            .any(|d| d.path == vec!["age".to_string()] && d.new.is_none()))
+            .any(|d| d.path == vec!["age".to_string()] && d.new == Some(serde_json::Value::Null)))
     }
 }
 

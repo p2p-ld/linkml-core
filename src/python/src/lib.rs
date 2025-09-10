@@ -734,18 +734,16 @@ fn load_json(
     Ok(PyLinkMLValue::new(v, sv))
 }
 
-#[pyfunction(name = "diff", signature = (source, target, ignore_missing_target=None, treat_missing_as_null=None))]
+#[pyfunction(name = "diff", signature = (source, target, treat_missing_as_null=None))]
 fn py_diff(
     py: Python<'_>,
     source: &PyLinkMLValue,
     target: &PyLinkMLValue,
-    ignore_missing_target: Option<bool>,
     treat_missing_as_null: Option<bool>,
 ) -> PyResult<PyObject> {
     let deltas = diff_internal(
         &source.value,
         &target.value,
-        ignore_missing_target.unwrap_or(false),
         treat_missing_as_null.unwrap_or(false),
     );
     let vals: Vec<JsonValue> = deltas
