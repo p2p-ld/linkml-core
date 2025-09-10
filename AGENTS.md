@@ -28,6 +28,7 @@
 - Add integration tests under `src/runtime/tests/` when changing CLI/runtime behavior.
 - Prefer `assert_cmd` for CLI and `predicates` for output checks. Keep fixtures in `src/runtime/tests/data/`.
 - Run `cargo test --workspace` locally; ensure tests don’t rely on network input.
+ - Prefer modifying existing tests over adding new ones for new code paths. Extend current scenarios with extra assertions/fixtures to avoid redundant tests proliferating. For example, if adding null-handling in diff/patch, enhance the existing diff tests rather than introducing separate "basic diff works" tests that become redundant.
 
 ## Commit & Pull Request Guidelines
 - Commits: short, imperative summary (e.g., “Add __repr__ for LinkMLValue”); group related changes.
