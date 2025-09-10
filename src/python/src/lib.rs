@@ -761,7 +761,8 @@ fn py_patch(
         serde_json::from_str(&deltas_str).map_err(|e| PyException::new_err(e.to_string()))?;
     let sv_ref = source.sv.bind(py).borrow();
     let rust_sv = sv_ref.as_rust();
-    let (new_value, trace) = patch_internal(&source.value, &deltas_vec, rust_sv);
+    let (new_value, trace) = patch_internal(&source.value, &deltas_vec, rust_sv)
+        .map_err(|e| PyException::new_err(e.to_string()))?;
     let trace_json = serde_json::json!({
         "added": trace.added,
         "deleted": trace.deleted,

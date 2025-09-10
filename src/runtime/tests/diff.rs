@@ -57,7 +57,7 @@ fn diff_and_patch_person() {
         }
     }
 
-    let (patched, _trace) = patch(&src, &deltas, &sv);
+    let (patched, _trace) = patch(&src, &deltas, &sv).unwrap();
     let patched_json = patched.to_json();
     let target_json = tgt.to_json();
     let src_json = src.to_json();
@@ -93,7 +93,7 @@ fn diff_ignore_missing_target() {
 
     let deltas = diff(&src, &tgt, true);
     assert!(deltas.is_empty());
-    let (patched, _trace) = patch(&src, &deltas, &sv);
+    let (patched, _trace) = patch(&src, &deltas, &sv).unwrap();
     let patched_json = patched.to_json();
     let src_json = src.to_json();
     assert_eq!(patched_json, src_json);
@@ -135,7 +135,7 @@ fn diff_and_patch_personinfo() {
             assert!(tgt.navigate_path(&d.path).is_some());
         }
     }
-    let (patched, _trace) = patch(&src, &deltas, &sv);
+    let (patched, _trace) = patch(&src, &deltas, &sv).unwrap();
     assert_eq!(patched.to_json(), tgt.to_json());
 }
 

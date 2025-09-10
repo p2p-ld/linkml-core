@@ -1,4 +1,4 @@
-use crate::{LinkMLValue, NodeId};
+use crate::{LResult, LinkMLError, LinkMLValue, NodeId};
 use linkml_schemaview::schemaview::{SchemaView, SlotView};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -188,13 +188,17 @@ pub struct PatchTrace {
     pub updated: Vec<NodeId>,
 }
 
-pub fn patch(source: &LinkMLValue, deltas: &[Delta], sv: &SchemaView) -> (LinkMLValue, PatchTrace) {
+pub fn patch(
+    source: &LinkMLValue,
+    deltas: &[Delta],
+    sv: &SchemaView,
+) -> LResult<(LinkMLValue, PatchTrace)> {
     let mut out = source.clone();
     let mut trace = PatchTrace::default();
     for d in deltas {
-        apply_delta_linkml(&mut out, &d.path, &d.new, sv, &mut trace);
+        apply_delta_linkml(&mut out, &d.path, &d.new, sv, &mut trace)?;
     }
-    (out, trace)
+    Ok((out, trace))
 }
 
 fn collect_all_ids(value: &LinkMLValue, ids: &mut Vec<NodeId>) {
@@ -230,7 +234,7 @@ fn apply_delta_linkml(
     newv: &Option<serde_json::Value>,
     sv: &SchemaView,
     trace: &mut PatchTrace,
-) {
+) -> LResult<()> {
     if path.is_empty() {
         if let Some(v) = newv {
             let (class_opt, slot_opt) = match current {
@@ -241,14 +245,13 @@ fn apply_delta_linkml(
             };
             let conv = sv.converter();
             if let Some(cls) = class_opt {
-                let new_node = LinkMLValue::from_json(v.clone(), cls, slot_opt, sv, &conv, false)
-                    .expect("failed to parse replacement value");
+                let new_node = LinkMLValue::from_json(v.clone(), cls, slot_opt, sv, &conv, false)?;
                 mark_deleted_subtree(current, trace);
                 mark_added_subtree(&new_node, trace);
                 *current = new_node;
             }
         }
-        return;
+        return Ok(());
     }
 
     match current {
@@ -262,7 +265,7 @@ fn apply_delta_linkml(
                                 if !v.is_object() && !v.is_array() {
                                     *value = v.clone();
                                     trace.updated.push(old_child.node_id());
-                                    return;
+                                    return Ok(());
                                 }
                             }
                             let conv = sv.converter();
@@ -274,11 +277,10 @@ fn apply_delta_linkml(
                                 sv,
                                 &conv,
                                 false,
-                            )
-                            .expect("failed to parse object slot value");
+                            )?;
                             let old_snapshot = std::mem::replace(old_child, new_child);
                             mark_deleted_subtree(&old_snapshot, trace);
-                            mark_added_subtree(values.get(key).unwrap(), trace);
+                            mark_added_subtree(old_child, trace);
                             trace.updated.push(current.node_id());
                         } else {
                             let conv = sv.converter();
@@ -290,10 +292,10 @@ fn apply_delta_linkml(
                                 sv,
                                 &conv,
                                 false,
-                            )
-                            .expect("failed to parse object slot value");
+                            )?;
+                            // mark before insert
+                            mark_added_subtree(&new_child, trace);
                             values.insert(key.clone(), new_child);
-                            mark_added_subtree(values.get(key).unwrap(), trace);
                             trace.updated.push(current.node_id());
                         }
                     }
@@ -305,7 +307,7 @@ fn apply_delta_linkml(
                     }
                 }
             } else if let Some(child) = values.get_mut(key) {
-                apply_delta_linkml(child, &path[1..], newv, sv, trace);
+                apply_delta_linkml(child, &path[1..], newv, sv, trace)?;
             }
         }
         LinkMLValue::Mapping { values, slot, .. } => {
@@ -320,13 +322,13 @@ fn apply_delta_linkml(
                             sv,
                             &conv,
                             Vec::new(),
-                        )
-                        .expect("failed to parse mapping value");
+                        )?;
                         if let Some(old_child) = values.get(key) {
                             mark_deleted_subtree(old_child, trace);
                         }
+                        // mark before insert
+                        mark_added_subtree(&new_child, trace);
                         values.insert(key.clone(), new_child);
-                        mark_added_subtree(values.get(key).unwrap(), trace);
                         trace.updated.push(current.node_id());
                     }
                     None => {
@@ -337,7 +339,7 @@ fn apply_delta_linkml(
                     }
                 }
             } else if let Some(child) = values.get_mut(key) {
-                apply_delta_linkml(child, &path[1..], newv, sv, trace);
+                apply_delta_linkml(child, &path[1..], newv, sv, trace)?;
             }
         }
         LinkMLValue::List {
@@ -346,7 +348,9 @@ fn apply_delta_linkml(
             class,
             ..
         } => {
-            let idx: usize = path[0].parse().expect("invalid list index in delta path");
+            let idx: usize = path[0].parse().map_err(|_| {
+                LinkMLError(format!("invalid list index '{}' in delta path", path[0]))
+            })?;
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
@@ -367,8 +371,7 @@ fn apply_delta_linkml(
                                     sv,
                                     &conv,
                                     Vec::new(),
-                                )
-                                .expect("failed to parse list item");
+                                )?;
                                 let old = std::mem::replace(&mut values[idx], new_child);
                                 mark_deleted_subtree(&old, trace);
                                 mark_added_subtree(&values[idx], trace);
@@ -383,17 +386,17 @@ fn apply_delta_linkml(
                                 sv,
                                 &conv,
                                 Vec::new(),
-                            )
-                            .expect("failed to parse list item");
+                            )?;
+                            // mark before push
+                            mark_added_subtree(&new_child, trace);
                             values.push(new_child);
-                            mark_added_subtree(values.last().unwrap(), trace);
                             trace.updated.push(current.node_id());
                         } else {
-                            panic!(
+                            return Err(LinkMLError(format!(
                                 "list index out of bounds in add: {} > {}",
                                 idx,
                                 values.len()
-                            );
+                            )));
                         }
                     }
                     None => {
@@ -405,9 +408,10 @@ fn apply_delta_linkml(
                     }
                 }
             } else if idx < values.len() {
-                apply_delta_linkml(&mut values[idx], &path[1..], newv, sv, trace);
+                apply_delta_linkml(&mut values[idx], &path[1..], newv, sv, trace)?;
             }
         }
         LinkMLValue::Scalar { .. } => {}
     }
+    Ok(())
 }
