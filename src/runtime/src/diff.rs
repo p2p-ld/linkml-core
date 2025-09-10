@@ -1,5 +1,5 @@
 use crate::{LinkMLValue, NodeId};
-use linkml_schemaview::schemaview::{ClassView, SchemaView, SlotView};
+use linkml_schemaview::schemaview::{SchemaView, SlotView};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
@@ -222,48 +222,7 @@ fn mark_deleted_subtree(v: &LinkMLValue, trace: &mut PatchTrace) {
     collect_all_ids(v, &mut trace.deleted);
 }
 
-fn build_from_json_with_context(
-    json: serde_json::Value,
-    class_ctx: ClassView,
-    slot_ctx: Option<SlotView>,
-    sv: &SchemaView,
-    allow_inlined: bool,
-) -> LinkMLValue {
-    let conv = sv.converter();
-    LinkMLValue::from_json(json, class_ctx, slot_ctx, sv, &conv, allow_inlined)
-        .expect("failed to construct LinkMLValue from JSON")
-}
-
-fn build_for_object_slot(
-    parent_class: &ClassView,
-    key: &str,
-    json: serde_json::Value,
-    sv: &SchemaView,
-) -> LinkMLValue {
-    let slot = parent_class.slots().iter().find(|s| s.name == key).cloned();
-    build_from_json_with_context(json, parent_class.clone(), slot, sv, false)
-}
-
-fn build_for_list_item(
-    list_slot: &SlotView,
-    list_class: Option<&ClassView>,
-    json: serde_json::Value,
-    sv: &SchemaView,
-) -> LinkMLValue {
-    let conv = sv.converter();
-    LinkMLValue::build_list_item_for_slot(list_slot, list_class, json, sv, &conv, Vec::new())
-        .expect("failed to parse list item")
-}
-
-fn build_for_mapping_value(
-    map_slot: &SlotView,
-    json: serde_json::Value,
-    sv: &SchemaView,
-) -> LinkMLValue {
-    let conv = sv.converter();
-    LinkMLValue::build_mapping_entry_for_slot(map_slot, json, sv, &conv, Vec::new())
-        .expect("failed to parse mapping value")
-}
+// Removed thin wrappers; call LinkMLValue builders directly at call sites.
 
 fn apply_delta_linkml(
     current: &mut LinkMLValue,
@@ -306,13 +265,33 @@ fn apply_delta_linkml(
                                     return;
                                 }
                             }
-                            let new_child = build_for_object_slot(class, key, v.clone(), sv);
+                            let conv = sv.converter();
+                            let slot = class.slots().iter().find(|s| s.name == *key).cloned();
+                            let new_child = LinkMLValue::from_json(
+                                v.clone(),
+                                class.clone(),
+                                slot,
+                                sv,
+                                &conv,
+                                false,
+                            )
+                            .expect("failed to parse object slot value");
                             let old_snapshot = std::mem::replace(old_child, new_child);
                             mark_deleted_subtree(&old_snapshot, trace);
                             mark_added_subtree(values.get(key).unwrap(), trace);
                             trace.updated.push(current.node_id());
                         } else {
-                            let new_child = build_for_object_slot(class, key, v.clone(), sv);
+                            let conv = sv.converter();
+                            let slot = class.slots().iter().find(|s| s.name == *key).cloned();
+                            let new_child = LinkMLValue::from_json(
+                                v.clone(),
+                                class.clone(),
+                                slot,
+                                sv,
+                                &conv,
+                                false,
+                            )
+                            .expect("failed to parse object slot value");
                             values.insert(key.clone(), new_child);
                             mark_added_subtree(values.get(key).unwrap(), trace);
                             trace.updated.push(current.node_id());
@@ -334,7 +313,15 @@ fn apply_delta_linkml(
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
-                        let new_child = build_for_mapping_value(slot, v.clone(), sv);
+                        let conv = sv.converter();
+                        let new_child = LinkMLValue::build_mapping_entry_for_slot(
+                            slot,
+                            v.clone(),
+                            sv,
+                            &conv,
+                            Vec::new(),
+                        )
+                        .expect("failed to parse mapping value");
                         if let Some(old_child) = values.get(key) {
                             mark_deleted_subtree(old_child, trace);
                         }
@@ -372,16 +359,32 @@ fn apply_delta_linkml(
                                     trace.updated.push(values[idx].node_id());
                                 }
                             } else {
-                                let new_child =
-                                    build_for_list_item(slot, class.as_ref(), v.clone(), sv);
+                                let conv = sv.converter();
+                                let new_child = LinkMLValue::build_list_item_for_slot(
+                                    slot,
+                                    class.as_ref(),
+                                    v.clone(),
+                                    sv,
+                                    &conv,
+                                    Vec::new(),
+                                )
+                                .expect("failed to parse list item");
                                 let old = std::mem::replace(&mut values[idx], new_child);
                                 mark_deleted_subtree(&old, trace);
                                 mark_added_subtree(&values[idx], trace);
                                 trace.updated.push(current.node_id());
                             }
                         } else if idx == values.len() {
-                            let new_child =
-                                build_for_list_item(slot, class.as_ref(), v.clone(), sv);
+                            let conv = sv.converter();
+                            let new_child = LinkMLValue::build_list_item_for_slot(
+                                slot,
+                                class.as_ref(),
+                                v.clone(),
+                                sv,
+                                &conv,
+                                Vec::new(),
+                            )
+                            .expect("failed to parse list item");
                             values.push(new_child);
                             mark_added_subtree(values.last().unwrap(), trace);
                             trace.updated.push(current.node_id());
