@@ -61,6 +61,11 @@ pub enum LinkMLValue {
         class: Option<ClassView>,
         sv: SchemaView,
     },
+    Null {
+        slot: SlotView,
+        class: Option<ClassView>,
+        sv: SchemaView,
+    },
     List {
         values: Vec<LinkMLValue>,
         slot: SlotView,
@@ -104,6 +109,7 @@ impl LinkMLValue {
                     current = values.get(key)?;
                 }
                 LinkMLValue::Scalar { .. } => return None,
+                LinkMLValue::Null { .. } => return None,
             }
         }
         Some(current)
@@ -253,6 +259,12 @@ impl LinkMLValue {
                     sv: sv.clone(),
                 })
             }
+            // Preserve explicit null as a Null value for list-valued slot
+            (false, JsonValue::Null) => Ok(LinkMLValue::Null {
+                slot: sl.clone(),
+                class: Some(class.clone()),
+                sv: sv.clone(),
+            }),
             (false, other) => Err(LinkMLError(format!(
                 "expected list for slot `{}`, found {:?} at {}",
                 sl.name,
@@ -371,6 +383,12 @@ impl LinkMLValue {
                     sv: sv.clone(),
                 })
             }
+            // Preserve explicit null as a Null value for mapping-valued slot
+            JsonValue::Null => Ok(LinkMLValue::Null {
+                slot: sl.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            }),
             other => Err(LinkMLError(format!(
                 "expected mapping for slot `{}`, found {:?} at {}",
                 sl.name,
@@ -483,12 +501,20 @@ impl LinkMLValue {
                 classview_name
             ))
         })?;
-        Ok(LinkMLValue::Scalar {
-            value,
-            slot: sl,
-            class: Some(class.clone()),
-            sv: sv.clone(),
-        })
+        if value.is_null() {
+            Ok(LinkMLValue::Null {
+                slot: sl,
+                class: Some(class.clone()),
+                sv: sv.clone(),
+            })
+        } else {
+            Ok(LinkMLValue::Scalar {
+                value,
+                slot: sl,
+                class: Some(class.clone()),
+                sv: sv.clone(),
+            })
+        }
     }
 
     fn from_json_internal(
@@ -616,6 +642,7 @@ fn validate_inner(value: &LinkMLValue) -> std::result::Result<(), String> {
             }
             Ok(())
         }
+        LinkMLValue::Null { .. } => Ok(()),
         LinkMLValue::List { values, .. } => {
             for v in values {
                 validate_inner(v)?;
@@ -647,6 +674,7 @@ pub fn validate(value: &LinkMLValue) -> std::result::Result<(), String> {
 fn validate_collect(value: &LinkMLValue, errors: &mut Vec<String>) {
     match value {
         LinkMLValue::Scalar { .. } => {}
+        LinkMLValue::Null { .. } => {}
         LinkMLValue::List { values, .. } => {
             for v in values {
                 validate_collect(v, errors);

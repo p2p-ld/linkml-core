@@ -27,6 +27,7 @@ impl LinkMLValue {
     pub fn to_json(&self) -> JsonValue {
         match self {
             LinkMLValue::Scalar { value, .. } => value.clone(),
+            LinkMLValue::Null { .. } => JsonValue::Null,
             LinkMLValue::List { values, .. } => {
                 JsonValue::Array(values.iter().map(|v| v.to_json()).collect())
             }
