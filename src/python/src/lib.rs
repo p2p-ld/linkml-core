@@ -1,5 +1,5 @@
 use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
-use linkml_runtime::diff::{diff as diff_internal, patch as patch_internal, Delta, PatchTrace};
+use linkml_runtime::diff::{diff as diff_internal, patch as patch_internal, Delta};
 use linkml_runtime::turtle::{turtle_to_string, TurtleOptions};
 use linkml_runtime::{load_json_str, load_yaml_str, LinkMLValue};
 use linkml_schemaview::identifier::Identifier;
@@ -771,7 +771,7 @@ fn py_patch(
     let dict = pyo3::types::PyDict::new(py);
     dict.set_item("value", Py::new(py, py_val)?)?;
     dict.set_item("trace", json_value_to_py(py, &trace_json))?;
-    Ok(dict.into_any().unbind().into())
+    Ok(dict.into_any().unbind())
 }
 
 #[pyfunction(name = "to_turtle", signature = (value, skolem=None))]

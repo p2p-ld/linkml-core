@@ -238,36 +238,10 @@ impl LinkMLValue {
         match (inside_list, value) {
             (false, JsonValue::Array(arr)) => {
                 let mut values = Vec::new();
-                let class_range: Option<ClassView> = sl.get_range_class();
-                let slot_for_item = if class_range.is_some() {
-                    None
-                } else {
-                    Some(sl.clone())
-                };
                 for (i, v) in arr.into_iter().enumerate() {
                     let mut p = path.clone();
                     p.push(format!("{}[{}]", sl.name, i));
-                    let v_transformed =
-                        if let (Some(cr), JsonValue::String(s)) = (class_range.as_ref(), &v) {
-                            if let Some(id_slot) = cr.identifier_slot() {
-                                let mut m = serde_json::Map::new();
-                                m.insert(id_slot.name.clone(), JsonValue::String(s.clone()));
-                                JsonValue::Object(m)
-                            } else {
-                                v
-                            }
-                        } else {
-                            v
-                        };
-                    values.push(Self::from_json_internal(
-                        v_transformed,
-                        class_range.as_ref().unwrap_or(&class).clone(),
-                        slot_for_item.clone(),
-                        sv,
-                        conv,
-                        true,
-                        p,
-                    )?);
+                    values.push(Self::build_list_item_for_slot(&sl, Some(&class), v, sv, conv, p)?);
                 }
                 Ok(LinkMLValue::List {
                     node_id: new_node_id(),
@@ -303,95 +277,13 @@ impl LinkMLValue {
     ) -> LResult<Self> {
         match value {
             JsonValue::Object(map) => {
-                let range_cv = sl
-                    .definition()
-                    .range
-                    .as_ref()
-                    .and_then(|r| sv.get_class(&Identifier::new(r), conv).ok().flatten())
-                    .ok_or_else(|| {
-                        LinkMLError(format!(
-                            "mapping slot must have class range at {}",
-                            path_to_string(&path)
-                        ))
-                    })?;
                 let mut values = HashMap::new();
                 for (k, v) in map.into_iter() {
-                    let base = sv
-                        .get_class(&Identifier::new(range_cv.name()), conv)
-                        .ok()
-                        .flatten()
-                        .unwrap_or_else(|| range_cv.clone());
-                    let child = match v {
-                        JsonValue::Object(m) => {
-                            // Select the most specific subclass using any type designator in the map
-                            let selected = Self::select_class(&m, &base, sv, conv);
-                            let mut child_values = HashMap::new();
-                            for (ck, cv) in m.into_iter() {
-                                let slot_tmp = selected
-                                    .slots()
-                                    .iter()
-                                    .find(|s| slot_matches_key(s, &ck))
-                                    .cloned();
-                                let mut p = path.clone();
-                                p.push(format!("{}:{}", k, ck));
-                                let key_name = slot_tmp
-                                    .as_ref()
-                                    .map(|s| s.name.clone())
-                                    .unwrap_or_else(|| ck.clone());
-                                child_values.insert(
-                                    key_name,
-                                    Self::from_json_internal(
-                                        cv,
-                                        selected.clone(),
-                                        slot_tmp,
-                                        sv,
-                                        conv,
-                                        false,
-                                        p,
-                                    )?,
-                                );
-                            }
-                            LinkMLValue::Object {
-                                node_id: new_node_id(),
-                                values: child_values,
-                                class: selected,
-                                sv: sv.clone(),
-                            }
-                        }
-                        other => {
-                            // Scalar mapping value: attach it to a chosen scalar slot if any
-                            let scalar_slot = Self::find_scalar_slot_for_inlined_map(
-                                &base,
-                                range_cv
-                                    .key_or_identifier_slot()
-                                    .map(|s| s.name.as_str())
-                                    .unwrap_or(""),
-                            )
-                            .ok_or_else(|| {
-                                LinkMLError(format!(
-                                    "no scalar slot available for inlined mapping at {}",
-                                    path_to_string(&path)
-                                ))
-                            })?;
-                            let mut child_values = HashMap::new();
-                            child_values.insert(
-                                scalar_slot.name.clone(),
-                                LinkMLValue::Scalar {
-                                    node_id: new_node_id(),
-                                    value: other,
-                                    slot: scalar_slot.clone(),
-                                    class: Some(base.clone()),
-                                    sv: sv.clone(),
-                                },
-                            );
-                            LinkMLValue::Object {
-                                node_id: new_node_id(),
-                                values: child_values,
-                                class: base.clone(),
-                                sv: sv.clone(),
-                            }
-                        }
-                    };
+                    let child = Self::build_mapping_entry_for_slot(sl, v, sv, conv, {
+                        let mut p = path.clone();
+                        p.push(k.clone());
+                        p
+                    })?;
                     values.insert(k, child);
                 }
                 Ok(LinkMLValue::Mapping {
@@ -426,25 +318,11 @@ impl LinkMLValue {
                 class.name()
             ))
         })?;
-        let class_range: Option<ClassView> = sl.get_range_class();
-        let slot_for_item = if class_range.is_some() {
-            None
-        } else {
-            Some(sl.clone())
-        };
         let mut values = Vec::new();
         for (i, v) in arr.into_iter().enumerate() {
             let mut p = path.clone();
             p.push(format!("[{}]", i));
-            values.push(Self::from_json_internal(
-                v,
-                class_range.as_ref().unwrap_or(&class).clone(),
-                slot_for_item.clone(),
-                sv,
-                conv,
-                false,
-                p,
-            )?);
+            values.push(Self::build_list_item_for_slot(&sl, Some(&class), v, sv, conv, p)?);
         }
         Ok(LinkMLValue::List {
             node_id: new_node_id(),
@@ -573,6 +451,134 @@ impl LinkMLValue {
         inside_list: bool,
     ) -> LResult<Self> {
         Self::from_json_internal(value, class, slot, sv, conv, inside_list, Vec::new())
+    }
+
+    // Shared builders (used by loaders and patch logic)
+    pub(crate) fn build_list_item_for_slot(
+        list_slot: &SlotView,
+        list_class: Option<&ClassView>,
+        value: JsonValue,
+        sv: &SchemaView,
+        conv: &Converter,
+        path: Vec<String>,
+    ) -> LResult<Self> {
+        let class_range: Option<ClassView> = list_slot.get_range_class();
+        let slot_for_item = if class_range.is_some() {
+            None
+        } else {
+            Some(list_slot.clone())
+        };
+        let v_transformed = if let (Some(cr), JsonValue::String(s)) = (class_range.as_ref(), &value) {
+            if let Some(id_slot) = cr.identifier_slot() {
+                let mut m = serde_json::Map::new();
+                m.insert(id_slot.name.clone(), JsonValue::String(s.clone()));
+                JsonValue::Object(m)
+            } else {
+                value
+            }
+        } else {
+            value
+        };
+        Self::from_json_internal(
+            v_transformed,
+            class_range
+                .as_ref()
+                .or(list_class)
+                .cloned()
+                .ok_or_else(|| LinkMLError("list item class context".to_string()))?,
+            slot_for_item,
+            sv,
+            conv,
+            true,
+            path,
+        )
+    }
+
+    pub(crate) fn build_mapping_entry_for_slot(
+        map_slot: &SlotView,
+        value: JsonValue,
+        sv: &SchemaView,
+        conv: &Converter,
+        path: Vec<String>,
+    ) -> LResult<Self> {
+        let range_cv = map_slot
+            .definition()
+            .range
+            .as_ref()
+            .and_then(|r| sv.get_class(&Identifier::new(r), conv).ok().flatten())
+            .ok_or_else(|| {
+                LinkMLError(format!(
+                    "mapping slot must have class range at {}",
+                    path_to_string(&path)
+                ))
+            })?;
+        match value {
+            JsonValue::Object(m) => {
+                let selected = Self::select_class(&m, &range_cv, sv, conv);
+                let mut child_values = HashMap::new();
+                for (ck, cv) in m.into_iter() {
+                    let slot_tmp = selected
+                        .slots()
+                        .iter()
+                        .find(|s| slot_matches_key(s, &ck))
+                        .cloned();
+                    let mut p = path.clone();
+                    p.push(ck.clone());
+                    let key_name = slot_tmp
+                        .as_ref()
+                        .map(|s| s.name.clone())
+                        .unwrap_or_else(|| ck.clone());
+                    child_values.insert(
+                        key_name,
+                        Self::from_json_internal(
+                            cv,
+                            selected.clone(),
+                            slot_tmp,
+                            sv,
+                            conv,
+                            false,
+                            p,
+                        )?,
+                    );
+                }
+                Ok(LinkMLValue::Object {
+                    node_id: new_node_id(),
+                    values: child_values,
+                    class: selected,
+                    sv: sv.clone(),
+                })
+            }
+            other => {
+                let key_slot_name = range_cv
+                    .key_or_identifier_slot()
+                    .map(|s| s.name.as_str())
+                    .unwrap_or("");
+                let scalar_slot = Self::find_scalar_slot_for_inlined_map(&range_cv, key_slot_name)
+                    .ok_or_else(|| {
+                        LinkMLError(format!(
+                            "no scalar slot available for inlined mapping at {}",
+                            path_to_string(&path)
+                        ))
+                    })?;
+                let mut child_values = HashMap::new();
+                child_values.insert(
+                    scalar_slot.name.clone(),
+                    LinkMLValue::Scalar {
+                        node_id: new_node_id(),
+                        value: other,
+                        slot: scalar_slot.clone(),
+                        class: Some(range_cv.clone()),
+                        sv: sv.clone(),
+                    },
+                );
+                Ok(LinkMLValue::Object {
+                    node_id: new_node_id(),
+                    values: child_values,
+                    class: range_cv,
+                    sv: sv.clone(),
+                })
+            }
+        }
     }
 }
 

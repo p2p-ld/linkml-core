@@ -60,8 +60,13 @@ fn node_ids_preserved_scalar_update() {
     if let serde_json::Value::Object(ref mut m) = tgt_json {
         m.insert("age".to_string(), serde_json::json!(99));
     }
-    let tgt = load_json_str(&serde_json::to_string(&tgt_json).unwrap(), &sv, &class, &conv)
-        .unwrap();
+    let tgt = load_json_str(
+        &serde_json::to_string(&tgt_json).unwrap(),
+        &sv,
+        &class,
+        &conv,
+    )
+    .unwrap();
 
     let deltas = diff(&src, &tgt, false);
     let (patched, trace) = linkml_runtime::patch(&src, &deltas, &sv);
@@ -106,8 +111,13 @@ fn patch_trace_add_in_list() {
             arr.push(new_obj);
         }
     }
-    let target = load_json_str(&serde_json::to_string(&base_json).unwrap(), &sv, &container, &conv)
-        .unwrap();
+    let target = load_json_str(
+        &serde_json::to_string(&base_json).unwrap(),
+        &sv,
+        &container,
+        &conv,
+    )
+    .unwrap();
 
     let deltas = diff(&base, &target, false);
     let mut pre = Vec::new();
@@ -123,4 +133,3 @@ fn patch_trace_add_in_list() {
     assert_eq!(added, trace_added);
     assert!(!added.is_empty());
 }
-
