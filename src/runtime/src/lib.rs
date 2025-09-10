@@ -241,7 +241,14 @@ impl LinkMLValue {
                 for (i, v) in arr.into_iter().enumerate() {
                     let mut p = path.clone();
                     p.push(format!("{}[{}]", sl.name, i));
-                    values.push(Self::build_list_item_for_slot(&sl, Some(&class), v, sv, conv, p)?);
+                    values.push(Self::build_list_item_for_slot(
+                        &sl,
+                        Some(&class),
+                        v,
+                        sv,
+                        conv,
+                        p,
+                    )?);
                 }
                 Ok(LinkMLValue::List {
                     node_id: new_node_id(),
@@ -322,7 +329,14 @@ impl LinkMLValue {
         for (i, v) in arr.into_iter().enumerate() {
             let mut p = path.clone();
             p.push(format!("[{}]", i));
-            values.push(Self::build_list_item_for_slot(&sl, Some(&class), v, sv, conv, p)?);
+            values.push(Self::build_list_item_for_slot(
+                &sl,
+                Some(&class),
+                v,
+                sv,
+                conv,
+                p,
+            )?);
         }
         Ok(LinkMLValue::List {
             node_id: new_node_id(),
@@ -468,7 +482,8 @@ impl LinkMLValue {
         } else {
             Some(list_slot.clone())
         };
-        let v_transformed = if let (Some(cr), JsonValue::String(s)) = (class_range.as_ref(), &value) {
+        let v_transformed = if let (Some(cr), JsonValue::String(s)) = (class_range.as_ref(), &value)
+        {
             if let Some(id_slot) = cr.identifier_slot() {
                 let mut m = serde_json::Map::new();
                 m.insert(id_slot.name.clone(), JsonValue::String(s.clone()));

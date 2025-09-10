@@ -255,7 +255,6 @@ fn build_for_list_item(
         .expect("failed to parse list item")
 }
 
-
 fn build_for_mapping_value(
     map_slot: &SlotView,
     json: serde_json::Value,
