@@ -1,4 +1,4 @@
-use crate::{load_json_str, LinkMLValue};
+use crate::{load_json_str, LinkMLValue, NodeId};
 use linkml_schemaview::schemaview::{SchemaView, SlotView};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value as JsonValue};
@@ -181,17 +181,163 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
     out
 }
 
-pub fn patch(source: &LinkMLValue, deltas: &[Delta], sv: &SchemaView) -> LinkMLValue {
+#[derive(Debug, Clone, Default)]
+pub struct PatchTrace {
+    pub added: Vec<NodeId>,
+    pub deleted: Vec<NodeId>,
+    pub updated: Vec<NodeId>,
+}
+
+fn collect_ids(value: &LinkMLValue, out: &mut Vec<NodeId>) {
+    out.push(value.node_id());
+    match value {
+        LinkMLValue::Scalar { .. } => {}
+        LinkMLValue::List { values, .. } => {
+            for v in values {
+                collect_ids(v, out);
+            }
+        }
+        LinkMLValue::Mapping { values, .. } | LinkMLValue::Object { values, .. } => {
+            for v in values.values() {
+                collect_ids(v, out);
+            }
+        }
+    }
+}
+
+fn reconcile_ids(old: &LinkMLValue, new: &mut LinkMLValue) {
+    match (old, new) {
+        (LinkMLValue::Scalar { node_id: oid, .. }, LinkMLValue::Scalar { node_id: nid, .. }) => {
+            *nid = *oid;
+        }
+        (
+            LinkMLValue::List {
+                node_id: oid,
+                values: ov,
+                ..
+            },
+            LinkMLValue::List {
+                node_id: nid,
+                values: nv,
+                ..
+            },
+        ) => {
+            *nid = *oid;
+            let n = std::cmp::min(ov.len(), nv.len());
+            for i in 0..n {
+                reconcile_ids(&ov[i], &mut nv[i]);
+            }
+        }
+        (
+            LinkMLValue::Mapping {
+                node_id: oid,
+                values: om,
+                ..
+            },
+            LinkMLValue::Mapping {
+                node_id: nid,
+                values: nm,
+                ..
+            },
+        ) => {
+            *nid = *oid;
+            for (k, ov) in om {
+                if let Some(nv) = nm.get_mut(k) {
+                    reconcile_ids(ov, nv);
+                }
+            }
+        }
+        (
+            LinkMLValue::Object {
+                node_id: oid,
+                values: om,
+                ..
+            },
+            LinkMLValue::Object {
+                node_id: nid,
+                values: nm,
+                ..
+            },
+        ) => {
+            *nid = *oid;
+            for (k, ov) in om {
+                if let Some(nv) = nm.get_mut(k) {
+                    reconcile_ids(ov, nv);
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+fn collect_updated(old: &LinkMLValue, new: &LinkMLValue, updated: &mut Vec<NodeId>) {
+    if old.node_id() == new.node_id() && old.to_json() != new.to_json() {
+        updated.push(new.node_id());
+    }
+    match (old, new) {
+        (LinkMLValue::Scalar { .. }, LinkMLValue::Scalar { .. }) => {}
+        (LinkMLValue::List { values: ov, .. }, LinkMLValue::List { values: nv, .. }) => {
+            let n = std::cmp::min(ov.len(), nv.len());
+            for i in 0..n {
+                collect_updated(&ov[i], &nv[i], updated);
+            }
+        }
+        (
+            LinkMLValue::Mapping { values: om, .. },
+            LinkMLValue::Mapping { values: nm, .. },
+        )
+        | (
+            LinkMLValue::Object { values: om, .. },
+            LinkMLValue::Object { values: nm, .. },
+        ) => {
+            for (k, ov) in om {
+                if let Some(nv) = nm.get(k) {
+                    collect_updated(ov, nv, updated);
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+pub fn patch(source: &LinkMLValue, deltas: &[Delta], sv: &SchemaView) -> (LinkMLValue, PatchTrace) {
+    // Pre-snapshot
+    let mut pre_ids = Vec::new();
+    collect_ids(source, &mut pre_ids);
+
     let mut json = source.to_json();
     for d in deltas {
         apply_delta(&mut json, d);
     }
     let json_str = serde_json::to_string(&json).unwrap();
     let conv = sv.converter();
-    match source {
+    let mut new_value = match source {
         LinkMLValue::Object { class: ref c, .. } => load_json_str(&json_str, sv, c, &conv).unwrap(),
         _ => panic!("patching non-map values is not supported here"),
-    }
+    };
+
+    reconcile_ids(source, &mut new_value);
+
+    let mut post_ids = Vec::new();
+    collect_ids(&new_value, &mut post_ids);
+
+    use std::collections::HashSet;
+    let pre: HashSet<NodeId> = pre_ids.into_iter().collect();
+    let post: HashSet<NodeId> = post_ids.into_iter().collect();
+    let added: Vec<NodeId> = post.difference(&pre).copied().collect();
+    let deleted: Vec<NodeId> = pre.difference(&post).copied().collect();
+
+    let mut updated = Vec::new();
+    collect_updated(source, &new_value, &mut updated);
+
+    (
+        new_value,
+        PatchTrace {
+            added,
+            deleted,
+            updated,
+        },
+    )
 }
 
 fn apply_delta(value: &mut JsonValue, delta: &Delta) {

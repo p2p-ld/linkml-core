@@ -92,7 +92,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         serde_yaml::from_str(&delta_text)?
     };
-    let patched = patch(&src, &deltas, &sv);
+    let (patched, _trace) = patch(&src, &deltas, &sv);
     write_value(args.output.as_deref(), &patched)?;
     Ok(())
 }

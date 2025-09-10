@@ -5,10 +5,11 @@ use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 pub mod diff;
 pub mod turtle;
-pub use diff::{diff, patch, Delta};
+pub use diff::{diff, patch, Delta, PatchTrace};
 #[derive(Debug)]
 pub struct LinkMLError(pub String);
 
@@ -56,31 +57,52 @@ fn slot_matches_key(slot: &SlotView, key: &str) -> bool {
 #[derive(Clone)]
 pub enum LinkMLValue {
     Scalar {
+        node_id: NodeId,
         value: JsonValue,
         slot: SlotView,
         class: Option<ClassView>,
         sv: SchemaView,
     },
     List {
+        node_id: NodeId,
         values: Vec<LinkMLValue>,
         slot: SlotView,
         class: Option<ClassView>,
         sv: SchemaView,
     },
     Mapping {
+        node_id: NodeId,
         values: HashMap<String, LinkMLValue>,
         slot: SlotView,
         class: Option<ClassView>,
         sv: SchemaView,
     },
     Object {
+        node_id: NodeId,
         values: HashMap<String, LinkMLValue>,
         class: ClassView,
         sv: SchemaView,
     },
 }
 
+// Stable node identifiers assigned to every LinkMLValue node
+pub type NodeId = u64;
+
+static NEXT_NODE_ID: AtomicU64 = AtomicU64::new(1);
+
+fn new_node_id() -> NodeId {
+    NEXT_NODE_ID.fetch_add(1, Ordering::Relaxed)
+}
+
 impl LinkMLValue {
+    pub fn node_id(&self) -> NodeId {
+        match self {
+            LinkMLValue::Scalar { node_id, .. }
+            | LinkMLValue::List { node_id, .. }
+            | LinkMLValue::Mapping { node_id, .. }
+            | LinkMLValue::Object { node_id, .. } => *node_id,
+        }
+    }
     /// Navigate the value by a path of strings, where each element is either
     /// a dictionary key (for maps) or a list index (for lists).
     /// Returns `Some(&LinkMLValue)` if the full path can be resolved, otherwise `None`.
@@ -197,6 +219,7 @@ impl LinkMLValue {
             );
         }
         Ok(LinkMLValue::Object {
+            node_id: new_node_id(),
             values,
             class: class.clone(),
             sv: sv.clone(),
@@ -247,6 +270,7 @@ impl LinkMLValue {
                     )?);
                 }
                 Ok(LinkMLValue::List {
+                    node_id: new_node_id(),
                     values,
                     slot: sl.clone(),
                     class: Some(class.clone()),
@@ -260,6 +284,7 @@ impl LinkMLValue {
                 path_to_string(&path)
             ))),
             (true, other) => Ok(LinkMLValue::Scalar {
+                node_id: new_node_id(),
                 value: other,
                 slot: sl.clone(),
                 class: Some(class.clone()),
@@ -327,6 +352,7 @@ impl LinkMLValue {
                                 );
                             }
                             LinkMLValue::Object {
+                                node_id: new_node_id(),
                                 values: child_values,
                                 class: selected,
                                 sv: sv.clone(),
@@ -351,6 +377,7 @@ impl LinkMLValue {
                             child_values.insert(
                                 scalar_slot.name.clone(),
                                 LinkMLValue::Scalar {
+                                    node_id: new_node_id(),
                                     value: other,
                                     slot: scalar_slot.clone(),
                                     class: Some(base.clone()),
@@ -358,6 +385,7 @@ impl LinkMLValue {
                                 },
                             );
                             LinkMLValue::Object {
+                                node_id: new_node_id(),
                                 values: child_values,
                                 class: base.clone(),
                                 sv: sv.clone(),
@@ -367,6 +395,7 @@ impl LinkMLValue {
                     values.insert(k, child);
                 }
                 Ok(LinkMLValue::Mapping {
+                    node_id: new_node_id(),
                     values,
                     slot: sl.clone(),
                     class: class.clone(),
@@ -418,6 +447,7 @@ impl LinkMLValue {
             )?);
         }
         Ok(LinkMLValue::List {
+            node_id: new_node_id(),
             values,
             slot: sl,
             class: Some(class),
@@ -464,6 +494,7 @@ impl LinkMLValue {
             );
         }
         Ok(LinkMLValue::Object {
+            node_id: new_node_id(),
             values,
             class: chosen,
             sv: sv.clone(),
@@ -486,6 +517,7 @@ impl LinkMLValue {
             ))
         })?;
         Ok(LinkMLValue::Scalar {
+            node_id: new_node_id(),
             value,
             slot: sl,
             class: Some(class.clone()),

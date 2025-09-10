@@ -1,5 +1,5 @@
 use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
-use linkml_runtime::diff::{diff as diff_internal, patch as patch_internal, Delta};
+use linkml_runtime::diff::{diff as diff_internal, patch as patch_internal, Delta, PatchTrace};
 use linkml_runtime::turtle::{turtle_to_string, TurtleOptions};
 use linkml_runtime::{load_json_str, load_yaml_str, LinkMLValue};
 use linkml_schemaview::identifier::Identifier;
@@ -498,6 +498,11 @@ impl PyLinkMLValue {
     }
 
     #[getter]
+    fn node_id(&self) -> u64 {
+        self.value.node_id()
+    }
+
+    #[getter]
     fn slot_definition(&self) -> Option<SlotDefinition> {
         match &self.value {
             LinkMLValue::Scalar { slot, .. } => Some(slot.definition().clone()),
@@ -749,15 +754,24 @@ fn py_patch(
     py: Python<'_>,
     source: &PyLinkMLValue,
     deltas: &Bound<'_, PyAny>,
-) -> PyResult<PyLinkMLValue> {
+) -> PyResult<PyObject> {
     let json_mod = PyModule::import(py, "json")?;
     let deltas_str: String = json_mod.call_method1("dumps", (deltas,))?.extract()?;
     let deltas_vec: Vec<Delta> =
         serde_json::from_str(&deltas_str).map_err(|e| PyException::new_err(e.to_string()))?;
     let sv_ref = source.sv.bind(py).borrow();
     let rust_sv = sv_ref.as_rust();
-    let new_value = patch_internal(&source.value, &deltas_vec, rust_sv);
-    Ok(PyLinkMLValue::new(new_value, source.sv.clone_ref(py)))
+    let (new_value, trace) = patch_internal(&source.value, &deltas_vec, rust_sv);
+    let trace_json = serde_json::json!({
+        "added": trace.added,
+        "deleted": trace.deleted,
+        "updated": trace.updated,
+    });
+    let py_val = PyLinkMLValue::new(new_value, source.sv.clone_ref(py));
+    let dict = pyo3::types::PyDict::new(py);
+    dict.set_item("value", Py::new(py, py_val)?)?;
+    dict.set_item("trace", json_value_to_py(py, &trace_json))?;
+    Ok(dict.into_any().unbind().into())
 }
 
 #[pyfunction(name = "to_turtle", signature = (value, skolem=None))]
