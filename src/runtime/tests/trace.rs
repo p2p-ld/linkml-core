@@ -25,6 +25,7 @@ fn collect_ids(v: &linkml_runtime::LinkMLValue, out: &mut Vec<u64>) {
     out.push(v.node_id());
     match v {
         linkml_runtime::LinkMLValue::Scalar { .. } => {}
+        linkml_runtime::LinkMLValue::Null { .. } => {}
         linkml_runtime::LinkMLValue::List { values, .. } => {
             for c in values {
                 collect_ids(c, out);

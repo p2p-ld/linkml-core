@@ -1,4 +1,4 @@
-use linkml_runtime::{diff, load_yaml_file, patch};
+use linkml_runtime::{diff, load_json_str, load_yaml_file, patch};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
@@ -160,126 +160,78 @@ fn diff_null_and_missing_semantics() {
     .unwrap();
 
     // X -> null => update to null
-    if let LinkMLValue::Object { values, .. } = src.clone() {
-        let mut tgt_values = values.clone();
-        let age_slot = class
-            .slots()
-            .iter()
-            .find(|s| s.name == "age")
-            .expect("age slot");
-        tgt_values.insert(
-            "age".to_string(),
-            LinkMLValue::Null {
-                slot: age_slot.clone(),
-                class: Some(class.clone()),
-                sv: sv.clone(),
-            },
-        );
-        let deltas = diff(
-            &LinkMLValue::Object {
-                values: values.clone(),
-                class: class.clone(),
-                sv: sv.clone(),
-            },
-            &LinkMLValue::Object {
-                values: tgt_values.clone(),
-                class: class.clone(),
-                sv: sv.clone(),
-            },
-            false,
-        );
+    if let LinkMLValue::Object { .. } = src.clone() {
+        let mut tgt_json = src.to_json();
+        if let serde_json::Value::Object(ref mut m) = tgt_json {
+            m.insert("age".to_string(), serde_json::Value::Null);
+        }
+        let tgt = load_json_str(
+            &serde_json::to_string(&tgt_json).unwrap(),
+            &sv,
+            &class,
+            &conv,
+        )
+        .unwrap();
+        let deltas = diff(&src, &tgt, false);
         assert!(deltas
             .iter()
             .any(|d| d.path == vec!["age".to_string()] && d.new == Some(serde_json::Value::Null)));
     }
 
     // null -> X => update from null
-    if let LinkMLValue::Object { values, .. } = src.clone() {
-        let mut src_values = values.clone();
-        let age_slot = class
-            .slots()
-            .iter()
-            .find(|s| s.name == "age")
-            .expect("age slot");
-        src_values.insert(
-            "age".to_string(),
-            LinkMLValue::Null {
-                slot: age_slot.clone(),
-                class: Some(class.clone()),
-                sv: sv.clone(),
-            },
-        );
-        let deltas = diff(
-            &LinkMLValue::Object {
-                values: src_values.clone(),
-                class: class.clone(),
-                sv: sv.clone(),
-            },
-            &LinkMLValue::Object {
-                values: values.clone(),
-                class: class.clone(),
-                sv: sv.clone(),
-            },
-            false,
-        );
+    if let LinkMLValue::Object { .. } = src.clone() {
+        let mut src_json = src.to_json();
+        if let serde_json::Value::Object(ref mut m) = src_json {
+            m.insert("age".to_string(), serde_json::Value::Null);
+        }
+        let src_with_null = load_json_str(
+            &serde_json::to_string(&src_json).unwrap(),
+            &sv,
+            &class,
+            &conv,
+        )
+        .unwrap();
+        let deltas = diff(&src_with_null, &src, false);
         assert!(deltas.iter().any(|d| d.path == vec!["age".to_string()]
             && d.old == Some(serde_json::Value::Null)
             && d.new.is_some()));
     }
 
     // missing -> X => add
-    if let LinkMLValue::Object { values, .. } = src.clone() {
-        let mut src_values = values.clone();
-        src_values.remove("age");
-        let deltas = diff(
-            &LinkMLValue::Object {
-                values: src_values.clone(),
-                class: class.clone(),
-                sv: sv.clone(),
-            },
-            &LinkMLValue::Object {
-                values: values.clone(),
-                class: class.clone(),
-                sv: sv.clone(),
-            },
-            false,
-        );
+    if let LinkMLValue::Object { .. } = src.clone() {
+        let mut src_json = src.to_json();
+        if let serde_json::Value::Object(ref mut m) = src_json {
+            m.remove("age");
+        }
+        let src_missing = load_json_str(
+            &serde_json::to_string(&src_json).unwrap(),
+            &sv,
+            &class,
+            &conv,
+        )
+        .unwrap();
+        let deltas = diff(&src_missing, &src, false);
         assert!(deltas
             .iter()
             .any(|d| d.path == vec!["age".to_string()] && d.old.is_none() && d.new.is_some()));
     }
 
     // X -> missing: ignored by default; produce update-to-null when treat_missing_as_null=true
-    if let LinkMLValue::Object { values, .. } = src.clone() {
-        let mut tgt_values = values.clone();
-        tgt_values.remove("age");
-        let deltas = diff(
-            &LinkMLValue::Object {
-                values: values.clone(),
-                class: class.clone(),
-                sv: sv.clone(),
-            },
-            &LinkMLValue::Object {
-                values: tgt_values.clone(),
-                class: class.clone(),
-                sv: sv.clone(),
-            },
-            false,
-        );
+    if let LinkMLValue::Object { .. } = src.clone() {
+        let mut tgt_json = src.to_json();
+        if let serde_json::Value::Object(ref mut m) = tgt_json {
+            m.remove("age");
+        }
+        let tgt_missing = load_json_str(
+            &serde_json::to_string(&tgt_json).unwrap(),
+            &sv,
+            &class,
+            &conv,
+        )
+        .unwrap();
+        let deltas = diff(&src, &tgt_missing, false);
         assert!(deltas.iter().all(|d| d.path != vec!["age".to_string()]));
-        let deltas2 = diff(
-            &LinkMLValue::Object {
-                values: values.clone(),
-                class: class.clone(),
-                sv: sv.clone(),
-            },
-            &LinkMLValue::Object {
-                values: tgt_values.clone(),
-                class: class.clone(),
-                sv: sv.clone(),
-            },
-            true,
-        );
+        let deltas2 = diff(&src, &tgt_missing, true);
         assert!(deltas2
             .iter()
             .any(|d| d.path == vec!["age".to_string()] && d.new == Some(serde_json::Value::Null)))

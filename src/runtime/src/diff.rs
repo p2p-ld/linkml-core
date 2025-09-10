@@ -273,6 +273,7 @@ fn apply_delta_linkml(
                 LinkMLValue::List { class, slot, .. } => (class.clone(), Some(slot.clone())),
                 LinkMLValue::Mapping { class, slot, .. } => (class.clone(), Some(slot.clone())),
                 LinkMLValue::Scalar { class, slot, .. } => (class.clone(), Some(slot.clone())),
+                LinkMLValue::Null { class, slot, .. } => (class.clone(), Some(slot.clone())),
             };
             let conv = sv.converter();
             if let Some(cls) = class_opt {
@@ -443,6 +444,7 @@ fn apply_delta_linkml(
             }
         }
         LinkMLValue::Scalar { .. } => {}
+        LinkMLValue::Null { .. } => {}
     }
     Ok(())
 }
