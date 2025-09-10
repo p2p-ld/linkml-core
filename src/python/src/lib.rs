@@ -483,6 +483,7 @@ impl PyLinkMLValue {
         match &self.value {
             LinkMLValue::Scalar { slot, .. } => Some(slot.name.clone()),
             LinkMLValue::List { slot, .. } => Some(slot.name.clone()),
+            LinkMLValue::Null { slot, .. } => Some(slot.name.clone()),
             _ => None,
         }
     }
@@ -491,6 +492,7 @@ impl PyLinkMLValue {
     fn kind(&self) -> String {
         match &self.value {
             LinkMLValue::Scalar { .. } => "scalar".to_string(),
+            LinkMLValue::Null { .. } => "null".to_string(),
             LinkMLValue::List { .. } => "list".to_string(),
             LinkMLValue::Mapping { .. } => "mapping".to_string(),
             LinkMLValue::Object { .. } => "object".to_string(),
@@ -502,6 +504,7 @@ impl PyLinkMLValue {
         match &self.value {
             LinkMLValue::Scalar { slot, .. } => Some(slot.definition().clone()),
             LinkMLValue::List { slot, .. } => Some(slot.definition().clone()),
+            LinkMLValue::Null { slot, .. } => Some(slot.definition().clone()),
             _ => None,
         }
     }
@@ -512,6 +515,7 @@ impl PyLinkMLValue {
             LinkMLValue::Object { class, .. } => Some(class.def().clone()),
             LinkMLValue::Scalar { class: Some(c), .. } => Some(c.def().clone()),
             LinkMLValue::List { class: Some(c), .. } => Some(c.def().clone()),
+            LinkMLValue::Null { class: Some(c), .. } => Some(c.def().clone()),
             _ => None,
         }
     }
@@ -522,6 +526,7 @@ impl PyLinkMLValue {
             LinkMLValue::Object { class, .. } => Some(class.def().name.clone()),
             LinkMLValue::Scalar { class: Some(c), .. } => Some(c.def().name.clone()),
             LinkMLValue::List { class: Some(c), .. } => Some(c.def().name.clone()),
+            LinkMLValue::Null { class: Some(c), .. } => Some(c.def().name.clone()),
             _ => None,
         }
     }
@@ -529,6 +534,7 @@ impl PyLinkMLValue {
     fn __len__(&self) -> PyResult<usize> {
         Ok(match &self.value {
             LinkMLValue::Scalar { .. } => 0,
+            LinkMLValue::Null { .. } => 0,
             LinkMLValue::List { values, .. } => values.len(),
             LinkMLValue::Mapping { values, .. } => values.len(),
             LinkMLValue::Object { values, .. } => values.len(),
@@ -645,6 +651,9 @@ impl PyLinkMLValue {
             LinkMLValue::Scalar { value, slot, .. } => {
                 format!("LinkMLValue.Scalar(slot='{}', value={})", slot.name, value)
             }
+            LinkMLValue::Null { slot, .. } => {
+                format!("LinkMLValue.Null(slot='{}')", slot.name)
+            }
             LinkMLValue::List { values, slot, .. } => {
                 format!(
                     "LinkMLValue.List(slot='{}', len={})",
@@ -725,17 +734,17 @@ fn load_json(
     Ok(PyLinkMLValue::new(v, sv))
 }
 
-#[pyfunction(name = "diff", signature = (source, target, ignore_missing_target=None))]
+#[pyfunction(name = "diff", signature = (source, target, treat_missing_as_null=None))]
 fn py_diff(
     py: Python<'_>,
     source: &PyLinkMLValue,
     target: &PyLinkMLValue,
-    ignore_missing_target: Option<bool>,
+    treat_missing_as_null: Option<bool>,
 ) -> PyResult<PyObject> {
     let deltas = diff_internal(
         &source.value,
         &target.value,
-        ignore_missing_target.unwrap_or(false),
+        treat_missing_as_null.unwrap_or(false),
     );
     let vals: Vec<JsonValue> = deltas
         .iter()
