@@ -45,7 +45,7 @@ fn diff_and_patch_person() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false);
+    let deltas = diff(&src, &tgt, false, false);
     assert_eq!(deltas.len(), 1);
     // Ensure delta paths are navigable on respective values
     for d in &deltas {
@@ -91,7 +91,7 @@ fn diff_ignore_missing_target() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, true);
+    let deltas = diff(&src, &tgt, true, false);
     assert!(deltas.is_empty());
     let patched = patch(&src, &deltas, &sv);
     let patched_json = patched.to_json();
@@ -124,7 +124,7 @@ fn diff_and_patch_personinfo() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false);
+    let deltas = diff(&src, &tgt, false, false);
     assert!(!deltas.is_empty());
     // Ensure delta paths are navigable on respective values, including mapping-list keys
     for d in &deltas {
@@ -137,6 +137,158 @@ fn diff_and_patch_personinfo() {
     }
     let patched = patch(&src, &deltas, &sv);
     assert_eq!(patched.to_json(), tgt.to_json());
+}
+
+#[test]
+fn diff_null_and_missing_semantics() {
+    use linkml_runtime::LinkMLValue;
+    let schema = from_yaml(Path::new(&data_path("schema.yaml"))).unwrap();
+    let mut sv = SchemaView::new();
+    sv.add_schema(schema.clone()).unwrap();
+    let conv = converter_from_schema(&schema);
+    let class = sv
+        .get_class(&Identifier::new("Person"), &conv)
+        .unwrap()
+        .expect("class not found");
+
+    let src = load_yaml_file(
+        Path::new(&data_path("person_valid.yaml")),
+        &sv,
+        &class,
+        &conv,
+    )
+    .unwrap();
+
+    // X -> null => removal
+    if let LinkMLValue::Object { values, .. } = src.clone() {
+        let mut tgt_values = values.clone();
+        let age_slot = class
+            .slots()
+            .iter()
+            .find(|s| s.name == "age")
+            .expect("age slot");
+        tgt_values.insert(
+            "age".to_string(),
+            LinkMLValue::Null {
+                slot: age_slot.clone(),
+                class: Some(class.clone()),
+                sv: sv.clone(),
+            },
+        );
+        let deltas = diff(
+            &LinkMLValue::Object {
+                values: values.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            },
+            &LinkMLValue::Object {
+                values: tgt_values.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            },
+            false,
+            false,
+        );
+        assert!(deltas
+            .iter()
+            .any(|d| d.path == vec!["age".to_string()] && d.new.is_none()));
+    }
+
+    // null -> X => add
+    if let LinkMLValue::Object { values, .. } = src.clone() {
+        let mut src_values = values.clone();
+        let age_slot = class
+            .slots()
+            .iter()
+            .find(|s| s.name == "age")
+            .expect("age slot");
+        src_values.insert(
+            "age".to_string(),
+            LinkMLValue::Null {
+                slot: age_slot.clone(),
+                class: Some(class.clone()),
+                sv: sv.clone(),
+            },
+        );
+        let deltas = diff(
+            &LinkMLValue::Object {
+                values: src_values.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            },
+            &LinkMLValue::Object {
+                values: values.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            },
+            false,
+            false,
+        );
+        assert!(deltas
+            .iter()
+            .any(|d| d.path == vec!["age".to_string()] && d.old.is_none() && d.new.is_some()));
+    }
+
+    // missing -> X => add
+    if let LinkMLValue::Object { values, .. } = src.clone() {
+        let mut src_values = values.clone();
+        src_values.remove("age");
+        let deltas = diff(
+            &LinkMLValue::Object {
+                values: src_values.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            },
+            &LinkMLValue::Object {
+                values: values.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            },
+            false,
+            false,
+        );
+        assert!(deltas
+            .iter()
+            .any(|d| d.path == vec!["age".to_string()] && d.old.is_none() && d.new.is_some()));
+    }
+
+    // X -> missing: ignore when ignore_missing_target=true, but produce when treat_missing_as_null=true
+    if let LinkMLValue::Object { values, .. } = src.clone() {
+        let mut tgt_values = values.clone();
+        tgt_values.remove("age");
+        let deltas = diff(
+            &LinkMLValue::Object {
+                values: values.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            },
+            &LinkMLValue::Object {
+                values: tgt_values.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            },
+            true,
+            false,
+        );
+        assert!(deltas.iter().all(|d| d.path != vec!["age".to_string()]));
+        let deltas2 = diff(
+            &LinkMLValue::Object {
+                values: values.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            },
+            &LinkMLValue::Object {
+                values: tgt_values.clone(),
+                class: class.clone(),
+                sv: sv.clone(),
+            },
+            false,
+            true,
+        );
+        assert!(deltas2
+            .iter()
+            .any(|d| d.path == vec!["age".to_string()] && d.new.is_none()))
+    }
 }
 
 #[test]

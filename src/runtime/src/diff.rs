@@ -47,13 +47,29 @@ impl LinkMLValue {
     }
 }
 
-pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: bool) -> Vec<Delta> {
+/// Compute a semantic diff between two LinkMLValue trees.
+///
+/// Semantics of nulls and missing values:
+/// - X -> null: produces a removal delta (new = None).
+/// - null -> X: produces an add delta (old = None, new = X).
+/// - missing -> X: produces an add delta (old = None, new = X).
+/// - X -> missing:
+///   - if `treat_missing_as_null` is true: produces a removal delta (new = None).
+///   - else if `ignore_missing_target` is true: ignored (no delta).
+///   - else: produces a removal delta (new = None), matching previous behavior.
+pub fn diff(
+    source: &LinkMLValue,
+    target: &LinkMLValue,
+    ignore_missing_target: bool,
+    treat_missing_as_null: bool,
+) -> Vec<Delta> {
     fn inner(
         path: &mut Vec<String>,
         slot: Option<&SlotView>,
         s: &LinkMLValue,
         t: &LinkMLValue,
         ignore_missing: bool,
+        treat_missing_as_null: bool,
         out: &mut Vec<Delta>,
     ) {
         if let Some(sl) = slot {
@@ -82,9 +98,19 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
                         .or_else(|| tc.slots().iter().find(|s| s.name == *k));
                     path.push(k.clone());
                     match tm.get(k) {
-                        Some(tv) => inner(path, slot_view, sv, tv, ignore_missing, out),
+                        Some(tv) => inner(
+                            path,
+                            slot_view,
+                            sv,
+                            tv,
+                            ignore_missing,
+                            treat_missing_as_null,
+                            out,
+                        ),
                         None => {
-                            if !ignore_missing && !slot_view.is_some_and(slot_is_ignored) {
+                            if !slot_view.is_some_and(slot_is_ignored)
+                                && (treat_missing_as_null || !ignore_missing)
+                            {
                                 out.push(Delta {
                                     path: path.clone(),
                                     old: Some(sv.to_json()),
@@ -119,7 +145,15 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
                 for i in 0..max_len {
                     path.push(i.to_string());
                     match (sl.get(i), tl.get(i)) {
-                        (Some(sv), Some(tv)) => inner(path, None, sv, tv, ignore_missing, out),
+                        (Some(sv), Some(tv)) => inner(
+                            path,
+                            None,
+                            sv,
+                            tv,
+                            ignore_missing,
+                            treat_missing_as_null,
+                            out,
+                        ),
                         (Some(sv), None) => out.push(Delta {
                             path: path.clone(),
                             old: Some(sv.to_json()),
@@ -141,7 +175,15 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
                 for k in keys {
                     path.push(k.clone());
                     match (sm.get(&k), tm.get(&k)) {
-                        (Some(sv), Some(tv)) => inner(path, None, sv, tv, ignore_missing, out),
+                        (Some(sv), Some(tv)) => inner(
+                            path,
+                            None,
+                            sv,
+                            tv,
+                            ignore_missing,
+                            treat_missing_as_null,
+                            out,
+                        ),
                         (Some(sv), None) => out.push(Delta {
                             path: path.clone(),
                             old: Some(sv.to_json()),
@@ -157,14 +199,29 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
                     path.pop();
                 }
             }
-            _ => {
-                let sv = s.to_json();
-                let tv = t.to_json();
-                if sv != tv {
+            (LinkMLValue::Null { .. }, LinkMLValue::Null { .. }) => {}
+            (LinkMLValue::Null { .. }, tv) => {
+                out.push(Delta {
+                    path: path.clone(),
+                    old: None,
+                    new: Some(tv.to_json()),
+                });
+            }
+            (sv, LinkMLValue::Null { .. }) => {
+                out.push(Delta {
+                    path: path.clone(),
+                    old: Some(sv.to_json()),
+                    new: None,
+                });
+            }
+            (sv, tv) => {
+                let sj = sv.to_json();
+                let tj = tv.to_json();
+                if sj != tj {
                     out.push(Delta {
                         path: path.clone(),
-                        old: Some(sv),
-                        new: Some(tv),
+                        old: Some(sj),
+                        new: Some(tj),
                     });
                 }
             }
@@ -177,6 +234,7 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
         source,
         target,
         ignore_missing_target,
+        treat_missing_as_null,
         &mut out,
     );
     out
