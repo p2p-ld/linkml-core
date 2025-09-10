@@ -17,8 +17,22 @@ fn slot_is_ignored(slot: &SlotView) -> bool {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DeltaOp {
+    Add,
+    Update,
+    Remove,
+}
+
+fn default_op_update() -> DeltaOp {
+    DeltaOp::Update
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Delta {
     pub path: Vec<String>,
+    #[serde(default = "default_op_update")]
+    pub op: DeltaOp,
     pub old: Option<JsonValue>,
     pub new: Option<JsonValue>,
 }
@@ -96,6 +110,7 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
                                 if treat_missing_as_null {
                                     out.push(Delta {
                                         path: path.clone(),
+                                        op: DeltaOp::Update,
                                         old: Some(sv.to_json()),
                                         new: Some(JsonValue::Null),
                                     });
@@ -116,6 +131,7 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
                             path.push(k.clone());
                             out.push(Delta {
                                 path: path.clone(),
+                                op: DeltaOp::Update,
                                 old: None,
                                 new: Some(tv.to_json()),
                             });
@@ -134,11 +150,13 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
                         }
                         (Some(sv), None) => out.push(Delta {
                             path: path.clone(),
+                            op: DeltaOp::Remove,
                             old: Some(sv.to_json()),
                             new: None,
                         }),
                         (None, Some(tv)) => out.push(Delta {
                             path: path.clone(),
+                            op: DeltaOp::Add,
                             old: None,
                             new: Some(tv.to_json()),
                         }),
@@ -158,11 +176,13 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
                         }
                         (Some(sv), None) => out.push(Delta {
                             path: path.clone(),
+                            op: DeltaOp::Remove,
                             old: Some(sv.to_json()),
                             new: None,
                         }),
                         (None, Some(tv)) => out.push(Delta {
                             path: path.clone(),
+                            op: DeltaOp::Add,
                             old: None,
                             new: Some(tv.to_json()),
                         }),
@@ -175,6 +195,7 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
             (LinkMLValue::Null { .. }, tv) => {
                 out.push(Delta {
                     path: path.clone(),
+                    op: DeltaOp::Update,
                     old: Some(JsonValue::Null),
                     new: Some(tv.to_json()),
                 });
@@ -182,6 +203,7 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
             (sv, LinkMLValue::Null { .. }) => {
                 out.push(Delta {
                     path: path.clone(),
+                    op: DeltaOp::Update,
                     old: Some(sv.to_json()),
                     new: Some(JsonValue::Null),
                 });
@@ -192,6 +214,7 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
                 if sj != tj {
                     out.push(Delta {
                         path: path.clone(),
+                        op: DeltaOp::Update,
                         old: Some(sj),
                         new: Some(tj),
                     });

@@ -287,6 +287,136 @@ fn diff_null_and_missing_semantics() {
 }
 
 #[test]
+fn diff_add_remove_in_collections() {
+    use linkml_runtime::diff::DeltaOp;
+    // Use personinfo Container with multivalued 'objects' (list) and
+    // inlined-as-dict 'has_familial_relationships' on Person.
+    let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
+    let mut sv = SchemaView::new();
+    sv.add_schema(schema.clone()).unwrap();
+    let conv = converter_from_schema(&schema);
+    let container = sv
+        .get_class(&Identifier::new("Container"), &conv)
+        .unwrap()
+        .expect("class not found");
+    let base = load_yaml_file(
+        Path::new(&info_path("example_personinfo_data.yaml")),
+        &sv,
+        &container,
+        &conv,
+    )
+    .unwrap();
+
+    // Prepare JSON for easier mutation
+    let mut base_json = base.to_json();
+    // Add an object to 'objects' list
+    if let serde_json::Value::Object(ref mut root) = base_json {
+        if let Some(serde_json::Value::Array(ref mut arr)) = root.get_mut("objects") {
+            let new_obj = serde_json::json!({
+                "id": "P:999",
+                "name": "Added Person",
+                "objecttype": "https://w3id.org/linkml/examples/personinfo/Person"
+            });
+            arr.push(new_obj);
+        }
+    }
+    let base_plus_one = linkml_runtime::load_json_str(
+        &serde_json::to_string(&base_json).unwrap(),
+        &sv,
+        &container,
+        &conv,
+    )
+    .unwrap();
+    let deltas = diff(&base, &base_plus_one, false);
+    assert!(deltas
+        .iter()
+        .any(|d| d.op == DeltaOp::Add && d.path.first().map(|s| s.as_str()) == Some("objects")));
+
+    // Remove last element from 'objects'
+    let mut minus_json = base_plus_one.to_json();
+    if let serde_json::Value::Object(ref mut root) = minus_json {
+        if let Some(serde_json::Value::Array(ref mut arr)) = root.get_mut("objects") {
+            arr.pop();
+        }
+    }
+    let base_minus_one = linkml_runtime::load_json_str(
+        &serde_json::to_string(&minus_json).unwrap(),
+        &sv,
+        &container,
+        &conv,
+    )
+    .unwrap();
+    let deltas = diff(&base_plus_one, &base_minus_one, false);
+    assert!(deltas
+        .iter()
+        .any(|d| d.op == DeltaOp::Remove && d.path.first().map(|s| s.as_str()) == Some("objects")));
+
+    // Mapping add/remove: add a new familial relationship key on the first Person
+    let mut map_add = base.to_json();
+    if let serde_json::Value::Object(ref mut root) = map_add {
+        if let Some(serde_json::Value::Array(ref mut arr)) = root.get_mut("objects") {
+            if let Some(serde_json::Value::Object(ref mut first)) = arr
+                .iter_mut()
+                .find(|v| v.get("has_familial_relationships").is_some())
+            {
+                let rels = first
+                    .entry("has_familial_relationships")
+                    .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
+                if let serde_json::Value::Object(ref mut map) = rels {
+                    map.insert(
+                        "test_sibling".to_string(),
+                        serde_json::json!({
+                            "related_to": "P:001",
+                            "type": "SIBLING_OF"
+                        }),
+                    );
+                }
+            }
+        }
+    }
+    let v_add = linkml_runtime::load_json_str(
+        &serde_json::to_string(&map_add).unwrap(),
+        &sv,
+        &container,
+        &conv,
+    )
+    .unwrap();
+    let deltas = diff(&base, &v_add, false);
+    assert!(deltas.iter().any(
+        |d| d.op == DeltaOp::Add && d.path.contains(&"has_familial_relationships".to_string())
+    ));
+
+    // Remove that key again
+    let mut map_remove = v_add.to_json();
+    if let serde_json::Value::Object(ref mut root) = map_remove {
+        if let Some(serde_json::Value::Array(ref mut arr)) = root.get_mut("objects") {
+            if let Some(serde_json::Value::Object(ref mut first)) = arr
+                .iter_mut()
+                .find(|v| v.get("has_familial_relationships").is_some())
+            {
+                if let Some(serde_json::Value::Object(ref mut map)) =
+                    first.get_mut("has_familial_relationships")
+                {
+                    map.remove("test_sibling");
+                }
+            }
+        }
+    }
+    let v_remove = linkml_runtime::load_json_str(
+        &serde_json::to_string(&map_remove).unwrap(),
+        &sv,
+        &container,
+        &conv,
+    )
+    .unwrap();
+    let deltas = diff(&v_add, &v_remove, false);
+    assert!(deltas
+        .iter()
+        .any(|d| d.op == DeltaOp::Remove
+            && d.path.contains(&"has_familial_relationships".to_string())));
+}
+
+#[test]
 fn personinfo_invalid_fails() {
     let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
     let mut sv = SchemaView::new();
