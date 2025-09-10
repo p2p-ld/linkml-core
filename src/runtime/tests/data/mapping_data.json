@@ -1,0 +1,15 @@
+{
+  "things": {
+    "alpha": {
+      "typeURI": "ThingA",
+      "a_only": "foo",
+      "common": "shared"
+    },
+    "beta": {
+      "typeURI": "ThingB",
+      "b_only": true,
+      "common": "shared"
+    }
+  }
+}
+
