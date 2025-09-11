@@ -1,0 +1,136 @@
+use linkml_runtime::{diff, load_json_str, load_yaml_file};
+use linkml_schemaview::identifier::{converter_from_schema, Identifier};
+use linkml_schemaview::io::from_yaml;
+use linkml_schemaview::schemaview::SchemaView;
+use std::collections::HashSet;
+use std::path::{Path, PathBuf};
+
+fn data_path(name: &str) -> PathBuf {
+    let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    p.push("tests");
+    p.push("data");
+    p.push(name);
+    p
+}
+
+fn info_path(name: &str) -> PathBuf {
+    let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    p.push("tests");
+    p.push("data");
+    p.push(name);
+    p
+}
+
+fn collect_ids(v: &linkml_runtime::LinkMLValue, out: &mut Vec<u64>) {
+    out.push(v.node_id());
+    match v {
+        linkml_runtime::LinkMLValue::Scalar { .. } => {}
+        linkml_runtime::LinkMLValue::Null { .. } => {}
+        linkml_runtime::LinkMLValue::List { values, .. } => {
+            for c in values {
+                collect_ids(c, out);
+            }
+        }
+        linkml_runtime::LinkMLValue::Mapping { values, .. }
+        | linkml_runtime::LinkMLValue::Object { values, .. } => {
+            for c in values.values() {
+                collect_ids(c, out);
+            }
+        }
+    }
+}
+
+#[test]
+fn node_ids_preserved_scalar_update() {
+    let schema = from_yaml(Path::new(&data_path("schema.yaml"))).unwrap();
+    let mut sv = SchemaView::new();
+    sv.add_schema(schema.clone()).unwrap();
+    let conv = converter_from_schema(&schema);
+    let class = sv
+        .get_class(&Identifier::new("Person"), &conv)
+        .unwrap()
+        .expect("class not found");
+    let src = load_yaml_file(
+        Path::new(&data_path("person_valid.yaml")),
+        &sv,
+        &class,
+        &conv,
+    )
+    .unwrap();
+    let mut tgt_json = src.to_json();
+    if let serde_json::Value::Object(ref mut m) = tgt_json {
+        m.insert("age".to_string(), serde_json::json!(99));
+    }
+    let tgt = load_json_str(
+        &serde_json::to_string(&tgt_json).unwrap(),
+        &sv,
+        &class,
+        &conv,
+    )
+    .unwrap();
+
+    let deltas = diff(&src, &tgt, false);
+    let (patched, trace) = linkml_runtime::patch(&src, &deltas, &sv).unwrap();
+
+    assert!(trace.added.is_empty());
+    assert!(trace.deleted.is_empty());
+    assert!(!trace.updated.is_empty());
+
+    let src_age = src.navigate_path(["age"]).unwrap();
+    let pat_age = patched.navigate_path(["age"]).unwrap();
+    assert_eq!(src_age.node_id(), pat_age.node_id());
+    assert!(trace.updated.contains(&pat_age.node_id()));
+}
+
+#[test]
+fn patch_trace_add_in_list() {
+    let schema = from_yaml(Path::new(&info_path("personinfo.yaml"))).unwrap();
+    let mut sv = SchemaView::new();
+    sv.add_schema(schema.clone()).unwrap();
+    let conv = converter_from_schema(&schema);
+    let container = sv
+        .get_class(&Identifier::new("Container"), &conv)
+        .unwrap()
+        .expect("class not found");
+    let base = load_yaml_file(
+        Path::new(&info_path("example_personinfo_data.yaml")),
+        &sv,
+        &container,
+        &conv,
+    )
+    .unwrap();
+
+    // Add a new object to the 'objects' list
+    let mut base_json = base.to_json();
+    if let serde_json::Value::Object(ref mut root) = base_json {
+        if let Some(serde_json::Value::Array(ref mut arr)) = root.get_mut("objects") {
+            let new_obj = serde_json::json!({
+                "id": "P:999",
+                "name": "Added Person",
+                "objecttype": "https://w3id.org/linkml/examples/personinfo/Person"
+            });
+            arr.push(new_obj);
+        }
+    }
+    let target = load_json_str(
+        &serde_json::to_string(&base_json).unwrap(),
+        &sv,
+        &container,
+        &conv,
+    )
+    .unwrap();
+
+    let deltas = diff(&base, &target, false);
+    let mut pre = Vec::new();
+    collect_ids(&base, &mut pre);
+    let (patched, trace) = linkml_runtime::patch(&base, &deltas, &sv).unwrap();
+    let mut post = Vec::new();
+    collect_ids(&patched, &mut post);
+
+    let pre_set: HashSet<u64> = pre.into_iter().collect();
+    let post_set: HashSet<u64> = post.into_iter().collect();
+    let added: HashSet<u64> = post_set.difference(&pre_set).copied().collect();
+    let trace_added: HashSet<u64> = trace.added.iter().copied().collect();
+    assert_eq!(added, trace_added);
+    assert!(!added.is_empty());
+}
