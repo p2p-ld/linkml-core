@@ -23,6 +23,9 @@ struct Args {
     /// Output patched file; defaults to stdout
     #[arg(short, long)]
     output: Option<PathBuf>,
+    /// Treat missing assignments as equivalent to explicit null when determining no-ops
+    #[arg(long, default_value_t = false)]
+    treat_missing_as_null: bool,
 }
 
 fn load_value(
@@ -92,7 +95,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         serde_yaml::from_str(&delta_text)?
     };
-    let (patched, _trace) = patch(&src, &deltas, &sv)?;
+    let (patched, _trace) = patch(&src, &deltas, &sv, args.treat_missing_as_null)?;
     write_value(args.output.as_deref(), &patched)?;
     Ok(())
 }

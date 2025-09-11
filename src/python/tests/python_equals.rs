@@ -68,7 +68,7 @@ doc2 = {
 
 v1 = lr.load_json(json.dumps(doc1), sv, cls)
 v2 = lr.load_json(json.dumps(doc2), sv, cls)
-assert v1['objects'][0].equals(v2['objects'][0])
+assert v1['objects'][0].equals(v2['objects'][0], True)
 "#
         );
     });

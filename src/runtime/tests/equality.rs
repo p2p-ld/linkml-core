@@ -45,7 +45,7 @@ objects:
     let p1 = v1.navigate_path(["objects", "0"]).unwrap();
     let p2 = v2.navigate_path(["objects", "0"]).unwrap();
     assert!(
-        p1.equals(p2),
+        p1.equals(p2, true),
         "Person with null assignment should equal omission"
     );
 }
@@ -92,7 +92,7 @@ objects:
     let p2 = v2.navigate_path(["objects", "0"]).unwrap();
     assert!(matches!(p1, LinkMLValue::Object { .. }));
     assert!(matches!(p2, LinkMLValue::Object { .. }));
-    assert!(!p1.equals(p2), "List order must affect equality");
+    assert!(!p1.equals(p2, true), "List order must affect equality");
 }
 
 #[test]
@@ -128,7 +128,10 @@ fn mapping_equality_is_key_based_not_ordered() {
     let m2 = v2.navigate_path(["things"]).unwrap();
     assert!(matches!(m1, LinkMLValue::Mapping { .. }));
     assert!(matches!(m2, LinkMLValue::Mapping { .. }));
-    assert!(m1.equals(m2), "Mapping equality should ignore key order");
+    assert!(
+        m1.equals(m2, true),
+        "Mapping equality should ignore key order"
+    );
 }
 
 #[test]
@@ -172,6 +175,6 @@ objects:
     let g1 = v1.navigate_path(["objects", "0", "gender"]).unwrap();
     let g2 = v2.navigate_path(["objects", "0", "gender"]).unwrap();
     let g3 = v3.navigate_path(["objects", "0", "gender"]).unwrap();
-    assert!(g1.equals(g2));
-    assert!(!g1.equals(g3));
+    assert!(g1.equals(g2, true));
+    assert!(!g1.equals(g3, true));
 }

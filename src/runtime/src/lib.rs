@@ -163,9 +163,10 @@ impl LinkMLValue {
     ///   (same Enum range when present; otherwise same TypeDefinition range name when present).
     /// - Lists: equal iff same length and pairwise equal in order.
     /// - Mappings: equal iff same keys and values equal for each key (order-insensitive).
-    /// - Objects: equal iff same instantiated class (by identity) and slot assignments match
-    ///   after normalization (i.e., treating assignments with value Null as omitted), ignoring order.
-    pub fn equals(&self, other: &LinkMLValue) -> bool {
+    /// - Objects: equal iff same instantiated class (by identity) and slot assignments match; when
+    ///   `treat_missing_as_null` is true, Null is treated as omitted (normalized), otherwise Null is
+    ///   distinct from missing.
+    pub fn equals(&self, other: &LinkMLValue, treat_missing_as_null: bool) -> bool {
         use LinkMLValue::*;
         match (self, other) {
             (Null { .. }, Null { .. }) => true,
@@ -210,7 +211,7 @@ impl LinkMLValue {
                     return false;
                 }
                 for (x, y) in a.iter().zip(b.iter()) {
-                    if !x.equals(y) {
+                    if !x.equals(y, treat_missing_as_null) {
                         return false;
                     }
                 }
@@ -223,7 +224,7 @@ impl LinkMLValue {
                 for (k, va) in a.iter() {
                     match b.get(k) {
                         Some(vb) => {
-                            if !va.equals(vb) {
+                            if !va.equals(vb, treat_missing_as_null) {
                                 return false;
                             }
                         }
@@ -261,37 +262,54 @@ impl LinkMLValue {
                     return false;
                 }
 
-                // Normalize conceptually by ignoring entries whose value is Null
-                let count_a = a.iter().filter(|(_, v)| !matches!(v, Null { .. })).count();
-                let count_b = b.iter().filter(|(_, v)| !matches!(v, Null { .. })).count();
-                if count_a != count_b {
-                    return false;
-                }
-                for (k, va) in a.iter().filter(|(_, v)| !matches!(v, Null { .. })) {
-                    match b.get(k) {
-                        Some(vb) => {
-                            if matches!(vb, Null { .. }) {
-                                return false;
-                            }
-                            if !va.equals(vb) {
-                                return false;
-                            }
-                        }
-                        None => return false,
+                if treat_missing_as_null {
+                    // Normalize conceptually by ignoring entries whose value is Null
+                    let count_a = a.iter().filter(|(_, v)| !matches!(v, Null { .. })).count();
+                    let count_b = b.iter().filter(|(_, v)| !matches!(v, Null { .. })).count();
+                    if count_a != count_b {
+                        return false;
                     }
-                }
-                // Ensure b has no extra non-null keys not in a (counts already equal, so this is defensive)
-                for (k, _vb) in b.iter().filter(|(_, v)| !matches!(v, Null { .. })) {
-                    match a.get(k) {
-                        Some(va) => {
-                            if matches!(va, Null { .. }) {
-                                return false;
+                    for (k, va) in a.iter().filter(|(_, v)| !matches!(v, Null { .. })) {
+                        match b.get(k) {
+                            Some(vb) => {
+                                if matches!(vb, Null { .. }) {
+                                    return false;
+                                }
+                                if !va.equals(vb, treat_missing_as_null) {
+                                    return false;
+                                }
                             }
+                            None => return false,
                         }
-                        None => return false,
                     }
+                    // Ensure b has no extra non-null keys not in a
+                    for (k, _vb) in b.iter().filter(|(_, v)| !matches!(v, Null { .. })) {
+                        match a.get(k) {
+                            Some(va) => {
+                                if matches!(va, Null { .. }) {
+                                    return false;
+                                }
+                            }
+                            None => return false,
+                        }
+                    }
+                    true
+                } else {
+                    if a.len() != b.len() {
+                        return false;
+                    }
+                    for (k, va) in a.iter() {
+                        match b.get(k) {
+                            Some(vb) => {
+                                if !va.equals(vb, treat_missing_as_null) {
+                                    return false;
+                                }
+                            }
+                            None => return false,
+                        }
+                    }
+                    true
                 }
-                true
             }
             _ => false,
         }

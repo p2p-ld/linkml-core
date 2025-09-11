@@ -480,8 +480,9 @@ impl Clone for PyLinkMLValue {
 impl PyLinkMLValue {
     /// Semantic equality per LinkML Instances spec.
     /// Compares this value with another `LinkMLValue`.
-    fn equals(&self, other: &PyLinkMLValue) -> bool {
-        self.value.equals(&other.value)
+    #[pyo3(signature = (other, treat_missing_as_null = false))]
+    fn equals(&self, other: &PyLinkMLValue, treat_missing_as_null: bool) -> bool {
+        self.value.equals(&other.value, treat_missing_as_null)
     }
     #[getter]
     fn slot_name(&self) -> Option<String> {
@@ -763,11 +764,12 @@ fn py_diff(
     Ok(json_value_to_py(py, &JsonValue::Array(vals)))
 }
 
-#[pyfunction(name = "patch")]
+#[pyfunction(name = "patch", signature = (source, deltas, treat_missing_as_null = false))]
 fn py_patch(
     py: Python<'_>,
     source: &PyLinkMLValue,
     deltas: &Bound<'_, PyAny>,
+    treat_missing_as_null: bool,
 ) -> PyResult<PyObject> {
     let json_mod = PyModule::import(py, "json")?;
     let deltas_str: String = json_mod.call_method1("dumps", (deltas,))?.extract()?;
@@ -775,8 +777,9 @@ fn py_patch(
         serde_json::from_str(&deltas_str).map_err(|e| PyException::new_err(e.to_string()))?;
     let sv_ref = source.sv.bind(py).borrow();
     let rust_sv = sv_ref.as_rust();
-    let (new_value, trace) = patch_internal(&source.value, &deltas_vec, rust_sv)
-        .map_err(|e| PyException::new_err(e.to_string()))?;
+    let (new_value, trace) =
+        patch_internal(&source.value, &deltas_vec, rust_sv, treat_missing_as_null)
+            .map_err(|e| PyException::new_err(e.to_string()))?;
     let trace_json = serde_json::json!({
         "added": trace.added,
         "deleted": trace.deleted,

@@ -76,7 +76,7 @@ fn single_inlined_object_identifier_change_is_replacement() {
     assert!(d.old.is_some() && d.new.is_some());
 
     // Patch should yield target
-    let (patched, _trace) = patch(&src, &deltas, &sv).unwrap();
+    let (patched, _trace) = patch(&src, &deltas, &sv, false).unwrap();
     assert_eq!(patched.to_json(), tgt.to_json());
 }
 
@@ -145,7 +145,7 @@ fn single_inlined_object_non_identifier_change_is_field_delta() {
             "diagnosis".to_string()
         ]));
 
-    let (patched, _trace) = patch(&src, &deltas, &sv).unwrap();
+    let (patched, _trace) = patch(&src, &deltas, &sv, false).unwrap();
     assert_eq!(patched.to_json(), tgt.to_json());
 }
 
@@ -194,7 +194,7 @@ fn list_inlined_object_identifier_change_is_replacement() {
         .iter()
         .any(|d| d.path == vec!["objects".to_string(), "2".to_string(), "id".to_string()]));
 
-    let (patched, _trace) = patch(&src, &deltas, &sv).unwrap();
+    let (patched, _trace) = patch(&src, &deltas, &sv, false).unwrap();
     assert_eq!(patched.to_json(), tgt.to_json());
 }
 
@@ -241,6 +241,6 @@ fn mapping_inlined_identifier_change_is_add_delete() {
         .iter()
         .any(|d| d.path == vec!["things".to_string(), "alpha".to_string(), "key".to_string()]));
 
-    let (patched, _trace) = patch(&src, &deltas, &sv).unwrap();
+    let (patched, _trace) = patch(&src, &deltas, &sv, false).unwrap();
     assert_eq!(patched.to_json(), tgt.to_json());
 }

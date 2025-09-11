@@ -70,7 +70,7 @@ fn node_ids_preserved_scalar_update() {
     .unwrap();
 
     let deltas = diff(&src, &tgt, false);
-    let (patched, trace) = linkml_runtime::patch(&src, &deltas, &sv).unwrap();
+    let (patched, trace) = linkml_runtime::patch(&src, &deltas, &sv, false).unwrap();
 
     assert!(trace.added.is_empty());
     assert!(trace.deleted.is_empty());
@@ -123,7 +123,7 @@ fn patch_trace_add_in_list() {
     let deltas = diff(&base, &target, false);
     let mut pre = Vec::new();
     collect_ids(&base, &mut pre);
-    let (patched, trace) = linkml_runtime::patch(&base, &deltas, &sv).unwrap();
+    let (patched, trace) = linkml_runtime::patch(&base, &deltas, &sv, false).unwrap();
     let mut post = Vec::new();
     collect_ids(&patched, &mut post);
 
@@ -133,4 +133,58 @@ fn patch_trace_add_in_list() {
     let trace_added: HashSet<u64> = trace.added.iter().copied().collect();
     assert_eq!(added, trace_added);
     assert!(!added.is_empty());
+}
+
+#[test]
+fn patch_missing_to_null_semantics() {
+    use linkml_runtime::LinkMLValue;
+    // Use simple schema
+    let schema = from_yaml(Path::new(&data_path("schema.yaml"))).unwrap();
+    let mut sv = SchemaView::new();
+    sv.add_schema(schema.clone()).unwrap();
+    let conv = converter_from_schema(&schema);
+    let class = sv
+        .get_class(&Identifier::new("Person"), &conv)
+        .unwrap()
+        .expect("class not found");
+
+    let src = load_yaml_file(
+        Path::new(&data_path("person_partial.yaml")),
+        &sv,
+        &class,
+        &conv,
+    )
+    .unwrap();
+    // Build delta: set age to explicit null
+    let deltas = vec![linkml_runtime::Delta {
+        path: vec!["age".to_string()],
+        old: None,
+        new: Some(serde_json::Value::Null),
+    }];
+
+    // treat_missing_as_null = true => no-op; no trace changes, no node id changes
+    let pre_id = src.node_id();
+    let (patched_same, trace_same) = linkml_runtime::patch(&src, &deltas, &sv, true).unwrap();
+    assert!(
+        trace_same.added.is_empty()
+            && trace_same.deleted.is_empty()
+            && trace_same.updated.is_empty()
+    );
+    assert_eq!(pre_id, patched_same.node_id());
+    // Equality under treat_missing_as_null=true must hold
+    assert!(src.equals(&patched_same, true));
+    // And age remains absent (since explicit null is treated as omitted)
+    if let LinkMLValue::Object { values, .. } = &patched_same {
+        assert!(!values.contains_key("age"));
+    }
+
+    // treat_missing_as_null = false => apply explicit null
+    let (patched_null, trace_applied) = linkml_runtime::patch(&src, &deltas, &sv, false).unwrap();
+    assert!(trace_applied.updated.contains(&patched_null.node_id()));
+    // age present as Null
+    if let LinkMLValue::Object { values, .. } = &patched_null {
+        assert!(matches!(values.get("age"), Some(LinkMLValue::Null { .. })));
+    } else {
+        panic!("expected object root");
+    }
 }
