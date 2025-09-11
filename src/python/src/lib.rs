@@ -478,6 +478,11 @@ impl Clone for PyLinkMLValue {
 
 #[pymethods]
 impl PyLinkMLValue {
+    /// Semantic equality per LinkML Instances spec.
+    /// Compares this value with another `LinkMLValue`.
+    fn equals(&self, other: &PyLinkMLValue) -> bool {
+        self.value.equals(&other.value)
+    }
     #[getter]
     fn slot_name(&self) -> Option<String> {
         match &self.value {
