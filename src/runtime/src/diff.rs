@@ -248,23 +248,31 @@ pub struct PatchTrace {
     pub updated: Vec<NodeId>,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct PatchOptions {
+    pub ignore_no_ops: bool,
+    pub treat_missing_as_null: bool,
+}
+
+impl Default for PatchOptions {
+    fn default() -> Self {
+        Self {
+            ignore_no_ops: true,
+            treat_missing_as_null: true,
+        }
+    }
+}
+
 pub fn patch(
     source: &LinkMLValue,
     deltas: &[Delta],
     sv: &SchemaView,
-    treat_missing_as_null: bool,
+    opts: PatchOptions,
 ) -> LResult<(LinkMLValue, PatchTrace)> {
     let mut out = source.clone();
     let mut trace = PatchTrace::default();
     for d in deltas {
-        apply_delta_linkml(
-            &mut out,
-            &d.path,
-            &d.new,
-            sv,
-            &mut trace,
-            treat_missing_as_null,
-        )?;
+        apply_delta_linkml(&mut out, &d.path, &d.new, sv, &mut trace, opts)?;
     }
     Ok((out, trace))
 }
@@ -303,7 +311,7 @@ fn apply_delta_linkml(
     newv: &Option<serde_json::Value>,
     sv: &SchemaView,
     trace: &mut PatchTrace,
-    treat_missing_as_null: bool,
+    opts: PatchOptions,
 ) -> LResult<()> {
     if path.is_empty() {
         if let Some(v) = newv {
@@ -317,7 +325,7 @@ fn apply_delta_linkml(
             let conv = sv.converter();
             if let Some(cls) = class_opt {
                 let new_node = LinkMLValue::from_json(v.clone(), cls, slot_opt, sv, &conv, false)?;
-                if current.equals(&new_node, treat_missing_as_null) {
+                if opts.ignore_no_ops && current.equals(&new_node, opts.treat_missing_as_null) {
                     // No-op delta; skip to preserve node IDs
                     return Ok(());
                 }
@@ -346,7 +354,9 @@ fn apply_delta_linkml(
                             false,
                         )?;
                         if let Some(old_child) = values.get_mut(key) {
-                            if old_child.equals(&new_child, treat_missing_as_null) {
+                            if opts.ignore_no_ops
+                                && old_child.equals(&new_child, opts.treat_missing_as_null)
+                            {
                                 // no-op; skip
                                 return Ok(());
                             }
@@ -368,7 +378,8 @@ fn apply_delta_linkml(
                             }
                         } else {
                             // adding a Null assignment may be a no-op when treating missing as null
-                            if treat_missing_as_null
+                            if opts.ignore_no_ops
+                                && opts.treat_missing_as_null
                                 && matches!(new_child, LinkMLValue::Null { .. })
                             {
                                 return Ok(());
@@ -381,7 +392,8 @@ fn apply_delta_linkml(
                     }
                     None => {
                         if let Some(old_child) = values.get(key) {
-                            if treat_missing_as_null
+                            if opts.ignore_no_ops
+                                && opts.treat_missing_as_null
                                 && matches!(old_child, LinkMLValue::Null { .. })
                             {
                                 // deleting a Null assignment: no-op
@@ -395,7 +407,7 @@ fn apply_delta_linkml(
                     }
                 }
             } else if let Some(child) = values.get_mut(key) {
-                apply_delta_linkml(child, &path[1..], newv, sv, trace, treat_missing_as_null)?;
+                apply_delta_linkml(child, &path[1..], newv, sv, trace, opts)?;
             }
         }
         LinkMLValue::Mapping { values, slot, .. } => {
@@ -412,7 +424,9 @@ fn apply_delta_linkml(
                             Vec::new(),
                         )?;
                         if let Some(old_child) = values.get(key) {
-                            if old_child.equals(&new_child, treat_missing_as_null) {
+                            if opts.ignore_no_ops
+                                && old_child.equals(&new_child, opts.treat_missing_as_null)
+                            {
                                 return Ok(());
                             }
                             mark_deleted_subtree(old_child, trace);
@@ -430,7 +444,7 @@ fn apply_delta_linkml(
                     }
                 }
             } else if let Some(child) = values.get_mut(key) {
-                apply_delta_linkml(child, &path[1..], newv, sv, trace, treat_missing_as_null)?;
+                apply_delta_linkml(child, &path[1..], newv, sv, trace, opts)?;
             }
         }
         LinkMLValue::List {
@@ -455,7 +469,9 @@ fn apply_delta_linkml(
                                 &conv,
                                 Vec::new(),
                             )?;
-                            if values[idx].equals(&new_child, treat_missing_as_null) {
+                            if opts.ignore_no_ops
+                                && values[idx].equals(&new_child, opts.treat_missing_as_null)
+                            {
                                 return Ok(());
                             }
                             match (&mut values[idx], &new_child) {
@@ -504,14 +520,7 @@ fn apply_delta_linkml(
                     }
                 }
             } else if idx < values.len() {
-                apply_delta_linkml(
-                    &mut values[idx],
-                    &path[1..],
-                    newv,
-                    sv,
-                    trace,
-                    treat_missing_as_null,
-                )?;
+                apply_delta_linkml(&mut values[idx], &path[1..], newv, sv, trace, opts)?;
             }
         }
         LinkMLValue::Scalar { .. } => {}

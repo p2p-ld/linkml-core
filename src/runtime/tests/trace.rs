@@ -70,7 +70,16 @@ fn node_ids_preserved_scalar_update() {
     .unwrap();
 
     let deltas = diff(&src, &tgt, false);
-    let (patched, trace) = linkml_runtime::patch(&src, &deltas, &sv, false).unwrap();
+    let (patched, trace) = linkml_runtime::patch(
+        &src,
+        &deltas,
+        &sv,
+        linkml_runtime::diff::PatchOptions {
+            ignore_no_ops: true,
+            treat_missing_as_null: false,
+        },
+    )
+    .unwrap();
 
     assert!(trace.added.is_empty());
     assert!(trace.deleted.is_empty());
@@ -123,7 +132,16 @@ fn patch_trace_add_in_list() {
     let deltas = diff(&base, &target, false);
     let mut pre = Vec::new();
     collect_ids(&base, &mut pre);
-    let (patched, trace) = linkml_runtime::patch(&base, &deltas, &sv, false).unwrap();
+    let (patched, trace) = linkml_runtime::patch(
+        &base,
+        &deltas,
+        &sv,
+        linkml_runtime::diff::PatchOptions {
+            ignore_no_ops: true,
+            treat_missing_as_null: false,
+        },
+    )
+    .unwrap();
     let mut post = Vec::new();
     collect_ids(&patched, &mut post);
 
@@ -164,7 +182,16 @@ fn patch_missing_to_null_semantics() {
 
     // treat_missing_as_null = true => no-op; no trace changes, no node id changes
     let pre_id = src.node_id();
-    let (patched_same, trace_same) = linkml_runtime::patch(&src, &deltas, &sv, true).unwrap();
+    let (patched_same, trace_same) = linkml_runtime::patch(
+        &src,
+        &deltas,
+        &sv,
+        linkml_runtime::diff::PatchOptions {
+            ignore_no_ops: true,
+            treat_missing_as_null: true,
+        },
+    )
+    .unwrap();
     assert!(
         trace_same.added.is_empty()
             && trace_same.deleted.is_empty()
@@ -179,7 +206,16 @@ fn patch_missing_to_null_semantics() {
     }
 
     // treat_missing_as_null = false => apply explicit null
-    let (patched_null, trace_applied) = linkml_runtime::patch(&src, &deltas, &sv, false).unwrap();
+    let (patched_null, trace_applied) = linkml_runtime::patch(
+        &src,
+        &deltas,
+        &sv,
+        linkml_runtime::diff::PatchOptions {
+            ignore_no_ops: true,
+            treat_missing_as_null: false,
+        },
+    )
+    .unwrap();
     assert!(trace_applied.updated.contains(&patched_null.node_id()));
     // age present as Null
     if let LinkMLValue::Object { values, .. } = &patched_null {
