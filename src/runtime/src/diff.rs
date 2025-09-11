@@ -81,6 +81,30 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
                     ..
                 },
             ) => {
+                // If objects have an identifier or key slot and it changed, treat as whole-object replacement
+                // This applies for single-valued and list-valued inlined objects.
+                let key_slot_name = sc
+                    .key_or_identifier_slot()
+                    .or_else(|| tc.key_or_identifier_slot())
+                    .map(|s| s.name.clone());
+                if let Some(ks) = key_slot_name {
+                    let sid = sm.get(&ks);
+                    let tid = tm.get(&ks);
+                    if let (
+                        Some(LinkMLValue::Scalar { value: s_id, .. }),
+                        Some(LinkMLValue::Scalar { value: t_id, .. }),
+                    ) = (sid, tid)
+                    {
+                        if s_id != t_id {
+                            out.push(Delta {
+                                path: path.clone(),
+                                old: Some(s.to_json()),
+                                new: Some(t.to_json()),
+                            });
+                            return;
+                        }
+                    }
+                }
                 for (k, sv) in sm {
                     let slot_view = sc
                         .slots()
