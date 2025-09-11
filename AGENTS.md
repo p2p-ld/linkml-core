@@ -25,6 +25,7 @@
 - Python (bindings helpers): follow PEP 8; prefer type hints where feasible.
 
 ## Testing Guidelines
+- When testing locally, always provide network access. never try to run the tests offline
 - Add integration tests under `src/runtime/tests/` when changing CLI/runtime behavior.
 - Prefer `assert_cmd` for CLI and `predicates` for output checks. Keep fixtures in `src/runtime/tests/data/`.
 - Run `cargo test --workspace` locally; ensure tests don’t rely on network input.
