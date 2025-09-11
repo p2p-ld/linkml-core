@@ -237,8 +237,14 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
 
 #[derive(Debug, Clone, Default)]
 pub struct PatchTrace {
+    /// Node IDs of subtrees that were newly created by the patch.
+    ///
+    /// See [`crate::NodeId`] for semantics: these are internal, ephemeral IDs
+    /// that are useful for tooling and provenance, not object identifiers.
     pub added: Vec<NodeId>,
+    /// Node IDs of subtrees that were removed by the patch.
     pub deleted: Vec<NodeId>,
+    /// Node IDs of nodes that were directly updated (e.g., parent containers, scalars).
     pub updated: Vec<NodeId>,
 }
 

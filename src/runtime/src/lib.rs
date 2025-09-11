@@ -91,7 +91,18 @@ pub enum LinkMLValue {
     },
 }
 
-// Stable node identifiers assigned to every LinkMLValue node
+/// Internal node identifier used for provenance and update tracking.
+///
+/// Node IDs are assigned to every `LinkMLValue` node when values are constructed or
+/// transformed. They exist solely as technical identifiers to help with patching and
+/// provenance (for example, `PatchTrace.added`/`deleted` collect `NodeId`s of affected
+/// subtrees). They are not intended to identify domain objects — for that, use LinkML
+/// identifier or key slots as defined in the schema.
+///
+/// Important properties:
+/// - Local and ephemeral: loading the same data twice will yield different `NodeId`s.
+/// - Non-persistent: never serialize or expose as a model identifier.
+/// - Useful for tracking modifications within a single in-memory value.
 pub type NodeId = u64;
 
 static NEXT_NODE_ID: AtomicU64 = AtomicU64::new(1);
@@ -101,6 +112,10 @@ fn new_node_id() -> NodeId {
 }
 
 impl LinkMLValue {
+    /// Returns the internal [`NodeId`] of this node.
+    ///
+    /// This ID is only for internal provenance/update tracking and is not a
+    /// semantic identifier of the represented object.
     pub fn node_id(&self) -> NodeId {
         match self {
             LinkMLValue::Scalar { node_id, .. }
