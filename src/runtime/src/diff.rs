@@ -248,15 +248,31 @@ pub struct PatchTrace {
     pub updated: Vec<NodeId>,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct PatchOptions {
+    pub ignore_no_ops: bool,
+    pub treat_missing_as_null: bool,
+}
+
+impl Default for PatchOptions {
+    fn default() -> Self {
+        Self {
+            ignore_no_ops: true,
+            treat_missing_as_null: true,
+        }
+    }
+}
+
 pub fn patch(
     source: &LinkMLValue,
     deltas: &[Delta],
     sv: &SchemaView,
+    opts: PatchOptions,
 ) -> LResult<(LinkMLValue, PatchTrace)> {
     let mut out = source.clone();
     let mut trace = PatchTrace::default();
     for d in deltas {
-        apply_delta_linkml(&mut out, &d.path, &d.new, sv, &mut trace)?;
+        apply_delta_linkml(&mut out, &d.path, &d.new, sv, &mut trace, opts)?;
     }
     Ok((out, trace))
 }
@@ -295,6 +311,7 @@ fn apply_delta_linkml(
     newv: &Option<serde_json::Value>,
     sv: &SchemaView,
     trace: &mut PatchTrace,
+    opts: PatchOptions,
 ) -> LResult<()> {
     if path.is_empty() {
         if let Some(v) = newv {
@@ -308,6 +325,10 @@ fn apply_delta_linkml(
             let conv = sv.converter();
             if let Some(cls) = class_opt {
                 let new_node = LinkMLValue::from_json(v.clone(), cls, slot_opt, sv, &conv, false)?;
+                if opts.ignore_no_ops && current.equals(&new_node, opts.treat_missing_as_null) {
+                    // No-op delta; skip to preserve node IDs
+                    return Ok(());
+                }
                 mark_deleted_subtree(current, trace);
                 mark_added_subtree(&new_node, trace);
                 *current = new_node;
@@ -322,39 +343,47 @@ fn apply_delta_linkml(
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
+                        let conv = sv.converter();
+                        let slot = class.slots().iter().find(|s| s.name == *key).cloned();
+                        let new_child = LinkMLValue::from_json(
+                            v.clone(),
+                            class.clone(),
+                            slot.clone(),
+                            sv,
+                            &conv,
+                            false,
+                        )?;
                         if let Some(old_child) = values.get_mut(key) {
-                            if let LinkMLValue::Scalar { value, .. } = old_child {
-                                if !v.is_object() && !v.is_array() {
-                                    *value = v.clone();
+                            if opts.ignore_no_ops
+                                && old_child.equals(&new_child, opts.treat_missing_as_null)
+                            {
+                                // no-op; skip
+                                return Ok(());
+                            }
+                            match (&mut *old_child, &new_child) {
+                                (
+                                    LinkMLValue::Scalar { value: ov, .. },
+                                    LinkMLValue::Scalar { value: nv, .. },
+                                ) if !v.is_object() && !v.is_array() => {
+                                    // In-place scalar update: keep node_id stable and mark child node
+                                    *ov = nv.clone();
                                     trace.updated.push(old_child.node_id());
-                                    return Ok(());
+                                }
+                                _ => {
+                                    let old_snapshot = std::mem::replace(old_child, new_child);
+                                    mark_deleted_subtree(&old_snapshot, trace);
+                                    mark_added_subtree(old_child, trace);
+                                    trace.updated.push(current.node_id());
                                 }
                             }
-                            let conv = sv.converter();
-                            let slot = class.slots().iter().find(|s| s.name == *key).cloned();
-                            let new_child = LinkMLValue::from_json(
-                                v.clone(),
-                                class.clone(),
-                                slot,
-                                sv,
-                                &conv,
-                                false,
-                            )?;
-                            let old_snapshot = std::mem::replace(old_child, new_child);
-                            mark_deleted_subtree(&old_snapshot, trace);
-                            mark_added_subtree(old_child, trace);
-                            trace.updated.push(current.node_id());
                         } else {
-                            let conv = sv.converter();
-                            let slot = class.slots().iter().find(|s| s.name == *key).cloned();
-                            let new_child = LinkMLValue::from_json(
-                                v.clone(),
-                                class.clone(),
-                                slot,
-                                sv,
-                                &conv,
-                                false,
-                            )?;
+                            // adding a Null assignment may be a no-op when treating missing as null
+                            if opts.ignore_no_ops
+                                && opts.treat_missing_as_null
+                                && matches!(new_child, LinkMLValue::Null { .. })
+                            {
+                                return Ok(());
+                            }
                             // mark before insert
                             mark_added_subtree(&new_child, trace);
                             values.insert(key.clone(), new_child);
@@ -362,6 +391,15 @@ fn apply_delta_linkml(
                         }
                     }
                     None => {
+                        if let Some(old_child) = values.get(key) {
+                            if opts.ignore_no_ops
+                                && opts.treat_missing_as_null
+                                && matches!(old_child, LinkMLValue::Null { .. })
+                            {
+                                // deleting a Null assignment: no-op
+                                return Ok(());
+                            }
+                        }
                         if let Some(old_child) = values.remove(key) {
                             mark_deleted_subtree(&old_child, trace);
                             trace.updated.push(current.node_id());
@@ -369,7 +407,7 @@ fn apply_delta_linkml(
                     }
                 }
             } else if let Some(child) = values.get_mut(key) {
-                apply_delta_linkml(child, &path[1..], newv, sv, trace)?;
+                apply_delta_linkml(child, &path[1..], newv, sv, trace, opts)?;
             }
         }
         LinkMLValue::Mapping { values, slot, .. } => {
@@ -386,6 +424,11 @@ fn apply_delta_linkml(
                             Vec::new(),
                         )?;
                         if let Some(old_child) = values.get(key) {
+                            if opts.ignore_no_ops
+                                && old_child.equals(&new_child, opts.treat_missing_as_null)
+                            {
+                                return Ok(());
+                            }
                             mark_deleted_subtree(old_child, trace);
                         }
                         // mark before insert
@@ -401,7 +444,7 @@ fn apply_delta_linkml(
                     }
                 }
             } else if let Some(child) = values.get_mut(key) {
-                apply_delta_linkml(child, &path[1..], newv, sv, trace)?;
+                apply_delta_linkml(child, &path[1..], newv, sv, trace, opts)?;
             }
         }
         LinkMLValue::List {
@@ -417,27 +460,34 @@ fn apply_delta_linkml(
                 match newv {
                     Some(v) => {
                         if idx < values.len() {
-                            let is_scalar_target =
-                                matches!(values[idx], LinkMLValue::Scalar { .. });
-                            if is_scalar_target && !v.is_object() && !v.is_array() {
-                                if let LinkMLValue::Scalar { value, .. } = &mut values[idx] {
-                                    *value = v.clone();
+                            let conv = sv.converter();
+                            let new_child = LinkMLValue::build_list_item_for_slot(
+                                slot,
+                                class.as_ref(),
+                                v.clone(),
+                                sv,
+                                &conv,
+                                Vec::new(),
+                            )?;
+                            if opts.ignore_no_ops
+                                && values[idx].equals(&new_child, opts.treat_missing_as_null)
+                            {
+                                return Ok(());
+                            }
+                            match (&mut values[idx], &new_child) {
+                                (
+                                    LinkMLValue::Scalar { value: ov, .. },
+                                    LinkMLValue::Scalar { value: nv, .. },
+                                ) if !v.is_object() && !v.is_array() => {
+                                    *ov = nv.clone();
                                     trace.updated.push(values[idx].node_id());
                                 }
-                            } else {
-                                let conv = sv.converter();
-                                let new_child = LinkMLValue::build_list_item_for_slot(
-                                    slot,
-                                    class.as_ref(),
-                                    v.clone(),
-                                    sv,
-                                    &conv,
-                                    Vec::new(),
-                                )?;
-                                let old = std::mem::replace(&mut values[idx], new_child);
-                                mark_deleted_subtree(&old, trace);
-                                mark_added_subtree(&values[idx], trace);
-                                trace.updated.push(current.node_id());
+                                _ => {
+                                    let old = std::mem::replace(&mut values[idx], new_child);
+                                    mark_deleted_subtree(&old, trace);
+                                    mark_added_subtree(&values[idx], trace);
+                                    trace.updated.push(current.node_id());
+                                }
                             }
                         } else if idx == values.len() {
                             let conv = sv.converter();
@@ -470,7 +520,7 @@ fn apply_delta_linkml(
                     }
                 }
             } else if idx < values.len() {
-                apply_delta_linkml(&mut values[idx], &path[1..], newv, sv, trace)?;
+                apply_delta_linkml(&mut values[idx], &path[1..], newv, sv, trace, opts)?;
             }
         }
         LinkMLValue::Scalar { .. } => {}

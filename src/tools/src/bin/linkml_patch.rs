@@ -23,6 +23,12 @@ struct Args {
     /// Output patched file; defaults to stdout
     #[arg(short, long)]
     output: Option<PathBuf>,
+    /// Treat missing assignments as equivalent to explicit null for equality
+    #[arg(long, default_value_t = true)]
+    treat_missing_as_null: bool,
+    /// Skip deltas that do not change the value (no-ops)
+    #[arg(long, default_value_t = true)]
+    ignore_noop: bool,
 }
 
 fn load_value(
@@ -92,7 +98,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         serde_yaml::from_str(&delta_text)?
     };
-    let (patched, _trace) = patch(&src, &deltas, &sv)?;
+    let (patched, _trace) = patch(
+        &src,
+        &deltas,
+        &sv,
+        linkml_runtime::diff::PatchOptions {
+            ignore_no_ops: args.ignore_noop,
+            treat_missing_as_null: args.treat_missing_as_null,
+        },
+    )?;
     write_value(args.output.as_deref(), &patched)?;
     Ok(())
 }

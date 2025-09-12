@@ -153,6 +153,167 @@ impl LinkMLValue {
         }
         Some(current)
     }
+
+    /// Compare two LinkMLValue instances for semantic equality per the
+    /// LinkML Instances specification (Identity conditions).
+    ///
+    /// Key points implemented:
+    /// - Null equals Null.
+    /// - Scalars: equal iff same underlying atomic value and compatible typed context
+    ///   (same Enum range when present; otherwise same TypeDefinition range name when present).
+    /// - Lists: equal iff same length and pairwise equal in order.
+    /// - Mappings: equal iff same keys and values equal for each key (order-insensitive).
+    /// - Objects: equal iff same instantiated class (by identity) and slot assignments match; when
+    ///   `treat_missing_as_null` is true, Null is treated as omitted (normalized), otherwise Null is
+    ///   distinct from missing.
+    pub fn equals(&self, other: &LinkMLValue, treat_missing_as_null: bool) -> bool {
+        use LinkMLValue::*;
+        match (self, other) {
+            (Null { .. }, Null { .. }) => true,
+            (
+                Scalar {
+                    value: v1,
+                    slot: s1,
+                    ..
+                },
+                Scalar {
+                    value: v2,
+                    slot: s2,
+                    ..
+                },
+            ) => {
+                // If either slot has an enum range, both must and enum names must match
+                let e1 = s1.get_range_enum();
+                let e2 = s2.get_range_enum();
+                if e1.is_some() || e2.is_some() {
+                    match (e1, e2) {
+                        (Some(ev1), Some(ev2)) => {
+                            if ev1.schema_id() != ev2.schema_id() || ev1.name() != ev2.name() {
+                                return false;
+                            }
+                        }
+                        _ => return false,
+                    }
+                } else {
+                    // Compare type ranges if explicitly set on both
+                    let t1 = s1.definition().range.as_ref();
+                    let t2 = s2.definition().range.as_ref();
+                    if let (Some(r1), Some(r2)) = (t1, t2) {
+                        if r1 != r2 {
+                            return false;
+                        }
+                    }
+                }
+                v1 == v2
+            }
+            (List { values: a, .. }, List { values: b, .. }) => {
+                if a.len() != b.len() {
+                    return false;
+                }
+                for (x, y) in a.iter().zip(b.iter()) {
+                    if !x.equals(y, treat_missing_as_null) {
+                        return false;
+                    }
+                }
+                true
+            }
+            (Mapping { values: a, .. }, Mapping { values: b, .. }) => {
+                if a.len() != b.len() {
+                    return false;
+                }
+                for (k, va) in a.iter() {
+                    match b.get(k) {
+                        Some(vb) => {
+                            if !va.equals(vb, treat_missing_as_null) {
+                                return false;
+                            }
+                        }
+                        None => return false,
+                    }
+                }
+                true
+            }
+            (
+                Object {
+                    values: a,
+                    class: ca,
+                    sv: sva,
+                    ..
+                },
+                Object {
+                    values: b,
+                    class: cb,
+                    sv: svb,
+                    ..
+                },
+            ) => {
+                // Compare class identity via canonical URIs if possible
+                let ida = ca.canonical_uri();
+                let idb = cb.canonical_uri();
+                let class_equal = if let Some(conv) = sva.converter_for_schema(ca.schema_id()) {
+                    // Use 'sva' for comparison; identifiers are global across schemas
+                    sva.identifier_equals(&ida, &idb, conv).unwrap_or(false)
+                } else if let Some(conv) = svb.converter_for_schema(cb.schema_id()) {
+                    svb.identifier_equals(&ida, &idb, conv).unwrap_or(false)
+                } else {
+                    ca.name() == cb.name()
+                };
+                if !class_equal {
+                    return false;
+                }
+
+                if treat_missing_as_null {
+                    // Normalize conceptually by ignoring entries whose value is Null
+                    let count_a = a.iter().filter(|(_, v)| !matches!(v, Null { .. })).count();
+                    let count_b = b.iter().filter(|(_, v)| !matches!(v, Null { .. })).count();
+                    if count_a != count_b {
+                        return false;
+                    }
+                    for (k, va) in a.iter().filter(|(_, v)| !matches!(v, Null { .. })) {
+                        match b.get(k) {
+                            Some(vb) => {
+                                if matches!(vb, Null { .. }) {
+                                    return false;
+                                }
+                                if !va.equals(vb, treat_missing_as_null) {
+                                    return false;
+                                }
+                            }
+                            None => return false,
+                        }
+                    }
+                    // Ensure b has no extra non-null keys not in a
+                    for (k, _vb) in b.iter().filter(|(_, v)| !matches!(v, Null { .. })) {
+                        match a.get(k) {
+                            Some(va) => {
+                                if matches!(va, Null { .. }) {
+                                    return false;
+                                }
+                            }
+                            None => return false,
+                        }
+                    }
+                    true
+                } else {
+                    if a.len() != b.len() {
+                        return false;
+                    }
+                    for (k, va) in a.iter() {
+                        match b.get(k) {
+                            Some(vb) => {
+                                if !va.equals(vb, treat_missing_as_null) {
+                                    return false;
+                                }
+                            }
+                            None => return false,
+                        }
+                    }
+                    true
+                }
+            }
+            _ => false,
+        }
+    }
     fn find_scalar_slot_for_inlined_map(
         class: &ClassView,
         key_slot_name: &str,
