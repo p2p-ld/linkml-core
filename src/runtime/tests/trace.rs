@@ -21,18 +21,18 @@ fn info_path(name: &str) -> PathBuf {
     p
 }
 
-fn collect_ids(v: &linkml_runtime::LinkMLValue, out: &mut Vec<u64>) {
+fn collect_ids(v: &linkml_runtime::LinkMLInstance, out: &mut Vec<u64>) {
     out.push(v.node_id());
     match v {
-        linkml_runtime::LinkMLValue::Scalar { .. } => {}
-        linkml_runtime::LinkMLValue::Null { .. } => {}
-        linkml_runtime::LinkMLValue::List { values, .. } => {
+        linkml_runtime::LinkMLInstance::Scalar { .. } => {}
+        linkml_runtime::LinkMLInstance::Null { .. } => {}
+        linkml_runtime::LinkMLInstance::List { values, .. } => {
             for c in values {
                 collect_ids(c, out);
             }
         }
-        linkml_runtime::LinkMLValue::Mapping { values, .. }
-        | linkml_runtime::LinkMLValue::Object { values, .. } => {
+        linkml_runtime::LinkMLInstance::Mapping { values, .. }
+        | linkml_runtime::LinkMLInstance::Object { values, .. } => {
             for c in values.values() {
                 collect_ids(c, out);
             }
@@ -155,7 +155,6 @@ fn patch_trace_add_in_list() {
 
 #[test]
 fn patch_missing_to_null_semantics() {
-    use linkml_runtime::LinkMLValue;
     // Use simple schema
     let schema = from_yaml(Path::new(&data_path("schema.yaml"))).unwrap();
     let mut sv = SchemaView::new();
@@ -201,7 +200,7 @@ fn patch_missing_to_null_semantics() {
     // Equality under treat_missing_as_null=true must hold
     assert!(src.equals(&patched_same, true));
     // And age remains absent (since explicit null is treated as omitted)
-    if let LinkMLValue::Object { values, .. } = &patched_same {
+    if let linkml_runtime::LinkMLInstance::Object { values, .. } = &patched_same {
         assert!(!values.contains_key("age"));
     }
 
@@ -218,8 +217,11 @@ fn patch_missing_to_null_semantics() {
     .unwrap();
     assert!(trace_applied.updated.contains(&patched_null.node_id()));
     // age present as Null
-    if let LinkMLValue::Object { values, .. } = &patched_null {
-        assert!(matches!(values.get("age"), Some(LinkMLValue::Null { .. })));
+    if let linkml_runtime::LinkMLInstance::Object { values, .. } = &patched_null {
+        assert!(matches!(
+            values.get("age"),
+            Some(linkml_runtime::LinkMLInstance::Null { .. })
+        ));
     } else {
         panic!("expected object root");
     }

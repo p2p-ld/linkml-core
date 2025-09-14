@@ -70,22 +70,25 @@ fn validate_personinfo_null_collections() {
     )
     .unwrap();
     assert!(validate(&v).is_ok());
-    // Assert that nulls are preserved as LinkMLValue::Null (not empty collections)
-    if let linkml_runtime::LinkMLValue::Object { values, .. } = &v {
-        if let Some(linkml_runtime::LinkMLValue::List { values: objs, .. }) = values.get("objects")
+    // Assert that nulls are preserved as LinkMLInstance::Null (not empty collections)
+    if let linkml_runtime::LinkMLInstance::Object { values, .. } = &v {
+        if let Some(linkml_runtime::LinkMLInstance::List { values: objs, .. }) =
+            values.get("objects")
         {
-            if let Some(linkml_runtime::LinkMLValue::Object { values: person, .. }) = objs.first() {
+            if let Some(linkml_runtime::LinkMLInstance::Object { values: person, .. }) =
+                objs.first()
+            {
                 assert!(matches!(
                     person.get("aliases"),
-                    Some(linkml_runtime::LinkMLValue::Null { .. })
+                    Some(linkml_runtime::LinkMLInstance::Null { .. })
                 ));
                 assert!(matches!(
                     person.get("has_employment_history"),
-                    Some(linkml_runtime::LinkMLValue::Null { .. })
+                    Some(linkml_runtime::LinkMLInstance::Null { .. })
                 ));
                 assert!(matches!(
                     person.get("has_familial_relationships"),
-                    Some(linkml_runtime::LinkMLValue::Null { .. })
+                    Some(linkml_runtime::LinkMLInstance::Null { .. })
                 ));
             } else {
                 panic!("expected first object to be an Object");

@@ -33,20 +33,20 @@ fn parse_alias_fields() {
         println!("JSON: {:?}", v.to_json());
         panic!("validation failed: {}", e);
     }
-    if let linkml_runtime::LinkMLValue::Object { values, .. } = &v {
+    if let linkml_runtime::LinkMLInstance::Object { values, .. } = &v {
         let desc = values.get("description").expect("desc");
-        if let linkml_runtime::LinkMLValue::Object { values: item, .. } = desc {
+        if let linkml_runtime::LinkMLInstance::Object { values: item, .. } = desc {
             println!("json: {:?}", v.to_json());
             let desc_v = item.get("alt_description_text");
             assert!(desc_v.is_some(), "desc field missing");
-            if let linkml_runtime::LinkMLValue::Scalar { slot, .. } = desc_v.unwrap() {
+            if let linkml_runtime::LinkMLInstance::Scalar { slot, .. } = desc_v.unwrap() {
                 assert_eq!(slot.name, "alt_description_text");
             } else {
                 panic!("wrong type for description");
             }
             let src_v = item.get("alt_description_source");
             assert!(src_v.is_some(), "src field missing");
-            if let linkml_runtime::LinkMLValue::Scalar { slot, .. } = src_v.unwrap() {
+            if let linkml_runtime::LinkMLInstance::Scalar { slot, .. } = src_v.unwrap() {
                 assert_eq!(slot.name, "alt_description_source");
             } else {
                 panic!("wrong type for source");

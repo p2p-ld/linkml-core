@@ -13,7 +13,7 @@ use oxttl::TurtleSerializer;
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use regex::Regex;
 
-use crate::LinkMLValue;
+use crate::LinkMLInstance;
 
 pub struct TurtleOptions {
     pub skolem: bool,
@@ -99,7 +99,7 @@ fn literal_and_type(value: &JsonValue, slot: &SlotView) -> (String, Option<Strin
 }
 
 fn identifier_node(
-    map: &std::collections::HashMap<String, LinkMLValue>,
+    map: &std::collections::HashMap<String, LinkMLInstance>,
     class: &ClassView,
     conv: &Converter,
     state: &mut State,
@@ -107,7 +107,7 @@ fn identifier_node(
     index: Option<usize>,
 ) -> (Node, Option<String>) {
     if let Some(id_slot) = class.identifier_slot() {
-        if let Some(LinkMLValue::Scalar { value, .. }) = map.get(&id_slot.name) {
+        if let Some(LinkMLInstance::Scalar { value, .. }) = map.get(&id_slot.name) {
             let lit = literal_value(value);
             if let Ok(iri) = Identifier::new(&lit).to_uri(conv) {
                 return (Node::Named(iri.0), Some(id_slot.name.clone()));
@@ -120,7 +120,7 @@ fn identifier_node(
         if let Some(p) = parent {
             let part_opt = class.key_or_identifier_slot().and_then(|ks| {
                 map.get(&ks.name).and_then(|v| match v {
-                    LinkMLValue::Scalar { value, .. } => {
+                    LinkMLInstance::Scalar { value, .. } => {
                         if let JsonValue::String(s) = value {
                             Some(encode_path_part(s))
                         } else {
@@ -146,7 +146,7 @@ fn identifier_node(
 #[allow(clippy::too_many_arguments)]
 fn serialize_map<W: Write>(
     subject: &Node,
-    map: &std::collections::HashMap<String, LinkMLValue>,
+    map: &std::collections::HashMap<String, LinkMLInstance>,
     class: Option<&ClassView>,
     formatter: &mut WriterTurtleSerializer<W>,
     _sv: &SchemaView,
@@ -177,8 +177,10 @@ fn serialize_map<W: Write>(
             continue;
         }
         let skip = match v {
-            LinkMLValue::Scalar { slot, .. } => slot.definition().designates_type.unwrap_or(false),
-            LinkMLValue::List { slot, .. } => slot.definition().designates_type.unwrap_or(false),
+            LinkMLInstance::Scalar { slot, .. } => {
+                slot.definition().designates_type.unwrap_or(false)
+            }
+            LinkMLInstance::List { slot, .. } => slot.definition().designates_type.unwrap_or(false),
             _ => false,
         };
         if skip {
@@ -187,7 +189,7 @@ fn serialize_map<W: Write>(
         let pred_iri = format!("{}:{}", state.default_prefix, k);
         let predicate = NamedNode::new_unchecked(pred_iri.clone());
         match v {
-            LinkMLValue::Scalar { value, slot, .. } => {
+            LinkMLInstance::Scalar { value, slot, .. } => {
                 let inline_mode = slot.determine_slot_inline_mode();
                 if inline_mode == SlotInlineMode::Reference {
                     let lit = literal_value(value);
@@ -225,10 +227,10 @@ fn serialize_map<W: Write>(
                     }
                 }
             }
-            LinkMLValue::Null { .. } => {
+            LinkMLInstance::Null { .. } => {
                 // Null is treated as absent; emit nothing
             }
-            LinkMLValue::Object { values, class, .. } => {
+            LinkMLInstance::Object { values, class, .. } => {
                 let class_ref = &class;
                 let (obj, child_id) =
                     identifier_node(values, class_ref, conv, state, Some(subject), None);
@@ -249,10 +251,10 @@ fn serialize_map<W: Write>(
                     child_id.as_deref(),
                 )?;
             }
-            LinkMLValue::List { values, slot, .. } => {
+            LinkMLInstance::List { values, slot, .. } => {
                 for (idx, item) in values.iter().enumerate() {
                     match item {
-                        LinkMLValue::Scalar { value, .. } => {
+                        LinkMLInstance::Scalar { value, .. } => {
                             let inline_mode = slot.determine_slot_inline_mode();
                             if inline_mode == SlotInlineMode::Reference {
                                 let lit = literal_value(value);
@@ -291,10 +293,10 @@ fn serialize_map<W: Write>(
                                 }
                             }
                         }
-                        LinkMLValue::Null { .. } => {
+                        LinkMLInstance::Null { .. } => {
                             // Skip null items
                         }
-                        LinkMLValue::Object {
+                        LinkMLInstance::Object {
                             values: mv, class, ..
                         } => {
                             let class_ref = &class;
@@ -323,15 +325,15 @@ fn serialize_map<W: Write>(
                                 child_id.as_deref(),
                             )?;
                         }
-                        LinkMLValue::List { .. } => {}
-                        LinkMLValue::Mapping { .. } => {}
+                        LinkMLInstance::List { .. } => {}
+                        LinkMLInstance::Mapping { .. } => {}
                     }
                 }
             }
-            LinkMLValue::Mapping { values, .. } => {
+            LinkMLInstance::Mapping { values, .. } => {
                 for (idx, item) in values.values().enumerate() {
                     match item {
-                        LinkMLValue::Scalar { value: v, slot, .. } => {
+                        LinkMLInstance::Scalar { value: v, slot, .. } => {
                             let inline_mode = slot.determine_slot_inline_mode();
                             if inline_mode == SlotInlineMode::Reference {
                                 let lit = literal_value(v);
@@ -370,10 +372,10 @@ fn serialize_map<W: Write>(
                                 }
                             }
                         }
-                        LinkMLValue::Null { .. } => {
+                        LinkMLInstance::Null { .. } => {
                             // nothing
                         }
-                        LinkMLValue::Object {
+                        LinkMLInstance::Object {
                             values: mv, class, ..
                         } => {
                             let class_ref = class;
@@ -402,8 +404,8 @@ fn serialize_map<W: Write>(
                                 child_id.as_deref(),
                             )?;
                         }
-                        LinkMLValue::List { .. } => {}
-                        LinkMLValue::Mapping { .. } => {}
+                        LinkMLInstance::List { .. } => {}
+                        LinkMLInstance::Mapping { .. } => {}
                     }
                 }
             }
@@ -413,7 +415,7 @@ fn serialize_map<W: Write>(
 }
 
 pub fn write_turtle<W: Write>(
-    value: &LinkMLValue,
+    value: &LinkMLInstance,
     sv: &SchemaView,
     schema: &SchemaDefinition,
     conv: &Converter,
@@ -453,11 +455,11 @@ pub fn write_turtle<W: Write>(
     };
     let mut formatter = TurtleSerializer::new().for_writer(Vec::new());
     match value {
-        LinkMLValue::Object { values, class, .. } => {
+        LinkMLInstance::Object { values, class, .. } => {
             let cv = &class;
             let mut id_slot_name = None;
             let subj = if let Some(id_slot) = cv.identifier_slot() {
-                if let Some(LinkMLValue::Scalar { value, .. }) = values.get(&id_slot.name) {
+                if let Some(LinkMLInstance::Scalar { value, .. }) = values.get(&id_slot.name) {
                     let lit = literal_value(value);
                     let iri = Identifier::new(&lit)
                         .to_uri(conv)
@@ -482,7 +484,7 @@ pub fn write_turtle<W: Write>(
                 id_slot_name.as_deref(),
             )?;
         }
-        LinkMLValue::Mapping { values, .. } => {
+        LinkMLInstance::Mapping { values, .. } => {
             for (idx, item) in values.values().enumerate() {
                 let subj = if options.skolem {
                     Node::Named(format!("{}root/{}", state.base, idx))
@@ -490,7 +492,7 @@ pub fn write_turtle<W: Write>(
                     state.next_subject()
                 };
                 match item {
-                    LinkMLValue::Object {
+                    LinkMLInstance::Object {
                         values: mv, class, ..
                     } => {
                         let class = Some(class);
@@ -505,7 +507,7 @@ pub fn write_turtle<W: Write>(
                             None,
                         )?;
                     }
-                    LinkMLValue::Scalar { value: v, slot, .. } => {
+                    LinkMLInstance::Scalar { value: v, slot, .. } => {
                         let (lit, dt_opt) = literal_and_type(v, slot);
                         if let Some(dt) = dt_opt {
                             let object = Term::Literal(Literal::new_typed_literal(
@@ -532,13 +534,13 @@ pub fn write_turtle<W: Write>(
                             formatter.serialize_triple(triple.as_ref())?;
                         }
                     }
-                    LinkMLValue::Null { .. } => {}
-                    LinkMLValue::List { .. } => {}
-                    LinkMLValue::Mapping { .. } => {}
+                    LinkMLInstance::Null { .. } => {}
+                    LinkMLInstance::List { .. } => {}
+                    LinkMLInstance::Mapping { .. } => {}
                 }
             }
         }
-        LinkMLValue::List { values, .. } => {
+        LinkMLInstance::List { values, .. } => {
             for (idx, item) in values.iter().enumerate() {
                 let subj = if options.skolem {
                     Node::Named(format!("{}root/{}", state.base, idx))
@@ -546,7 +548,7 @@ pub fn write_turtle<W: Write>(
                     state.next_subject()
                 };
                 match item {
-                    LinkMLValue::Object {
+                    LinkMLInstance::Object {
                         values: mv, class, ..
                     } => {
                         let class = Some(class);
@@ -561,7 +563,7 @@ pub fn write_turtle<W: Write>(
                             None,
                         )?;
                     }
-                    LinkMLValue::Scalar { value, slot, .. } => {
+                    LinkMLInstance::Scalar { value, slot, .. } => {
                         let (lit, dt_opt) = literal_and_type(value, slot);
                         if let Some(dt) = dt_opt {
                             let object = Term::Literal(Literal::new_typed_literal(
@@ -588,16 +590,16 @@ pub fn write_turtle<W: Write>(
                             formatter.serialize_triple(triple.as_ref())?;
                         }
                     }
-                    LinkMLValue::Null { .. } => {
+                    LinkMLInstance::Null { .. } => {
                         // nothing
                     }
-                    LinkMLValue::List { .. } => {}
-                    LinkMLValue::Mapping { .. } => {}
+                    LinkMLInstance::List { .. } => {}
+                    LinkMLInstance::Mapping { .. } => {}
                 }
             }
         }
-        LinkMLValue::Scalar { .. } => {}
-        LinkMLValue::Null { .. } => {}
+        LinkMLInstance::Scalar { .. } => {}
+        LinkMLInstance::Null { .. } => {}
     }
     let out_buf = formatter.finish()?;
     let mut out = String::from_utf8(out_buf).unwrap_or_default();
@@ -620,7 +622,7 @@ pub fn write_turtle<W: Write>(
 }
 
 pub fn turtle_to_string(
-    value: &LinkMLValue,
+    value: &LinkMLInstance,
     sv: &SchemaView,
     schema: &SchemaDefinition,
     conv: &Converter,

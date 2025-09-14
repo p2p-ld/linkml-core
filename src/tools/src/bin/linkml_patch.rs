@@ -36,7 +36,7 @@ fn load_value(
     sv: &SchemaView,
     class: &ClassView,
     conv: &curies::Converter,
-) -> Result<linkml_runtime::LinkMLValue, Box<dyn std::error::Error>> {
+) -> Result<linkml_runtime::LinkMLInstance, Box<dyn std::error::Error>> {
     if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
         if ext == "json" {
             load_json_file(path, sv, class, conv)
@@ -50,7 +50,7 @@ fn load_value(
 
 fn write_value(
     path: Option<&Path>,
-    value: &linkml_runtime::LinkMLValue,
+    value: &linkml_runtime::LinkMLInstance,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let json = value.to_json();
     let mut writer: Box<dyn Write> = if let Some(p) = path {

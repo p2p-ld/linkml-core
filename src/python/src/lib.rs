@@ -1,7 +1,7 @@
 use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
 use linkml_runtime::diff::{diff as diff_internal, patch as patch_internal, Delta};
 use linkml_runtime::turtle::{turtle_to_string, TurtleOptions};
-use linkml_runtime::{load_json_str, load_yaml_str, LinkMLValue};
+use linkml_runtime::{load_json_str, load_yaml_str, LinkMLInstance};
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io;
 use linkml_schemaview::schemaview::SchemaView;
@@ -445,18 +445,18 @@ pub fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_diff, m)?)?;
     m.add_function(wrap_pyfunction!(py_patch, m)?)?;
     m.add_function(wrap_pyfunction!(py_to_turtle, m)?)?;
-    m.add_class::<PyLinkMLValue>()?;
+    m.add_class::<PyLinkMLInstance>()?;
     Ok(())
 }
 
-#[pyclass(name = "LinkMLValue")]
-pub struct PyLinkMLValue {
-    value: LinkMLValue,
+#[pyclass(name = "LinkMLInstance")]
+pub struct PyLinkMLInstance {
+    value: LinkMLInstance,
     sv: Py<PySchemaView>,
 }
 
-impl PyLinkMLValue {
-    fn new(value: LinkMLValue, sv: Py<PySchemaView>) -> Self {
+impl PyLinkMLInstance {
+    fn new(value: LinkMLInstance, sv: Py<PySchemaView>) -> Self {
         Self { value, sv }
     }
 }
@@ -467,7 +467,7 @@ fn json_value_to_py(py: Python<'_>, v: &JsonValue) -> PyObject {
     json_mod.call_method1("loads", (s,)).unwrap().unbind()
 }
 
-impl Clone for PyLinkMLValue {
+impl Clone for PyLinkMLInstance {
     fn clone(&self) -> Self {
         Python::with_gil(|py| Self {
             value: self.value.clone(),
@@ -477,19 +477,19 @@ impl Clone for PyLinkMLValue {
 }
 
 #[pymethods]
-impl PyLinkMLValue {
+impl PyLinkMLInstance {
     /// Semantic equality per LinkML Instances spec.
-    /// Compares this value with another `LinkMLValue`.
+    /// Compares this value with another `LinkMLInstance`.
     #[pyo3(signature = (other, treat_missing_as_null = false))]
-    fn equals(&self, other: &PyLinkMLValue, treat_missing_as_null: bool) -> bool {
+    fn equals(&self, other: &PyLinkMLInstance, treat_missing_as_null: bool) -> bool {
         self.value.equals(&other.value, treat_missing_as_null)
     }
     #[getter]
     fn slot_name(&self) -> Option<String> {
         match &self.value {
-            LinkMLValue::Scalar { slot, .. } => Some(slot.name.clone()),
-            LinkMLValue::List { slot, .. } => Some(slot.name.clone()),
-            LinkMLValue::Null { slot, .. } => Some(slot.name.clone()),
+            LinkMLInstance::Scalar { slot, .. } => Some(slot.name.clone()),
+            LinkMLInstance::List { slot, .. } => Some(slot.name.clone()),
+            LinkMLInstance::Null { slot, .. } => Some(slot.name.clone()),
             _ => None,
         }
     }
@@ -497,11 +497,11 @@ impl PyLinkMLValue {
     #[getter]
     fn kind(&self) -> String {
         match &self.value {
-            LinkMLValue::Scalar { .. } => "scalar".to_string(),
-            LinkMLValue::Null { .. } => "null".to_string(),
-            LinkMLValue::List { .. } => "list".to_string(),
-            LinkMLValue::Mapping { .. } => "mapping".to_string(),
-            LinkMLValue::Object { .. } => "object".to_string(),
+            LinkMLInstance::Scalar { .. } => "scalar".to_string(),
+            LinkMLInstance::Null { .. } => "null".to_string(),
+            LinkMLInstance::List { .. } => "list".to_string(),
+            LinkMLInstance::Mapping { .. } => "mapping".to_string(),
+            LinkMLInstance::Object { .. } => "object".to_string(),
         }
     }
 
@@ -513,9 +513,9 @@ impl PyLinkMLValue {
     #[getter]
     fn slot_definition(&self) -> Option<SlotDefinition> {
         match &self.value {
-            LinkMLValue::Scalar { slot, .. } => Some(slot.definition().clone()),
-            LinkMLValue::List { slot, .. } => Some(slot.definition().clone()),
-            LinkMLValue::Null { slot, .. } => Some(slot.definition().clone()),
+            LinkMLInstance::Scalar { slot, .. } => Some(slot.definition().clone()),
+            LinkMLInstance::List { slot, .. } => Some(slot.definition().clone()),
+            LinkMLInstance::Null { slot, .. } => Some(slot.definition().clone()),
             _ => None,
         }
     }
@@ -523,10 +523,10 @@ impl PyLinkMLValue {
     #[getter]
     fn class_definition(&self) -> Option<ClassDefinition> {
         match &self.value {
-            LinkMLValue::Object { class, .. } => Some(class.def().clone()),
-            LinkMLValue::Scalar { class: Some(c), .. } => Some(c.def().clone()),
-            LinkMLValue::List { class: Some(c), .. } => Some(c.def().clone()),
-            LinkMLValue::Null { class: Some(c), .. } => Some(c.def().clone()),
+            LinkMLInstance::Object { class, .. } => Some(class.def().clone()),
+            LinkMLInstance::Scalar { class: Some(c), .. } => Some(c.def().clone()),
+            LinkMLInstance::List { class: Some(c), .. } => Some(c.def().clone()),
+            LinkMLInstance::Null { class: Some(c), .. } => Some(c.def().clone()),
             _ => None,
         }
     }
@@ -534,21 +534,21 @@ impl PyLinkMLValue {
     #[getter]
     fn class_name(&self) -> Option<String> {
         match &self.value {
-            LinkMLValue::Object { class, .. } => Some(class.def().name.clone()),
-            LinkMLValue::Scalar { class: Some(c), .. } => Some(c.def().name.clone()),
-            LinkMLValue::List { class: Some(c), .. } => Some(c.def().name.clone()),
-            LinkMLValue::Null { class: Some(c), .. } => Some(c.def().name.clone()),
+            LinkMLInstance::Object { class, .. } => Some(class.def().name.clone()),
+            LinkMLInstance::Scalar { class: Some(c), .. } => Some(c.def().name.clone()),
+            LinkMLInstance::List { class: Some(c), .. } => Some(c.def().name.clone()),
+            LinkMLInstance::Null { class: Some(c), .. } => Some(c.def().name.clone()),
             _ => None,
         }
     }
 
     fn __len__(&self) -> PyResult<usize> {
         Ok(match &self.value {
-            LinkMLValue::Scalar { .. } => 0,
-            LinkMLValue::Null { .. } => 0,
-            LinkMLValue::List { values, .. } => values.len(),
-            LinkMLValue::Mapping { values, .. } => values.len(),
-            LinkMLValue::Object { values, .. } => values.len(),
+            LinkMLInstance::Scalar { .. } => 0,
+            LinkMLInstance::Null { .. } => 0,
+            LinkMLInstance::List { values, .. } => values.len(),
+            LinkMLInstance::Mapping { values, .. } => values.len(),
+            LinkMLInstance::Object { values, .. } => values.len(),
         })
     }
 
@@ -556,27 +556,27 @@ impl PyLinkMLValue {
         &self,
         py: Python<'py>,
         key: &Bound<'py, PyAny>,
-    ) -> PyResult<PyLinkMLValue> {
+    ) -> PyResult<PyLinkMLInstance> {
         match &self.value {
-            LinkMLValue::List { values, .. } => {
+            LinkMLInstance::List { values, .. } => {
                 let idx: usize = key.extract()?;
                 values
                     .get(idx)
-                    .map(|v| PyLinkMLValue::new(v.clone(), self.sv.clone_ref(py)))
+                    .map(|v| PyLinkMLInstance::new(v.clone(), self.sv.clone_ref(py)))
                     .ok_or_else(|| PyException::new_err("index out of range"))
             }
-            LinkMLValue::Object { values, .. } => {
+            LinkMLInstance::Object { values, .. } => {
                 let k: String = key.extract()?;
                 values
                     .get(&k)
-                    .map(|v| PyLinkMLValue::new(v.clone(), self.sv.clone_ref(py)))
+                    .map(|v| PyLinkMLInstance::new(v.clone(), self.sv.clone_ref(py)))
                     .ok_or_else(|| PyException::new_err("key not found"))
             }
-            LinkMLValue::Mapping { values, .. } => {
+            LinkMLInstance::Mapping { values, .. } => {
                 let k: String = key.extract()?;
                 values
                     .get(&k)
-                    .map(|v| PyLinkMLValue::new(v.clone(), self.sv.clone_ref(py)))
+                    .map(|v| PyLinkMLInstance::new(v.clone(), self.sv.clone_ref(py)))
                     .ok_or_else(|| PyException::new_err("key not found"))
             }
             _ => Err(PyException::new_err("not indexable")),
@@ -584,19 +584,19 @@ impl PyLinkMLValue {
     }
 
     /// Navigate by a path of strings (map keys or list indices).
-    /// Returns a new LinkMLValue if found, otherwise None.
+    /// Returns a new LinkMLInstance if found, otherwise None.
     #[pyo3(name = "navigate")]
     fn py_navigate<'py>(
         &self,
         py: Python<'py>,
         path: &Bound<'py, PyAny>,
-    ) -> PyResult<Option<PyLinkMLValue>> {
+    ) -> PyResult<Option<PyLinkMLInstance>> {
         // Expect any iterable of strings
         let path_vec: Vec<String> = path
             .extract()
             .map_err(|_| PyException::new_err("path must be a sequence of strings"))?;
         if let Some(found) = self.value.navigate_path(&path_vec) {
-            Ok(Some(PyLinkMLValue::new(
+            Ok(Some(PyLinkMLInstance::new(
                 found.clone(),
                 self.sv.clone_ref(py),
             )))
@@ -607,28 +607,28 @@ impl PyLinkMLValue {
 
     fn keys(&self) -> PyResult<Vec<String>> {
         match &self.value {
-            LinkMLValue::Object { values, .. } => Ok(values.keys().cloned().collect()),
-            LinkMLValue::Mapping { values, .. } => Ok(values.keys().cloned().collect()),
+            LinkMLInstance::Object { values, .. } => Ok(values.keys().cloned().collect()),
+            LinkMLInstance::Mapping { values, .. } => Ok(values.keys().cloned().collect()),
             _ => Ok(Vec::new()),
         }
     }
 
-    fn values<'py>(&self, py: Python<'py>) -> PyResult<Vec<PyLinkMLValue>> {
+    fn values<'py>(&self, py: Python<'py>) -> PyResult<Vec<PyLinkMLInstance>> {
         match &self.value {
-            LinkMLValue::Object { values, .. } => Ok(values
+            LinkMLInstance::Object { values, .. } => Ok(values
                 .values()
                 .cloned()
-                .map(|v| PyLinkMLValue::new(v, self.sv.clone_ref(py)))
+                .map(|v| PyLinkMLInstance::new(v, self.sv.clone_ref(py)))
                 .collect()),
-            LinkMLValue::Mapping { values, .. } => Ok(values
+            LinkMLInstance::Mapping { values, .. } => Ok(values
                 .values()
                 .cloned()
-                .map(|v| PyLinkMLValue::new(v, self.sv.clone_ref(py)))
+                .map(|v| PyLinkMLInstance::new(v, self.sv.clone_ref(py)))
                 .collect()),
-            LinkMLValue::List { values, .. } => Ok(values
+            LinkMLInstance::List { values, .. } => Ok(values
                 .iter()
                 .cloned()
-                .map(|v| PyLinkMLValue::new(v, self.sv.clone_ref(py)))
+                .map(|v| PyLinkMLInstance::new(v, self.sv.clone_ref(py)))
                 .collect()),
             _ => Ok(Vec::new()),
         }
@@ -659,30 +659,33 @@ impl PyLinkMLValue {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(match &self.value {
-            LinkMLValue::Scalar { value, slot, .. } => {
-                format!("LinkMLValue.Scalar(slot='{}', value={})", slot.name, value)
-            }
-            LinkMLValue::Null { slot, .. } => {
-                format!("LinkMLValue.Null(slot='{}')", slot.name)
-            }
-            LinkMLValue::List { values, slot, .. } => {
+            LinkMLInstance::Scalar { value, slot, .. } => {
                 format!(
-                    "LinkMLValue.List(slot='{}', len={})",
+                    "LinkMLInstance.Scalar(slot='{}', value={})",
+                    slot.name, value
+                )
+            }
+            LinkMLInstance::Null { slot, .. } => {
+                format!("LinkMLInstance.Null(slot='{}')", slot.name)
+            }
+            LinkMLInstance::List { values, slot, .. } => {
+                format!(
+                    "LinkMLInstance.List(slot='{}', len={})",
                     slot.name,
                     values.len()
                 )
             }
-            LinkMLValue::Mapping { values, slot, .. } => {
+            LinkMLInstance::Mapping { values, slot, .. } => {
                 format!(
-                    "LinkMLValue.Mapping(slot='{}', keys={:?})",
+                    "LinkMLInstance.Mapping(slot='{}', keys={:?})",
                     slot.name,
                     values.keys().collect::<Vec<&String>>()
                 )
             }
-            LinkMLValue::Object { values, class, .. } => {
+            LinkMLInstance::Object { values, class, .. } => {
                 let keys: Vec<&String> = values.keys().collect();
                 format!(
-                    "LinkMLValue.Object(class='{}', keys={:?})",
+                    "LinkMLInstance.Object(class='{}', keys={:?})",
                     class.def().name.clone(),
                     keys
                 )
@@ -701,7 +704,7 @@ fn load_yaml(
     source: &Bound<'_, PyAny>,
     sv: Py<PySchemaView>,
     class: Option<Py<PyClassView>>,
-) -> PyResult<PyLinkMLValue> {
+) -> PyResult<PyLinkMLInstance> {
     let sv_ref = sv.bind(py).borrow();
     let rust_sv = sv_ref.as_rust();
     let conv = rust_sv.converter();
@@ -717,7 +720,7 @@ fn load_yaml(
         .ok_or_else(|| PyException::new_err("class not found, please provide a valid class"))?;
     let v = load_yaml_str(&text, rust_sv, cv.as_rust(), &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
-    Ok(PyLinkMLValue::new(v, sv))
+    Ok(PyLinkMLInstance::new(v, sv))
 }
 
 #[pyfunction]
@@ -726,7 +729,7 @@ fn load_json(
     source: &Bound<'_, PyAny>,
     sv: Py<PySchemaView>,
     class: Option<Py<PyClassView>>,
-) -> PyResult<PyLinkMLValue> {
+) -> PyResult<PyLinkMLInstance> {
     let sv_ref = sv.bind(py).borrow();
     let rust_sv = sv_ref.as_rust();
     let conv = rust_sv.converter();
@@ -742,14 +745,14 @@ fn load_json(
     let (text, _) = py_filelike_or_string_to_string(source)?;
     let v = load_json_str(&text, rust_sv, cv.as_rust(), &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
-    Ok(PyLinkMLValue::new(v, sv))
+    Ok(PyLinkMLInstance::new(v, sv))
 }
 
 #[pyfunction(name = "diff", signature = (source, target, treat_missing_as_null=None))]
 fn py_diff(
     py: Python<'_>,
-    source: &PyLinkMLValue,
-    target: &PyLinkMLValue,
+    source: &PyLinkMLInstance,
+    target: &PyLinkMLInstance,
     treat_missing_as_null: Option<bool>,
 ) -> PyResult<PyObject> {
     let deltas = diff_internal(
@@ -767,7 +770,7 @@ fn py_diff(
 #[pyfunction(name = "patch", signature = (source, deltas, treat_missing_as_null = true, ignore_no_ops = true))]
 fn py_patch(
     py: Python<'_>,
-    source: &PyLinkMLValue,
+    source: &PyLinkMLInstance,
     deltas: &Bound<'_, PyAny>,
     treat_missing_as_null: bool,
     ignore_no_ops: bool,
@@ -793,7 +796,7 @@ fn py_patch(
         "deleted": trace.deleted,
         "updated": trace.updated,
     });
-    let py_val = PyLinkMLValue::new(new_value, source.sv.clone_ref(py));
+    let py_val = PyLinkMLInstance::new(new_value, source.sv.clone_ref(py));
     let dict = pyo3::types::PyDict::new(py);
     dict.set_item("value", Py::new(py, py_val)?)?;
     dict.set_item("trace", json_value_to_py(py, &trace_json))?;
@@ -801,6 +804,10 @@ fn py_patch(
 }
 
 #[pyfunction(name = "to_turtle", signature = (value, skolem=None))]
-fn py_to_turtle(py: Python<'_>, value: &PyLinkMLValue, skolem: Option<bool>) -> PyResult<String> {
+fn py_to_turtle(
+    py: Python<'_>,
+    value: &PyLinkMLInstance,
+    skolem: Option<bool>,
+) -> PyResult<String> {
     value.as_turtle(py, skolem)
 }
