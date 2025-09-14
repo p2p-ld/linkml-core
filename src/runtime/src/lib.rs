@@ -55,7 +55,7 @@ fn slot_matches_key(slot: &SlotView, key: &str) -> bool {
 }
 
 #[derive(Clone)]
-pub enum LinkMLValue {
+pub enum LinkMLInstance {
     Scalar {
         node_id: NodeId,
         value: JsonValue,
@@ -71,21 +71,21 @@ pub enum LinkMLValue {
     },
     List {
         node_id: NodeId,
-        values: Vec<LinkMLValue>,
+        values: Vec<LinkMLInstance>,
         slot: SlotView,
         class: Option<ClassView>,
         sv: SchemaView,
     },
     Mapping {
         node_id: NodeId,
-        values: HashMap<String, LinkMLValue>,
+        values: HashMap<String, LinkMLInstance>,
         slot: SlotView,
         class: Option<ClassView>,
         sv: SchemaView,
     },
     Object {
         node_id: NodeId,
-        values: HashMap<String, LinkMLValue>,
+        values: HashMap<String, LinkMLInstance>,
         class: ClassView,
         sv: SchemaView,
     },
@@ -93,7 +93,7 @@ pub enum LinkMLValue {
 
 /// Internal node identifier used for provenance and update tracking.
 ///
-/// Node IDs are assigned to every `LinkMLValue` node when values are constructed or
+/// Node IDs are assigned to every `LinkMLInstance` node when values are constructed or
 /// transformed. They exist solely as technical identifiers to help with patching and
 /// provenance (for example, `PatchTrace.added`/`deleted` collect `NodeId`s of affected
 /// subtrees). They are not intended to identify domain objects — for that, use LinkML
@@ -111,50 +111,50 @@ fn new_node_id() -> NodeId {
     NEXT_NODE_ID.fetch_add(1, Ordering::Relaxed)
 }
 
-impl LinkMLValue {
+impl LinkMLInstance {
     /// Returns the internal [`NodeId`] of this node.
     ///
     /// This ID is only for internal provenance/update tracking and is not a
     /// semantic identifier of the represented object.
     pub fn node_id(&self) -> NodeId {
         match self {
-            LinkMLValue::Scalar { node_id, .. }
-            | LinkMLValue::List { node_id, .. }
-            | LinkMLValue::Mapping { node_id, .. }
-            | LinkMLValue::Object { node_id, .. }
-            | LinkMLValue::Null { node_id, .. } => *node_id,
+            LinkMLInstance::Scalar { node_id, .. }
+            | LinkMLInstance::List { node_id, .. }
+            | LinkMLInstance::Mapping { node_id, .. }
+            | LinkMLInstance::Object { node_id, .. }
+            | LinkMLInstance::Null { node_id, .. } => *node_id,
         }
     }
     /// Navigate the value by a path of strings, where each element is either
     /// a dictionary key (for maps) or a list index (for lists).
-    /// Returns `Some(&LinkMLValue)` if the full path can be resolved, otherwise `None`.
-    pub fn navigate_path<I, S>(&self, path: I) -> Option<&LinkMLValue>
+    /// Returns `Some(&LinkMLInstance)` if the full path can be resolved, otherwise `None`.
+    pub fn navigate_path<I, S>(&self, path: I) -> Option<&LinkMLInstance>
     where
         I: IntoIterator<Item = S>,
         S: AsRef<str>,
     {
-        let mut current: &LinkMLValue = self;
+        let mut current: &LinkMLInstance = self;
         for seg in path {
             let key = seg.as_ref();
             match current {
-                LinkMLValue::Object { values, .. } => {
+                LinkMLInstance::Object { values, .. } => {
                     current = values.get(key)?;
                 }
-                LinkMLValue::List { values, .. } => {
+                LinkMLInstance::List { values, .. } => {
                     let idx: usize = key.parse().ok()?;
                     current = values.get(idx)?;
                 }
-                LinkMLValue::Mapping { values, .. } => {
+                LinkMLInstance::Mapping { values, .. } => {
                     current = values.get(key)?;
                 }
-                LinkMLValue::Scalar { .. } => return None,
-                LinkMLValue::Null { .. } => return None,
+                LinkMLInstance::Scalar { .. } => return None,
+                LinkMLInstance::Null { .. } => return None,
             }
         }
         Some(current)
     }
 
-    /// Compare two LinkMLValue instances for semantic equality per the
+    /// Compare two LinkMLInstance instances for semantic equality per the
     /// LinkML Instances specification (Identity conditions).
     ///
     /// Key points implemented:
@@ -166,8 +166,8 @@ impl LinkMLValue {
     /// - Objects: equal iff same instantiated class (by identity) and slot assignments match; when
     ///   `treat_missing_as_null` is true, Null is treated as omitted (normalized), otherwise Null is
     ///   distinct from missing.
-    pub fn equals(&self, other: &LinkMLValue, treat_missing_as_null: bool) -> bool {
-        use LinkMLValue::*;
+    pub fn equals(&self, other: &LinkMLInstance, treat_missing_as_null: bool) -> bool {
+        use LinkMLInstance::*;
         match (self, other) {
             (Null { .. }, Null { .. }) => true,
             (
@@ -402,7 +402,7 @@ impl LinkMLValue {
                 Self::from_json_internal(v, class.clone(), slot_ref, sv, conv, false, p)?,
             );
         }
-        Ok(LinkMLValue::Object {
+        Ok(LinkMLInstance::Object {
             node_id: new_node_id(),
             values,
             class: class.clone(),
@@ -434,7 +434,7 @@ impl LinkMLValue {
                         p,
                     )?);
                 }
-                Ok(LinkMLValue::List {
+                Ok(LinkMLInstance::List {
                     node_id: new_node_id(),
                     values,
                     slot: sl.clone(),
@@ -443,7 +443,7 @@ impl LinkMLValue {
                 })
             }
             // Preserve explicit null as a Null value for list-valued slot
-            (false, JsonValue::Null) => Ok(LinkMLValue::Null {
+            (false, JsonValue::Null) => Ok(LinkMLInstance::Null {
                 node_id: new_node_id(),
                 slot: sl.clone(),
                 class: Some(class.clone()),
@@ -455,7 +455,7 @@ impl LinkMLValue {
                 other,
                 path_to_string(&path)
             ))),
-            (true, other) => Ok(LinkMLValue::Scalar {
+            (true, other) => Ok(LinkMLInstance::Scalar {
                 node_id: new_node_id(),
                 value: other,
                 slot: sl.clone(),
@@ -484,7 +484,7 @@ impl LinkMLValue {
                     })?;
                     values.insert(k, child);
                 }
-                Ok(LinkMLValue::Mapping {
+                Ok(LinkMLInstance::Mapping {
                     node_id: new_node_id(),
                     values,
                     slot: sl.clone(),
@@ -493,7 +493,7 @@ impl LinkMLValue {
                 })
             }
             // Preserve explicit null as a Null value for mapping-valued slot
-            JsonValue::Null => Ok(LinkMLValue::Null {
+            JsonValue::Null => Ok(LinkMLInstance::Null {
                 node_id: new_node_id(),
                 slot: sl.clone(),
                 class: class.clone(),
@@ -536,7 +536,7 @@ impl LinkMLValue {
                 p,
             )?);
         }
-        Ok(LinkMLValue::List {
+        Ok(LinkMLInstance::List {
             node_id: new_node_id(),
             values,
             slot: sl,
@@ -583,7 +583,7 @@ impl LinkMLValue {
                 Self::from_json_internal(v, chosen.clone(), slot_tmp, sv, conv, false, p)?,
             );
         }
-        Ok(LinkMLValue::Object {
+        Ok(LinkMLInstance::Object {
             node_id: new_node_id(),
             values,
             class: chosen,
@@ -607,14 +607,14 @@ impl LinkMLValue {
             ))
         })?;
         if value.is_null() {
-            Ok(LinkMLValue::Null {
+            Ok(LinkMLInstance::Null {
                 node_id: new_node_id(),
                 slot: sl,
                 class: Some(class.clone()),
                 sv: sv.clone(),
             })
         } else {
-            Ok(LinkMLValue::Scalar {
+            Ok(LinkMLInstance::Scalar {
                 node_id: new_node_id(),
                 value,
                 slot: sl,
@@ -763,7 +763,7 @@ impl LinkMLValue {
                         )?,
                     );
                 }
-                Ok(LinkMLValue::Object {
+                Ok(LinkMLInstance::Object {
                     node_id: new_node_id(),
                     values: child_values,
                     class: selected,
@@ -785,7 +785,7 @@ impl LinkMLValue {
                 let mut child_values = HashMap::new();
                 child_values.insert(
                     scalar_slot.name.clone(),
-                    LinkMLValue::Scalar {
+                    LinkMLInstance::Scalar {
                         node_id: new_node_id(),
                         value: other,
                         slot: scalar_slot.clone(),
@@ -793,7 +793,7 @@ impl LinkMLValue {
                         sv: sv.clone(),
                     },
                 );
-                Ok(LinkMLValue::Object {
+                Ok(LinkMLInstance::Object {
                     node_id: new_node_id(),
                     values: child_values,
                     class: range_cv,
@@ -809,7 +809,7 @@ pub fn load_yaml_file(
     sv: &SchemaView,
     class: &ClassView,
     conv: &Converter,
-) -> std::result::Result<LinkMLValue, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLInstance, Box<dyn std::error::Error>> {
     let text = fs::read_to_string(path)?;
     load_yaml_str(&text, sv, class, conv)
 }
@@ -819,10 +819,10 @@ pub fn load_yaml_str(
     sv: &SchemaView,
     class: &ClassView,
     conv: &Converter,
-) -> std::result::Result<LinkMLValue, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLInstance, Box<dyn std::error::Error>> {
     let value: serde_yaml::Value = serde_yaml::from_str(data)?;
     let json = serde_json::to_value(value)?;
-    LinkMLValue::from_json(json, class.clone(), None, sv, conv, false)
+    LinkMLInstance::from_json(json, class.clone(), None, sv, conv, false)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
@@ -831,7 +831,7 @@ pub fn load_json_file(
     sv: &SchemaView,
     class: &ClassView,
     conv: &Converter,
-) -> std::result::Result<LinkMLValue, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLInstance, Box<dyn std::error::Error>> {
     let text = fs::read_to_string(path)?;
     load_json_str(&text, sv, class, conv)
 }
@@ -841,15 +841,15 @@ pub fn load_json_str(
     sv: &SchemaView,
     class: &ClassView,
     conv: &Converter,
-) -> std::result::Result<LinkMLValue, Box<dyn std::error::Error>> {
+) -> std::result::Result<LinkMLInstance, Box<dyn std::error::Error>> {
     let value: JsonValue = serde_json::from_str(data)?;
-    LinkMLValue::from_json(value, class.clone(), None, sv, conv, false)
+    LinkMLInstance::from_json(value, class.clone(), None, sv, conv, false)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
-fn validate_inner(value: &LinkMLValue) -> std::result::Result<(), String> {
+fn validate_inner(value: &LinkMLInstance) -> std::result::Result<(), String> {
     match value {
-        LinkMLValue::Scalar {
+        LinkMLInstance::Scalar {
             value: jv, slot, ..
         } => {
             if let Some(ev) = slot.get_range_enum() {
@@ -878,20 +878,20 @@ fn validate_inner(value: &LinkMLValue) -> std::result::Result<(), String> {
             }
             Ok(())
         }
-        LinkMLValue::Null { .. } => Ok(()),
-        LinkMLValue::List { values, .. } => {
+        LinkMLInstance::Null { .. } => Ok(()),
+        LinkMLInstance::List { values, .. } => {
             for v in values {
                 validate_inner(v)?;
             }
             Ok(())
         }
-        LinkMLValue::Mapping { values, .. } => {
+        LinkMLInstance::Mapping { values, .. } => {
             for v in values.values() {
                 validate_inner(v)?;
             }
             Ok(())
         }
-        LinkMLValue::Object { values, class, .. } => {
+        LinkMLInstance::Object { values, class, .. } => {
             for (k, v) in values {
                 if class.slots().iter().all(|s| s.name != *k) {
                     return Err(format!("unknown slot `{}` for class `{}`", k, class.name()));
@@ -903,25 +903,25 @@ fn validate_inner(value: &LinkMLValue) -> std::result::Result<(), String> {
     }
 }
 
-pub fn validate(value: &LinkMLValue) -> std::result::Result<(), String> {
+pub fn validate(value: &LinkMLInstance) -> std::result::Result<(), String> {
     validate_inner(value)
 }
 
-fn validate_collect(value: &LinkMLValue, errors: &mut Vec<String>) {
+fn validate_collect(value: &LinkMLInstance, errors: &mut Vec<String>) {
     match value {
-        LinkMLValue::Scalar { .. } => {}
-        LinkMLValue::Null { .. } => {}
-        LinkMLValue::List { values, .. } => {
+        LinkMLInstance::Scalar { .. } => {}
+        LinkMLInstance::Null { .. } => {}
+        LinkMLInstance::List { values, .. } => {
             for v in values {
                 validate_collect(v, errors);
             }
         }
-        LinkMLValue::Mapping { values, .. } => {
+        LinkMLInstance::Mapping { values, .. } => {
             for v in values.values() {
                 validate_collect(v, errors);
             }
         }
-        LinkMLValue::Object { values, class, .. } => {
+        LinkMLInstance::Object { values, class, .. } => {
             for (k, v) in values {
                 if class.slots().iter().all(|s| s.name != *k) {
                     errors.push(format!("unknown slot `{}` for class `{}`", k, class.name()));
@@ -932,7 +932,7 @@ fn validate_collect(value: &LinkMLValue, errors: &mut Vec<String>) {
     }
 }
 
-pub fn validate_errors(value: &LinkMLValue) -> Vec<String> {
+pub fn validate_errors(value: &LinkMLInstance) -> Vec<String> {
     let mut errs = Vec::new();
     validate_collect(value, &mut errs);
     errs

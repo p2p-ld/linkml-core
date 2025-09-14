@@ -168,7 +168,7 @@ fn diff_and_patch_personinfo() {
 
 #[test]
 fn diff_null_and_missing_semantics() {
-    use linkml_runtime::LinkMLValue;
+    use linkml_runtime::LinkMLInstance;
     let schema = from_yaml(Path::new(&data_path("schema.yaml"))).unwrap();
     let mut sv = SchemaView::new();
     sv.add_schema(schema.clone()).unwrap();
@@ -187,7 +187,7 @@ fn diff_null_and_missing_semantics() {
     .unwrap();
 
     // X -> null => update to null
-    if let LinkMLValue::Object { .. } = src.clone() {
+    if let LinkMLInstance::Object { .. } = src.clone() {
         let mut tgt_json = src.to_json();
         if let serde_json::Value::Object(ref mut m) = tgt_json {
             m.insert("age".to_string(), serde_json::Value::Null);
@@ -206,7 +206,7 @@ fn diff_null_and_missing_semantics() {
     }
 
     // null -> X => update from null
-    if let LinkMLValue::Object { .. } = src.clone() {
+    if let LinkMLInstance::Object { .. } = src.clone() {
         let mut src_json = src.to_json();
         if let serde_json::Value::Object(ref mut m) = src_json {
             m.insert("age".to_string(), serde_json::Value::Null);
@@ -225,7 +225,7 @@ fn diff_null_and_missing_semantics() {
     }
 
     // missing -> X => add
-    if let LinkMLValue::Object { .. } = src.clone() {
+    if let LinkMLInstance::Object { .. } = src.clone() {
         let mut src_json = src.to_json();
         if let serde_json::Value::Object(ref mut m) = src_json {
             m.remove("age");
@@ -244,7 +244,7 @@ fn diff_null_and_missing_semantics() {
     }
 
     // X -> missing: ignored by default; produce update-to-null when treat_missing_as_null=true
-    if let LinkMLValue::Object { .. } = src.clone() {
+    if let LinkMLInstance::Object { .. } = src.clone() {
         let mut tgt_json = src.to_json();
         if let serde_json::Value::Object(ref mut m) = tgt_json {
             m.remove("age");

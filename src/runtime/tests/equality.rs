@@ -1,4 +1,4 @@
-use linkml_runtime::{load_json_str, load_yaml_str, LinkMLValue};
+use linkml_runtime::{load_json_str, load_yaml_str, LinkMLInstance};
 use linkml_schemaview::identifier::converter_from_schema;
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
@@ -90,8 +90,8 @@ objects:
     let v2 = load_yaml_str(doc_b, &sv, &container, &conv).unwrap();
     let p1 = v1.navigate_path(["objects", "0"]).unwrap();
     let p2 = v2.navigate_path(["objects", "0"]).unwrap();
-    assert!(matches!(p1, LinkMLValue::Object { .. }));
-    assert!(matches!(p2, LinkMLValue::Object { .. }));
+    assert!(matches!(p1, LinkMLInstance::Object { .. }));
+    assert!(matches!(p2, LinkMLInstance::Object { .. }));
     assert!(!p1.equals(p2, true), "List order must affect equality");
 }
 
@@ -126,8 +126,8 @@ fn mapping_equality_is_key_based_not_ordered() {
     let v2 = load_json_str(doc2, &sv, &bag, &conv).unwrap();
     let m1 = v1.navigate_path(["things"]).unwrap();
     let m2 = v2.navigate_path(["things"]).unwrap();
-    assert!(matches!(m1, LinkMLValue::Mapping { .. }));
-    assert!(matches!(m2, LinkMLValue::Mapping { .. }));
+    assert!(matches!(m1, LinkMLInstance::Mapping { .. }));
+    assert!(matches!(m2, LinkMLInstance::Mapping { .. }));
     assert!(
         m1.equals(m2, true),
         "Mapping equality should ignore key order"

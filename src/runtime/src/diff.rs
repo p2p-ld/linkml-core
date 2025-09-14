@@ -1,4 +1,4 @@
-use crate::{LResult, LinkMLError, LinkMLValue, NodeId};
+use crate::{LResult, LinkMLError, LinkMLInstance, NodeId};
 use linkml_schemaview::schemaview::{SchemaView, SlotView};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -23,21 +23,21 @@ pub struct Delta {
     pub new: Option<JsonValue>,
 }
 
-impl LinkMLValue {
+impl LinkMLInstance {
     pub fn to_json(&self) -> JsonValue {
         match self {
-            LinkMLValue::Scalar { value, .. } => value.clone(),
-            LinkMLValue::Null { .. } => JsonValue::Null,
-            LinkMLValue::List { values, .. } => {
+            LinkMLInstance::Scalar { value, .. } => value.clone(),
+            LinkMLInstance::Null { .. } => JsonValue::Null,
+            LinkMLInstance::List { values, .. } => {
                 JsonValue::Array(values.iter().map(|v| v.to_json()).collect())
             }
-            LinkMLValue::Mapping { values, .. } => JsonValue::Object(
+            LinkMLInstance::Mapping { values, .. } => JsonValue::Object(
                 values
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_json()))
                     .collect(),
             ),
-            LinkMLValue::Object { values, .. } => JsonValue::Object(
+            LinkMLInstance::Object { values, .. } => JsonValue::Object(
                 values
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_json()))
@@ -47,19 +47,23 @@ impl LinkMLValue {
     }
 }
 
-/// Compute a semantic diff between two LinkMLValue trees.
+/// Compute a semantic diff between two LinkMLInstance trees.
 ///
 /// Semantics of nulls and missing values:
 /// - X -> null: update to null (old = X, new = null).
 /// - null -> X: update from null (old = null, new = X).
 /// - missing -> X: add (old = None, new = X).
 /// - X -> missing: ignored by default; if `treat_missing_as_null` is true, update to null (old = X, new = null).
-pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: bool) -> Vec<Delta> {
+pub fn diff(
+    source: &LinkMLInstance,
+    target: &LinkMLInstance,
+    treat_missing_as_null: bool,
+) -> Vec<Delta> {
     fn inner(
         path: &mut Vec<String>,
         slot: Option<&SlotView>,
-        s: &LinkMLValue,
-        t: &LinkMLValue,
+        s: &LinkMLInstance,
+        t: &LinkMLInstance,
         treat_missing_as_null: bool,
         out: &mut Vec<Delta>,
     ) {
@@ -70,12 +74,12 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
         }
         match (s, t) {
             (
-                LinkMLValue::Object {
+                LinkMLInstance::Object {
                     values: sm,
                     class: sc,
                     ..
                 },
-                LinkMLValue::Object {
+                LinkMLInstance::Object {
                     values: tm,
                     class: tc,
                     ..
@@ -91,8 +95,8 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
                     let sid = sm.get(&ks);
                     let tid = tm.get(&ks);
                     if let (
-                        Some(LinkMLValue::Scalar { value: s_id, .. }),
-                        Some(LinkMLValue::Scalar { value: t_id, .. }),
+                        Some(LinkMLInstance::Scalar { value: s_id, .. }),
+                        Some(LinkMLInstance::Scalar { value: t_id, .. }),
                     ) = (sid, tid)
                     {
                         if s_id != t_id {
@@ -148,7 +152,7 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
                     }
                 }
             }
-            (LinkMLValue::List { values: sl, .. }, LinkMLValue::List { values: tl, .. }) => {
+            (LinkMLInstance::List { values: sl, .. }, LinkMLInstance::List { values: tl, .. }) => {
                 let max_len = std::cmp::max(sl.len(), tl.len());
                 for i in 0..max_len {
                     path.push(i.to_string());
@@ -171,7 +175,10 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
                     path.pop();
                 }
             }
-            (LinkMLValue::Mapping { values: sm, .. }, LinkMLValue::Mapping { values: tm, .. }) => {
+            (
+                LinkMLInstance::Mapping { values: sm, .. },
+                LinkMLInstance::Mapping { values: tm, .. },
+            ) => {
                 use std::collections::BTreeSet;
                 let keys: BTreeSet<_> = sm.keys().chain(tm.keys()).cloned().collect();
                 for k in keys {
@@ -195,15 +202,15 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, treat_missing_as_null: b
                     path.pop();
                 }
             }
-            (LinkMLValue::Null { .. }, LinkMLValue::Null { .. }) => {}
-            (LinkMLValue::Null { .. }, tv) => {
+            (LinkMLInstance::Null { .. }, LinkMLInstance::Null { .. }) => {}
+            (LinkMLInstance::Null { .. }, tv) => {
                 out.push(Delta {
                     path: path.clone(),
                     old: Some(JsonValue::Null),
                     new: Some(tv.to_json()),
                 });
             }
-            (sv, LinkMLValue::Null { .. }) => {
+            (sv, LinkMLInstance::Null { .. }) => {
                 out.push(Delta {
                     path: path.clone(),
                     old: Some(sv.to_json()),
@@ -264,11 +271,11 @@ impl Default for PatchOptions {
 }
 
 pub fn patch(
-    source: &LinkMLValue,
+    source: &LinkMLInstance,
     deltas: &[Delta],
     sv: &SchemaView,
     opts: PatchOptions,
-) -> LResult<(LinkMLValue, PatchTrace)> {
+) -> LResult<(LinkMLInstance, PatchTrace)> {
     let mut out = source.clone();
     let mut trace = PatchTrace::default();
     for d in deltas {
@@ -277,17 +284,17 @@ pub fn patch(
     Ok((out, trace))
 }
 
-fn collect_all_ids(value: &LinkMLValue, ids: &mut Vec<NodeId>) {
+fn collect_all_ids(value: &LinkMLInstance, ids: &mut Vec<NodeId>) {
     ids.push(value.node_id());
     match value {
-        LinkMLValue::Scalar { .. } => {}
-        LinkMLValue::Null { .. } => {}
-        LinkMLValue::List { values, .. } => {
+        LinkMLInstance::Scalar { .. } => {}
+        LinkMLInstance::Null { .. } => {}
+        LinkMLInstance::List { values, .. } => {
             for v in values {
                 collect_all_ids(v, ids);
             }
         }
-        LinkMLValue::Mapping { values, .. } | LinkMLValue::Object { values, .. } => {
+        LinkMLInstance::Mapping { values, .. } | LinkMLInstance::Object { values, .. } => {
             for v in values.values() {
                 collect_all_ids(v, ids);
             }
@@ -295,18 +302,18 @@ fn collect_all_ids(value: &LinkMLValue, ids: &mut Vec<NodeId>) {
     }
 }
 
-fn mark_added_subtree(v: &LinkMLValue, trace: &mut PatchTrace) {
+fn mark_added_subtree(v: &LinkMLInstance, trace: &mut PatchTrace) {
     collect_all_ids(v, &mut trace.added);
 }
 
-fn mark_deleted_subtree(v: &LinkMLValue, trace: &mut PatchTrace) {
+fn mark_deleted_subtree(v: &LinkMLInstance, trace: &mut PatchTrace) {
     collect_all_ids(v, &mut trace.deleted);
 }
 
-// Removed thin wrappers; call LinkMLValue builders directly at call sites.
+// Removed thin wrappers; call LinkMLInstance builders directly at call sites.
 
 fn apply_delta_linkml(
-    current: &mut LinkMLValue,
+    current: &mut LinkMLInstance,
     path: &[String],
     newv: &Option<serde_json::Value>,
     sv: &SchemaView,
@@ -316,15 +323,16 @@ fn apply_delta_linkml(
     if path.is_empty() {
         if let Some(v) = newv {
             let (class_opt, slot_opt) = match current {
-                LinkMLValue::Object { class, .. } => (Some(class.clone()), None),
-                LinkMLValue::List { class, slot, .. } => (class.clone(), Some(slot.clone())),
-                LinkMLValue::Mapping { class, slot, .. } => (class.clone(), Some(slot.clone())),
-                LinkMLValue::Scalar { class, slot, .. } => (class.clone(), Some(slot.clone())),
-                LinkMLValue::Null { class, slot, .. } => (class.clone(), Some(slot.clone())),
+                LinkMLInstance::Object { class, .. } => (Some(class.clone()), None),
+                LinkMLInstance::List { class, slot, .. } => (class.clone(), Some(slot.clone())),
+                LinkMLInstance::Mapping { class, slot, .. } => (class.clone(), Some(slot.clone())),
+                LinkMLInstance::Scalar { class, slot, .. } => (class.clone(), Some(slot.clone())),
+                LinkMLInstance::Null { class, slot, .. } => (class.clone(), Some(slot.clone())),
             };
             let conv = sv.converter();
             if let Some(cls) = class_opt {
-                let new_node = LinkMLValue::from_json(v.clone(), cls, slot_opt, sv, &conv, false)?;
+                let new_node =
+                    LinkMLInstance::from_json(v.clone(), cls, slot_opt, sv, &conv, false)?;
                 if opts.ignore_no_ops && current.equals(&new_node, opts.treat_missing_as_null) {
                     // No-op delta; skip to preserve node IDs
                     return Ok(());
@@ -338,14 +346,14 @@ fn apply_delta_linkml(
     }
 
     match current {
-        LinkMLValue::Object { values, class, .. } => {
+        LinkMLInstance::Object { values, class, .. } => {
             let key = &path[0];
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
                         let conv = sv.converter();
                         let slot = class.slots().iter().find(|s| s.name == *key).cloned();
-                        let new_child = LinkMLValue::from_json(
+                        let new_child = LinkMLInstance::from_json(
                             v.clone(),
                             class.clone(),
                             slot.clone(),
@@ -362,8 +370,8 @@ fn apply_delta_linkml(
                             }
                             match (&mut *old_child, &new_child) {
                                 (
-                                    LinkMLValue::Scalar { value: ov, .. },
-                                    LinkMLValue::Scalar { value: nv, .. },
+                                    LinkMLInstance::Scalar { value: ov, .. },
+                                    LinkMLInstance::Scalar { value: nv, .. },
                                 ) if !v.is_object() && !v.is_array() => {
                                     // In-place scalar update: keep node_id stable and mark child node
                                     *ov = nv.clone();
@@ -380,7 +388,7 @@ fn apply_delta_linkml(
                             // adding a Null assignment may be a no-op when treating missing as null
                             if opts.ignore_no_ops
                                 && opts.treat_missing_as_null
-                                && matches!(new_child, LinkMLValue::Null { .. })
+                                && matches!(new_child, LinkMLInstance::Null { .. })
                             {
                                 return Ok(());
                             }
@@ -394,7 +402,7 @@ fn apply_delta_linkml(
                         if let Some(old_child) = values.get(key) {
                             if opts.ignore_no_ops
                                 && opts.treat_missing_as_null
-                                && matches!(old_child, LinkMLValue::Null { .. })
+                                && matches!(old_child, LinkMLInstance::Null { .. })
                             {
                                 // deleting a Null assignment: no-op
                                 return Ok(());
@@ -410,13 +418,13 @@ fn apply_delta_linkml(
                 apply_delta_linkml(child, &path[1..], newv, sv, trace, opts)?;
             }
         }
-        LinkMLValue::Mapping { values, slot, .. } => {
+        LinkMLInstance::Mapping { values, slot, .. } => {
             let key = &path[0];
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
                         let conv = sv.converter();
-                        let new_child = LinkMLValue::build_mapping_entry_for_slot(
+                        let new_child = LinkMLInstance::build_mapping_entry_for_slot(
                             slot,
                             v.clone(),
                             sv,
@@ -447,7 +455,7 @@ fn apply_delta_linkml(
                 apply_delta_linkml(child, &path[1..], newv, sv, trace, opts)?;
             }
         }
-        LinkMLValue::List {
+        LinkMLInstance::List {
             values,
             slot,
             class,
@@ -461,7 +469,7 @@ fn apply_delta_linkml(
                     Some(v) => {
                         if idx < values.len() {
                             let conv = sv.converter();
-                            let new_child = LinkMLValue::build_list_item_for_slot(
+                            let new_child = LinkMLInstance::build_list_item_for_slot(
                                 slot,
                                 class.as_ref(),
                                 v.clone(),
@@ -476,8 +484,8 @@ fn apply_delta_linkml(
                             }
                             match (&mut values[idx], &new_child) {
                                 (
-                                    LinkMLValue::Scalar { value: ov, .. },
-                                    LinkMLValue::Scalar { value: nv, .. },
+                                    LinkMLInstance::Scalar { value: ov, .. },
+                                    LinkMLInstance::Scalar { value: nv, .. },
                                 ) if !v.is_object() && !v.is_array() => {
                                     *ov = nv.clone();
                                     trace.updated.push(values[idx].node_id());
@@ -491,7 +499,7 @@ fn apply_delta_linkml(
                             }
                         } else if idx == values.len() {
                             let conv = sv.converter();
-                            let new_child = LinkMLValue::build_list_item_for_slot(
+                            let new_child = LinkMLInstance::build_list_item_for_slot(
                                 slot,
                                 class.as_ref(),
                                 v.clone(),
@@ -523,8 +531,8 @@ fn apply_delta_linkml(
                 apply_delta_linkml(&mut values[idx], &path[1..], newv, sv, trace, opts)?;
             }
         }
-        LinkMLValue::Scalar { .. } => {}
-        LinkMLValue::Null { .. } => {}
+        LinkMLInstance::Scalar { .. } => {}
+        LinkMLInstance::Null { .. } => {}
     }
     Ok(())
 }
