@@ -67,7 +67,7 @@ fn single_inlined_object_identifier_change_is_replacement() {
         d.path,
         vec![
             "objects".to_string(),
-            "2".to_string(),
+            "P:002".to_string(),
             "has_medical_history".to_string(),
             "0".to_string(),
             "diagnosis".to_string()
@@ -138,7 +138,7 @@ fn single_inlined_object_non_identifier_change_is_field_delta() {
     assert!(deltas.iter().any(|d| d.path
         == vec![
             "objects".to_string(),
-            "2".to_string(),
+            "P:002".to_string(),
             "has_medical_history".to_string(),
             "0".to_string(),
             "diagnosis".to_string(),
@@ -148,7 +148,7 @@ fn single_inlined_object_non_identifier_change_is_field_delta() {
     assert!(!deltas.iter().any(|d| d.path
         == vec![
             "objects".to_string(),
-            "2".to_string(),
+            "P:002".to_string(),
             "has_medical_history".to_string(),
             "0".to_string(),
             "diagnosis".to_string()
@@ -205,12 +205,15 @@ fn list_inlined_object_identifier_change_is_replacement() {
 
     let deltas = diff(&src, &tgt, false);
     // Expect a single replacement at the list item path
-    assert!(deltas
-        .iter()
-        .any(|d| d.path == vec!["objects".to_string(), "2".to_string()]));
-    assert!(!deltas
-        .iter()
-        .any(|d| d.path == vec!["objects".to_string(), "2".to_string(), "id".to_string()]));
+    assert!(deltas.iter().any(|d| {
+        d.path == vec!["objects".to_string(), "P:002".to_string()]
+            || d.path == vec!["objects".to_string(), "P:099".to_string()]
+    }));
+    assert!(!deltas.iter().any(|d| d.path == vec![
+        "objects".to_string(),
+        "P:002".to_string(),
+        "id".to_string()
+    ]));
 
     let (patched, _trace) = patch(
         &src,

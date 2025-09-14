@@ -141,8 +141,37 @@ impl LinkMLInstance {
                     current = values.get(key)?;
                 }
                 LinkMLInstance::List { values, .. } => {
-                    let idx: usize = key.parse().ok()?;
-                    current = values.get(idx)?;
+                    // Support either numeric index or identifier/key-based selection
+                    if let Ok(idx) = key.parse::<usize>() {
+                        current = values.get(idx)?;
+                    } else {
+                        // Attempt identifier-based lookup for object elements
+                        let mut found: Option<&LinkMLInstance> = None;
+                        for v in values.iter() {
+                            if let LinkMLInstance::Object { values: mv, class, .. } = v {
+                                if let Some(id_slot) = class.key_or_identifier_slot() {
+                                if let Some(LinkMLInstance::Scalar { value, .. }) = mv.get(&id_slot.name) {
+                                    match value {
+                                        JsonValue::String(sv) => {
+                                            if sv == key {
+                                                found = Some(v);
+                                                break;
+                                            }
+                                        }
+                                        other => {
+                                            let sv = other.to_string();
+                                            if sv == key {
+                                                found = Some(v);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                }
+                            }
+                        }
+                        current = found?;
+                    }
                 }
                 LinkMLInstance::Mapping { values, .. } => {
                     current = values.get(key)?;

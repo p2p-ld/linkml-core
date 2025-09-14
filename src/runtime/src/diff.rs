@@ -153,9 +153,28 @@ pub fn diff(
                 }
             }
             (LinkMLInstance::List { values: sl, .. }, LinkMLInstance::List { values: tl, .. }) => {
+                // Prefer identifier-based addressing when possible, fall back to index
                 let max_len = std::cmp::max(sl.len(), tl.len());
                 for i in 0..max_len {
-                    path.push(i.to_string());
+                    let label = |v: &LinkMLInstance| -> Option<String> {
+                        if let LinkMLInstance::Object { values, class, .. } = v {
+                            if let Some(id_slot) = class.key_or_identifier_slot() {
+                                if let Some(LinkMLInstance::Scalar { value, .. }) = values.get(&id_slot.name) {
+                                    return match value {
+                                        JsonValue::String(s) => Some(s.clone()),
+                                        other => Some(other.to_string()),
+                                    };
+                                }
+                            }
+                        }
+                        None
+                    };
+                    let step = if let Some(sv) = sl.get(i) {
+                        label(sv).or_else(|| tl.get(i).and_then(label)).unwrap_or_else(|| i.to_string())
+                    } else {
+                        tl.get(i).and_then(label).unwrap_or_else(|| i.to_string())
+                    };
+                    path.push(step);
                     match (sl.get(i), tl.get(i)) {
                         (Some(sv), Some(tv)) => {
                             inner(path, None, sv, tv, treat_missing_as_null, out)
@@ -461,13 +480,32 @@ fn apply_delta_linkml(
             class,
             ..
         } => {
-            let idx: usize = path[0].parse().map_err(|_| {
-                LinkMLError(format!("invalid list index '{}' in delta path", path[0]))
-            })?;
+            // Support index or identifier-based list addressing
+            let key = &path[0];
+            let idx_opt = key.parse::<usize>().ok().filter(|i| *i < values.len()).or_else(|| {
+                // Attempt identifier-based lookup
+                values.iter().enumerate().find_map(|(i, v)| {
+                    if let LinkMLInstance::Object { values: mv, class, .. } = v {
+                        class
+                            .key_or_identifier_slot()
+                            .and_then(|id_slot| mv.get(&id_slot.name))
+                            .and_then(|child| match child {
+                                LinkMLInstance::Scalar { value, .. } => Some(match value {
+                                    serde_json::Value::String(s) => s.clone(),
+                                    other => other.to_string(),
+                                }),
+                                _ => None,
+                            })
+                            .and_then(|s| if &s == key { Some(i) } else { None })
+                    } else {
+                        None
+                    }
+                })
+            });
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
-                        if idx < values.len() {
+                        if let Some(idx) = idx_opt.filter(|i| *i < values.len()) {
                             let conv = sv.converter();
                             let new_child = LinkMLInstance::build_list_item_for_slot(
                                 slot,
@@ -497,7 +535,7 @@ fn apply_delta_linkml(
                                     trace.updated.push(current.node_id());
                                 }
                             }
-                        } else if idx == values.len() {
+                        } else {
                             let conv = sv.converter();
                             let new_child = LinkMLInstance::build_list_item_for_slot(
                                 slot,
@@ -511,23 +549,17 @@ fn apply_delta_linkml(
                             mark_added_subtree(&new_child, trace);
                             values.push(new_child);
                             trace.updated.push(current.node_id());
-                        } else {
-                            return Err(LinkMLError(format!(
-                                "list index out of bounds in add: {} > {}",
-                                idx,
-                                values.len()
-                            )));
                         }
                     }
                     None => {
-                        if idx < values.len() {
+                        if let Some(idx) = idx_opt.filter(|i| *i < values.len()) {
                             let old = values.remove(idx);
                             mark_deleted_subtree(&old, trace);
                             trace.updated.push(current.node_id());
                         }
                     }
                 }
-            } else if idx < values.len() {
+            } else if let Some(idx) = idx_opt.filter(|i| *i < values.len()) {
                 apply_delta_linkml(&mut values[idx], &path[1..], newv, sv, trace, opts)?;
             }
         }
