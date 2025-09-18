@@ -90,7 +90,6 @@ impl ClassView {
                     }
                     if let Some(cu) = &class_def.slot_usage {
                         if let Some(usage) = cu.get(slot_ref) {
-                            slot_schema_uri = schema_uri.to_owned();
                             defs.push(*usage.clone());
                         }
                     }

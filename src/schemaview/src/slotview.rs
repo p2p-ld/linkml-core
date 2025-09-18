@@ -206,18 +206,6 @@ impl SlotView {
             let mut b = self.data.definitions[0].clone();
             for d in self.data.definitions.iter().skip(1) {
                 b.merge_with(d);
-                // the merge crate only provides `option::overwrite_none`, so specialized
-                // slot_usage ranges would be dropped without manually copying them here;
-                // replace once we have an official overwrite_except_none strategy upstream
-                if let Some(range) = &d.range {
-                    b.range = Some(range.clone());
-                }
-                if let Some(expr) = &d.range_expression {
-                    b.range_expression = Some(expr.clone());
-                }
-                if let Some(enum_range) = &d.enum_range {
-                    b.enum_range = Some(enum_range.clone());
-                }
             }
             b
         })
