@@ -1,0 +1,26 @@
+id: http://example.org/specialized
+name: specialized
+prefixes:
+  specialized: http://example.org/specialized/
+  base: http://example.org/base/
+default_prefix: specialized
+default_range: string
+imports:
+  - http://example.org/base
+
+classes:
+  TargetClass:
+    slots:
+      - target_slot
+
+  SpecializedThing:
+    is_a: base:BaseThing
+    slots:
+      - shared_slot
+    slot_usage:
+      shared_slot:
+        range: specialized:TargetClass
+
+slots:
+  target_slot:
+    range: string
