@@ -209,11 +209,9 @@ fn list_inlined_object_identifier_change_is_replacement() {
         d.path == vec!["objects".to_string(), "P:002".to_string()]
             || d.path == vec!["objects".to_string(), "P:099".to_string()]
     }));
-    assert!(!deltas.iter().any(|d| d.path == vec![
-        "objects".to_string(),
-        "P:002".to_string(),
-        "id".to_string()
-    ]));
+    assert!(!deltas
+        .iter()
+        .any(|d| { d.path == vec!["objects".to_string(), "P:002".to_string(), "id".to_string()] }));
 
     let (patched, _trace) = patch(
         &src,

@@ -148,25 +148,30 @@ impl LinkMLInstance {
                         // Attempt identifier-based lookup for object elements
                         let mut found: Option<&LinkMLInstance> = None;
                         for v in values.iter() {
-                            if let LinkMLInstance::Object { values: mv, class, .. } = v {
+                            if let LinkMLInstance::Object {
+                                values: mv, class, ..
+                            } = v
+                            {
                                 if let Some(id_slot) = class.key_or_identifier_slot() {
-                                if let Some(LinkMLInstance::Scalar { value, .. }) = mv.get(&id_slot.name) {
-                                    match value {
-                                        JsonValue::String(sv) => {
-                                            if sv == key {
-                                                found = Some(v);
-                                                break;
+                                    if let Some(LinkMLInstance::Scalar { value, .. }) =
+                                        mv.get(&id_slot.name)
+                                    {
+                                        match value {
+                                            JsonValue::String(sv) => {
+                                                if sv == key {
+                                                    found = Some(v);
+                                                    break;
+                                                }
                                             }
-                                        }
-                                        other => {
-                                            let sv = other.to_string();
-                                            if sv == key {
-                                                found = Some(v);
-                                                break;
+                                            other => {
+                                                let sv = other.to_string();
+                                                if sv == key {
+                                                    found = Some(v);
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
-                                }
                                 }
                             }
                         }

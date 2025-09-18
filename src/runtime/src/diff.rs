@@ -1,4 +1,4 @@
-use crate::{LResult, LinkMLError, LinkMLInstance, NodeId};
+use crate::{LResult, LinkMLInstance, NodeId};
 use linkml_schemaview::schemaview::{SchemaView, SlotView};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -159,7 +159,9 @@ pub fn diff(
                     let label = |v: &LinkMLInstance| -> Option<String> {
                         if let LinkMLInstance::Object { values, class, .. } = v {
                             if let Some(id_slot) = class.key_or_identifier_slot() {
-                                if let Some(LinkMLInstance::Scalar { value, .. }) = values.get(&id_slot.name) {
+                                if let Some(LinkMLInstance::Scalar { value, .. }) =
+                                    values.get(&id_slot.name)
+                                {
                                     return match value {
                                         JsonValue::String(s) => Some(s.clone()),
                                         other => Some(other.to_string()),
@@ -170,7 +172,9 @@ pub fn diff(
                         None
                     };
                     let step = if let Some(sv) = sl.get(i) {
-                        label(sv).or_else(|| tl.get(i).and_then(label)).unwrap_or_else(|| i.to_string())
+                        label(sv)
+                            .or_else(|| tl.get(i).and_then(label))
+                            .unwrap_or_else(|| i.to_string())
                     } else {
                         tl.get(i).and_then(label).unwrap_or_else(|| i.to_string())
                     };
@@ -482,26 +486,33 @@ fn apply_delta_linkml(
         } => {
             // Support index or identifier-based list addressing
             let key = &path[0];
-            let idx_opt = key.parse::<usize>().ok().filter(|i| *i < values.len()).or_else(|| {
-                // Attempt identifier-based lookup
-                values.iter().enumerate().find_map(|(i, v)| {
-                    if let LinkMLInstance::Object { values: mv, class, .. } = v {
-                        class
-                            .key_or_identifier_slot()
-                            .and_then(|id_slot| mv.get(&id_slot.name))
-                            .and_then(|child| match child {
-                                LinkMLInstance::Scalar { value, .. } => Some(match value {
-                                    serde_json::Value::String(s) => s.clone(),
-                                    other => other.to_string(),
-                                }),
-                                _ => None,
-                            })
-                            .and_then(|s| if &s == key { Some(i) } else { None })
-                    } else {
-                        None
-                    }
-                })
-            });
+            let idx_opt = key
+                .parse::<usize>()
+                .ok()
+                .filter(|i| *i < values.len())
+                .or_else(|| {
+                    // Attempt identifier-based lookup
+                    values.iter().enumerate().find_map(|(i, v)| {
+                        if let LinkMLInstance::Object {
+                            values: mv, class, ..
+                        } = v
+                        {
+                            class
+                                .key_or_identifier_slot()
+                                .and_then(|id_slot| mv.get(&id_slot.name))
+                                .and_then(|child| match child {
+                                    LinkMLInstance::Scalar { value, .. } => Some(match value {
+                                        serde_json::Value::String(s) => s.clone(),
+                                        other => other.to_string(),
+                                    }),
+                                    _ => None,
+                                })
+                                .and_then(|s| if &s == key { Some(i) } else { None })
+                        } else {
+                            None
+                        }
+                    })
+                });
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
