@@ -41,3 +41,47 @@ fn slot_lookup_and_class_slots() {
     assert_eq!(map.get("symbol"), Some(&1usize));
     assert_eq!(map.get("exact mappings"), Some(&2usize));
 }
+
+#[test]
+fn slot_usage_overrides_range_across_schemas() {
+    let base_schema = from_yaml(Path::new(&data_path("slot_usage_base.yaml"))).unwrap();
+    let specialized_schema =
+        from_yaml(Path::new(&data_path("slot_usage_specialized.yaml"))).unwrap();
+
+    let mut sv = SchemaView::new();
+    sv.add_schema(base_schema.clone()).unwrap();
+    sv.add_schema(specialized_schema.clone()).unwrap();
+
+    let conv = converter_from_schemas([&base_schema, &specialized_schema]);
+
+    let base_class = sv
+        .get_class(&Identifier::new("base:BaseThing"), &conv)
+        .unwrap()
+        .unwrap();
+    let base_slot = base_class
+        .slots()
+        .iter()
+        .find(|s| s.name == "shared_slot")
+        .expect("shared_slot not found");
+
+    assert_eq!(base_slot.definition().range.as_deref(), Some("string"));
+
+    let class = sv
+        .get_class(&Identifier::new("specialized:SpecializedThing"), &conv)
+        .unwrap()
+        .unwrap();
+    let slot = class
+        .slots()
+        .iter()
+        .find(|s| s.name == "shared_slot")
+        .expect("shared_slot not found");
+
+    assert_eq!(
+        slot.definition().range.as_deref(),
+        Some("specialized:TargetClass")
+    );
+    assert_eq!(
+        slot.get_range_class().map(|cv| cv.name().to_string()),
+        Some("TargetClass".to_string())
+    );
+}

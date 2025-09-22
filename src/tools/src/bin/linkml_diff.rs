@@ -30,7 +30,7 @@ fn load_value(
     sv: &SchemaView,
     class: &ClassView,
     conv: &curies::Converter,
-) -> Result<linkml_runtime::LinkMLValue, Box<dyn std::error::Error>> {
+) -> Result<linkml_runtime::LinkMLInstance, Box<dyn std::error::Error>> {
     if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
         if ext == "json" {
             load_json_file(path, sv, class, conv)

@@ -228,6 +228,12 @@ impl SchemaView {
         self.data.schema_definitions.iter()
     }
 
+    /// Returns a converter built from every schema loaded into this view.
+    ///
+    /// Note that prefix collisions across schemas will resolve to whichever
+    /// expansion appears last; avoid this helper if you expect conflicting
+    /// CURIE mappings and instead use `converter_for_schema` with a specific
+    /// schema URI.
     pub fn converter(&self) -> Converter {
         converter_from_schemas(self.data.schema_definitions.values())
     }
