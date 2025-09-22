@@ -461,6 +461,7 @@ pub fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_patch, m)?)?;
     m.add_function(wrap_pyfunction!(py_to_turtle, m)?)?;
     m.add_class::<PyLinkMLInstance>()?;
+    m.add_class::<PyDelta>()?;
     m.add_class::<PyPatchTrace>()?;
     m.add_class::<PyPatchResult>()?;
     Ok(())
@@ -476,6 +477,74 @@ pub struct PyLinkMLInstance {
 impl PyLinkMLInstance {
     fn new(value: LinkMLInstance, sv: Py<PySchemaView>) -> Self {
         Self { value, sv }
+    }
+}
+
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
+#[pyclass(name = "Delta")]
+#[derive(Clone)]
+pub struct PyDelta {
+    inner: Delta,
+}
+
+impl From<Delta> for PyDelta {
+    fn from(delta: Delta) -> Self {
+        Self { inner: delta }
+    }
+}
+
+impl PyDelta {
+    fn clone_inner(&self) -> Delta {
+        self.inner.clone()
+    }
+}
+
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
+#[pymethods]
+impl PyDelta {
+    #[getter]
+    fn path(&self) -> Vec<String> {
+        self.inner.path.clone()
+    }
+
+    #[getter]
+    fn old<'py>(&self, py: Python<'py>) -> PyObject {
+        match &self.inner.old {
+            Some(v) => json_value_to_py(py, v),
+            None => py.None(),
+        }
+    }
+
+    #[getter]
+    #[allow(clippy::wrong_self_convention, clippy::new_ret_no_self)]
+    fn new<'py>(&self, py: Python<'py>) -> PyObject {
+        match &self.inner.new {
+            Some(v) => json_value_to_py(py, v),
+            None => py.None(),
+        }
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let old_repr = self
+            .inner
+            .old
+            .as_ref()
+            .map(|v| v.to_string())
+            .unwrap_or_else(|| "None".to_string());
+        let new_repr = self
+            .inner
+            .new
+            .as_ref()
+            .map(|v| v.to_string())
+            .unwrap_or_else(|| "None".to_string());
+        Ok(format!(
+            "Delta(path={:?}, old={}, new={})",
+            self.inner.path, old_repr, new_repr
+        ))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        self.__repr__()
     }
 }
 
@@ -806,53 +875,39 @@ impl PyPatchResult {
 }
 
 #[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
-#[pyfunction]
+#[pyfunction(signature = (source, sv, class_view))]
 fn load_yaml(
     py: Python<'_>,
     source: &Bound<'_, PyAny>,
     sv: Py<PySchemaView>,
-    class: Option<Py<PyClassView>>,
+    class_view: Py<PyClassView>,
 ) -> PyResult<PyLinkMLInstance> {
     let sv_ref = sv.bind(py).borrow();
     let rust_sv = sv_ref.as_rust();
     let conv = rust_sv.converter();
-    let class_ref = match class {
-        Some(cv) => {
-            let bound = cv.bind(py);
-            Some(bound.borrow())
-        }
-        None => None,
-    };
+    let class_bound = class_view.bind(py);
+    let class_ref = class_bound.borrow();
     let (text, _) = py_filelike_or_string_to_string(source)?;
-    let cv = class_ref
-        .ok_or_else(|| PyException::new_err("class not found, please provide a valid class"))?;
-    let v = load_yaml_str(&text, rust_sv, cv.as_rust(), &conv)
+    let v = load_yaml_str(&text, rust_sv, class_ref.as_rust(), &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
     Ok(PyLinkMLInstance::new(v, sv))
 }
 
 #[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
-#[pyfunction]
+#[pyfunction(signature = (source, sv, class_view))]
 fn load_json(
     py: Python<'_>,
     source: &Bound<'_, PyAny>,
     sv: Py<PySchemaView>,
-    class: Option<Py<PyClassView>>,
+    class_view: Py<PyClassView>,
 ) -> PyResult<PyLinkMLInstance> {
     let sv_ref = sv.bind(py).borrow();
     let rust_sv = sv_ref.as_rust();
     let conv = rust_sv.converter();
-    let class_ref = match class {
-        Some(cv) => {
-            let bound = cv.bind(py);
-            Some(bound.borrow())
-        }
-        None => None,
-    };
-    let cv = class_ref
-        .ok_or_else(|| PyException::new_err("class not found, please provide a valid class"))?;
+    let class_bound = class_view.bind(py);
+    let class_ref = class_bound.borrow();
     let (text, _) = py_filelike_or_string_to_string(source)?;
-    let v = load_json_str(&text, rust_sv, cv.as_rust(), &conv)
+    let v = load_json_str(&text, rust_sv, class_ref.as_rust(), &conv)
         .map_err(|e| PyException::new_err(e.to_string()))?;
     Ok(PyLinkMLInstance::new(v, sv))
 }
@@ -864,17 +919,16 @@ fn py_diff(
     source: &PyLinkMLInstance,
     target: &PyLinkMLInstance,
     treat_missing_as_null: Option<bool>,
-) -> PyResult<PyObject> {
+) -> PyResult<Vec<Py<PyDelta>>> {
     let deltas = diff_internal(
         &source.value,
         &target.value,
         treat_missing_as_null.unwrap_or(false),
     );
-    let vals: Vec<JsonValue> = deltas
-        .iter()
-        .map(|d| serde_json::to_value(d).unwrap())
-        .collect();
-    Ok(json_value_to_py(py, &JsonValue::Array(vals)))
+    deltas
+        .into_iter()
+        .map(|delta| Py::new(py, PyDelta::from(delta)))
+        .collect()
 }
 
 #[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
@@ -882,14 +936,15 @@ fn py_diff(
 fn py_patch(
     py: Python<'_>,
     source: &PyLinkMLInstance,
-    deltas: &Bound<'_, PyAny>,
+    deltas: Vec<Py<PyDelta>>,
     treat_missing_as_null: bool,
     ignore_no_ops: bool,
 ) -> PyResult<Py<PyPatchResult>> {
-    let json_mod = PyModule::import(py, "json")?;
-    let deltas_str: String = json_mod.call_method1("dumps", (deltas,))?.extract()?;
-    let deltas_vec: Vec<Delta> =
-        serde_json::from_str(&deltas_str).map_err(|e| PyException::new_err(e.to_string()))?;
+    let mut deltas_vec = Vec::with_capacity(deltas.len());
+    for delta in deltas {
+        let bound = delta.bind(py);
+        deltas_vec.push(bound.borrow().clone_inner());
+    }
     let sv_ref = source.sv.bind(py).borrow();
     let rust_sv = sv_ref.as_rust();
     let (new_value, trace) = patch_internal(

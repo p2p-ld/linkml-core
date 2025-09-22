@@ -56,7 +56,7 @@ fn check_stubs(stub: &pyo3_stub_gen::StubInfo) -> pyo3_stub_gen::Result<()> {
             msg.push('\n');
         }
         msg.push_str("Run `cargo run --bin stub_gen --features stubgen` to regenerate.");
-        Err(std::io::Error::new(ErrorKind::Other, msg).into())
+        Err(std::io::Error::other(msg).into())
     }
 }
 
