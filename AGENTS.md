@@ -38,6 +38,7 @@
 ### Pre-commit checklist
 - Run `cargo fmt --all` to format Rust code.
 - Run `cargo clippy -p schemaview -p linkml_runtime -p linkml_tools -p linkml_runtime_python -p linkml_wasm --all-targets --all-features -- -D warnings --no-deps` and address all warnings (the generated `linkml_meta` crate is excluded).
+- Run `cargo run -p linkml_runtime_python --bin stub_gen --features stubgen -- --check` to ensure Python stubs are current.
 
 ## Notes
 - Network resolution is feature-gated; default builds include `resolve`. Only triggers when loading remote schemas.

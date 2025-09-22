@@ -12,6 +12,11 @@ use pyo3::types::PyAnyMethods;
 use pyo3::types::{PyAny, PyModule};
 use pyo3::Bound;
 use pyo3::{wrap_pyfunction, wrap_pymodule};
+#[cfg(feature = "stubgen")]
+use pyo3_stub_gen::{
+    define_stub_info_gatherer,
+    derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods},
+};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::fs;
@@ -38,11 +43,13 @@ fn py_filelike_or_string_to_string(obj: &Bound<'_, PyAny>) -> PyResult<(String, 
     Err(PyException::new_err("expected string or file-like object"))
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
 #[pyfunction]
 fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
     Ok((a + b).to_string())
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[pyclass(name = "SchemaView")]
 pub struct PySchemaView {
     inner: Arc<SchemaView>,
@@ -54,6 +61,7 @@ impl PySchemaView {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[pyclass(name = "ClassView")]
 #[derive(Clone)]
 pub struct PyClassView {
@@ -66,6 +74,7 @@ impl PyClassView {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[pyclass(name = "SlotView")]
 #[derive(Clone)]
 pub struct PySlotView {
@@ -78,6 +87,7 @@ impl PySlotView {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[pyclass(name = "EnumView")]
 #[derive(Clone)]
 pub struct PyEnumView {
@@ -90,6 +100,7 @@ impl PyEnumView {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PySchemaView {
     #[new]
@@ -252,6 +263,7 @@ impl PySchemaView {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PyClassView {
     #[getter]
@@ -321,6 +333,7 @@ impl PyClassView {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PySlotView {
     #[getter]
@@ -376,6 +389,7 @@ impl PySlotView {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PyEnumView {
     #[getter]
@@ -429,6 +443,7 @@ pub fn schemaview_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     Ok(())
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
 #[pyfunction]
 #[pyo3(signature = (source=None))]
 fn make_schema_view(source: Option<&Bound<'_, PyAny>>) -> PyResult<PySchemaView> {
@@ -451,6 +466,7 @@ pub fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     Ok(())
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[pyclass(name = "LinkMLInstance")]
 pub struct PyLinkMLInstance {
     value: LinkMLInstance,
@@ -478,6 +494,7 @@ impl Clone for PyLinkMLInstance {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PyLinkMLInstance {
     /// Semantic equality per LinkML Instances spec.
@@ -700,6 +717,7 @@ impl PyLinkMLInstance {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[pyclass(name = "PatchTrace")]
 pub struct PyPatchTrace {
     added: Vec<u64>,
@@ -717,6 +735,7 @@ impl From<PatchTrace> for PyPatchTrace {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PyPatchTrace {
     #[getter]
@@ -746,6 +765,7 @@ impl PyPatchTrace {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[pyclass(name = "PatchResult")]
 pub struct PyPatchResult {
     value: Py<PyLinkMLInstance>,
@@ -758,6 +778,7 @@ impl PyPatchResult {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PyPatchResult {
     #[getter]
@@ -784,6 +805,7 @@ impl PyPatchResult {
     }
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
 #[pyfunction]
 fn load_yaml(
     py: Python<'_>,
@@ -809,6 +831,7 @@ fn load_yaml(
     Ok(PyLinkMLInstance::new(v, sv))
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
 #[pyfunction]
 fn load_json(
     py: Python<'_>,
@@ -834,6 +857,7 @@ fn load_json(
     Ok(PyLinkMLInstance::new(v, sv))
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
 #[pyfunction(name = "diff", signature = (source, target, treat_missing_as_null=None))]
 fn py_diff(
     py: Python<'_>,
@@ -853,6 +877,7 @@ fn py_diff(
     Ok(json_value_to_py(py, &JsonValue::Array(vals)))
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
 #[pyfunction(name = "patch", signature = (source, deltas, treat_missing_as_null = true, ignore_no_ops = true))]
 fn py_patch(
     py: Python<'_>,
@@ -886,6 +911,7 @@ fn py_patch(
     Py::new(py, result)
 }
 
+#[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
 #[pyfunction(name = "to_turtle", signature = (value, skolem=None))]
 fn py_to_turtle(
     py: Python<'_>,
@@ -894,3 +920,6 @@ fn py_to_turtle(
 ) -> PyResult<String> {
     value.as_turtle(py, skolem)
 }
+
+#[cfg(feature = "stubgen")]
+define_stub_info_gatherer!(stub_info);
