@@ -23,6 +23,12 @@ struct Args {
     /// Output patched file; defaults to stdout
     #[arg(short, long)]
     output: Option<PathBuf>,
+    /// Treat missing assignments as equivalent to explicit null for equality
+    #[arg(long, default_value_t = true)]
+    treat_missing_as_null: bool,
+    /// Skip deltas that do not change the value (no-ops)
+    #[arg(long, default_value_t = true)]
+    ignore_noop: bool,
 }
 
 fn load_value(
@@ -30,7 +36,7 @@ fn load_value(
     sv: &SchemaView,
     class: &ClassView,
     conv: &curies::Converter,
-) -> Result<linkml_runtime::LinkMLValue, Box<dyn std::error::Error>> {
+) -> Result<linkml_runtime::LinkMLInstance, Box<dyn std::error::Error>> {
     if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
         if ext == "json" {
             load_json_file(path, sv, class, conv)
@@ -44,7 +50,7 @@ fn load_value(
 
 fn write_value(
     path: Option<&Path>,
-    value: &linkml_runtime::LinkMLValue,
+    value: &linkml_runtime::LinkMLInstance,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let json = value.to_json();
     let mut writer: Box<dyn Write> = if let Some(p) = path {
@@ -92,7 +98,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         serde_yaml::from_str(&delta_text)?
     };
-    let patched = patch(&src, &deltas, &sv);
+    let (patched, _trace) = patch(
+        &src,
+        &deltas,
+        &sv,
+        linkml_runtime::diff::PatchOptions {
+            ignore_no_ops: args.ignore_noop,
+            treat_missing_as_null: args.treat_missing_as_null,
+        },
+    )?;
     write_value(args.output.as_deref(), &patched)?;
     Ok(())
 }

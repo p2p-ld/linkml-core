@@ -1,7 +1,7 @@
-use crate::{load_json_str, LinkMLValue};
+use crate::{LResult, LinkMLError, LinkMLInstance, NodeId};
 use linkml_schemaview::schemaview::{SchemaView, SlotView};
 use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value as JsonValue};
+use serde_json::Value as JsonValue;
 
 const IGNORE_ANNOTATION: &str = "diff.linkml.io/ignore";
 
@@ -23,20 +23,21 @@ pub struct Delta {
     pub new: Option<JsonValue>,
 }
 
-impl LinkMLValue {
+impl LinkMLInstance {
     pub fn to_json(&self) -> JsonValue {
         match self {
-            LinkMLValue::Scalar { value, .. } => value.clone(),
-            LinkMLValue::List { values, .. } => {
+            LinkMLInstance::Scalar { value, .. } => value.clone(),
+            LinkMLInstance::Null { .. } => JsonValue::Null,
+            LinkMLInstance::List { values, .. } => {
                 JsonValue::Array(values.iter().map(|v| v.to_json()).collect())
             }
-            LinkMLValue::Mapping { values, .. } => JsonValue::Object(
+            LinkMLInstance::Mapping { values, .. } => JsonValue::Object(
                 values
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_json()))
                     .collect(),
             ),
-            LinkMLValue::Object { values, .. } => JsonValue::Object(
+            LinkMLInstance::Object { values, .. } => JsonValue::Object(
                 values
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_json()))
@@ -46,13 +47,24 @@ impl LinkMLValue {
     }
 }
 
-pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: bool) -> Vec<Delta> {
+/// Compute a semantic diff between two LinkMLInstance trees.
+///
+/// Semantics of nulls and missing values:
+/// - X -> null: update to null (old = X, new = null).
+/// - null -> X: update from null (old = null, new = X).
+/// - missing -> X: add (old = None, new = X).
+/// - X -> missing: ignored by default; if `treat_missing_as_null` is true, update to null (old = X, new = null).
+pub fn diff(
+    source: &LinkMLInstance,
+    target: &LinkMLInstance,
+    treat_missing_as_null: bool,
+) -> Vec<Delta> {
     fn inner(
         path: &mut Vec<String>,
         slot: Option<&SlotView>,
-        s: &LinkMLValue,
-        t: &LinkMLValue,
-        ignore_missing: bool,
+        s: &LinkMLInstance,
+        t: &LinkMLInstance,
+        treat_missing_as_null: bool,
         out: &mut Vec<Delta>,
     ) {
         if let Some(sl) = slot {
@@ -62,17 +74,41 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
         }
         match (s, t) {
             (
-                LinkMLValue::Object {
+                LinkMLInstance::Object {
                     values: sm,
                     class: sc,
                     ..
                 },
-                LinkMLValue::Object {
+                LinkMLInstance::Object {
                     values: tm,
                     class: tc,
                     ..
                 },
             ) => {
+                // If objects have an identifier or key slot and it changed, treat as whole-object replacement
+                // This applies for single-valued and list-valued inlined objects.
+                let key_slot_name = sc
+                    .key_or_identifier_slot()
+                    .or_else(|| tc.key_or_identifier_slot())
+                    .map(|s| s.name.clone());
+                if let Some(ks) = key_slot_name {
+                    let sid = sm.get(&ks);
+                    let tid = tm.get(&ks);
+                    if let (
+                        Some(LinkMLInstance::Scalar { value: s_id, .. }),
+                        Some(LinkMLInstance::Scalar { value: t_id, .. }),
+                    ) = (sid, tid)
+                    {
+                        if s_id != t_id {
+                            out.push(Delta {
+                                path: path.clone(),
+                                old: Some(s.to_json()),
+                                new: Some(t.to_json()),
+                            });
+                            return;
+                        }
+                    }
+                }
                 for (k, sv) in sm {
                     let slot_view = sc
                         .slots()
@@ -81,14 +117,17 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
                         .or_else(|| tc.slots().iter().find(|s| s.name == *k));
                     path.push(k.clone());
                     match tm.get(k) {
-                        Some(tv) => inner(path, slot_view, sv, tv, ignore_missing, out),
+                        Some(tv) => inner(path, slot_view, sv, tv, treat_missing_as_null, out),
                         None => {
-                            if !ignore_missing && !slot_view.is_some_and(slot_is_ignored) {
-                                out.push(Delta {
-                                    path: path.clone(),
-                                    old: Some(sv.to_json()),
-                                    new: None,
-                                });
+                            if !slot_view.is_some_and(slot_is_ignored) {
+                                // Missing target slot: either ignore (default) or treat as update to null
+                                if treat_missing_as_null {
+                                    out.push(Delta {
+                                        path: path.clone(),
+                                        old: Some(sv.to_json()),
+                                        new: Some(JsonValue::Null),
+                                    });
+                                }
                             }
                         }
                     }
@@ -113,12 +152,14 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
                     }
                 }
             }
-            (LinkMLValue::List { values: sl, .. }, LinkMLValue::List { values: tl, .. }) => {
+            (LinkMLInstance::List { values: sl, .. }, LinkMLInstance::List { values: tl, .. }) => {
                 let max_len = std::cmp::max(sl.len(), tl.len());
                 for i in 0..max_len {
                     path.push(i.to_string());
                     match (sl.get(i), tl.get(i)) {
-                        (Some(sv), Some(tv)) => inner(path, None, sv, tv, ignore_missing, out),
+                        (Some(sv), Some(tv)) => {
+                            inner(path, None, sv, tv, treat_missing_as_null, out)
+                        }
                         (Some(sv), None) => out.push(Delta {
                             path: path.clone(),
                             old: Some(sv.to_json()),
@@ -134,13 +175,18 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
                     path.pop();
                 }
             }
-            (LinkMLValue::Mapping { values: sm, .. }, LinkMLValue::Mapping { values: tm, .. }) => {
+            (
+                LinkMLInstance::Mapping { values: sm, .. },
+                LinkMLInstance::Mapping { values: tm, .. },
+            ) => {
                 use std::collections::BTreeSet;
                 let keys: BTreeSet<_> = sm.keys().chain(tm.keys()).cloned().collect();
                 for k in keys {
                     path.push(k.clone());
                     match (sm.get(&k), tm.get(&k)) {
-                        (Some(sv), Some(tv)) => inner(path, None, sv, tv, ignore_missing, out),
+                        (Some(sv), Some(tv)) => {
+                            inner(path, None, sv, tv, treat_missing_as_null, out)
+                        }
                         (Some(sv), None) => out.push(Delta {
                             path: path.clone(),
                             old: Some(sv.to_json()),
@@ -156,14 +202,29 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
                     path.pop();
                 }
             }
-            _ => {
-                let sv = s.to_json();
-                let tv = t.to_json();
-                if sv != tv {
+            (LinkMLInstance::Null { .. }, LinkMLInstance::Null { .. }) => {}
+            (LinkMLInstance::Null { .. }, tv) => {
+                out.push(Delta {
+                    path: path.clone(),
+                    old: Some(JsonValue::Null),
+                    new: Some(tv.to_json()),
+                });
+            }
+            (sv, LinkMLInstance::Null { .. }) => {
+                out.push(Delta {
+                    path: path.clone(),
+                    old: Some(sv.to_json()),
+                    new: Some(JsonValue::Null),
+                });
+            }
+            (sv, tv) => {
+                let sj = sv.to_json();
+                let tj = tv.to_json();
+                if sj != tj {
                     out.push(Delta {
                         path: path.clone(),
-                        old: Some(sv),
-                        new: Some(tv),
+                        old: Some(sj),
+                        new: Some(tj),
                     });
                 }
             }
@@ -175,90 +236,303 @@ pub fn diff(source: &LinkMLValue, target: &LinkMLValue, ignore_missing_target: b
         None,
         source,
         target,
-        ignore_missing_target,
+        treat_missing_as_null,
         &mut out,
     );
     out
 }
 
-pub fn patch(source: &LinkMLValue, deltas: &[Delta], sv: &SchemaView) -> LinkMLValue {
-    let mut json = source.to_json();
+#[derive(Debug, Clone, Default)]
+pub struct PatchTrace {
+    /// Node IDs of subtrees that were newly created by the patch.
+    ///
+    /// See [`crate::NodeId`] for semantics: these are internal, ephemeral IDs
+    /// that are useful for tooling and provenance, not object identifiers.
+    pub added: Vec<NodeId>,
+    /// Node IDs of subtrees that were removed by the patch.
+    pub deleted: Vec<NodeId>,
+    /// Node IDs of nodes that were directly updated (e.g., parent containers, scalars).
+    pub updated: Vec<NodeId>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct PatchOptions {
+    pub ignore_no_ops: bool,
+    pub treat_missing_as_null: bool,
+}
+
+impl Default for PatchOptions {
+    fn default() -> Self {
+        Self {
+            ignore_no_ops: true,
+            treat_missing_as_null: true,
+        }
+    }
+}
+
+pub fn patch(
+    source: &LinkMLInstance,
+    deltas: &[Delta],
+    sv: &SchemaView,
+    opts: PatchOptions,
+) -> LResult<(LinkMLInstance, PatchTrace)> {
+    let mut out = source.clone();
+    let mut trace = PatchTrace::default();
     for d in deltas {
-        apply_delta(&mut json, d);
+        apply_delta_linkml(&mut out, &d.path, &d.new, sv, &mut trace, opts)?;
     }
-    let json_str = serde_json::to_string(&json).unwrap();
-    let conv = sv.converter();
-    match source {
-        LinkMLValue::Object { class: ref c, .. } => load_json_str(&json_str, sv, c, &conv).unwrap(),
-        _ => panic!("patching non-map values is not supported here"),
+    Ok((out, trace))
+}
+
+fn collect_all_ids(value: &LinkMLInstance, ids: &mut Vec<NodeId>) {
+    ids.push(value.node_id());
+    match value {
+        LinkMLInstance::Scalar { .. } => {}
+        LinkMLInstance::Null { .. } => {}
+        LinkMLInstance::List { values, .. } => {
+            for v in values {
+                collect_all_ids(v, ids);
+            }
+        }
+        LinkMLInstance::Mapping { values, .. } | LinkMLInstance::Object { values, .. } => {
+            for v in values.values() {
+                collect_all_ids(v, ids);
+            }
+        }
     }
 }
 
-fn apply_delta(value: &mut JsonValue, delta: &Delta) {
-    apply_delta_inner(value, &delta.path, &delta.new);
+fn mark_added_subtree(v: &LinkMLInstance, trace: &mut PatchTrace) {
+    collect_all_ids(v, &mut trace.added);
 }
 
-fn apply_delta_inner(value: &mut JsonValue, path: &[String], newv: &Option<JsonValue>) {
+fn mark_deleted_subtree(v: &LinkMLInstance, trace: &mut PatchTrace) {
+    collect_all_ids(v, &mut trace.deleted);
+}
+
+// Removed thin wrappers; call LinkMLInstance builders directly at call sites.
+
+fn apply_delta_linkml(
+    current: &mut LinkMLInstance,
+    path: &[String],
+    newv: &Option<serde_json::Value>,
+    sv: &SchemaView,
+    trace: &mut PatchTrace,
+    opts: PatchOptions,
+) -> LResult<()> {
     if path.is_empty() {
         if let Some(v) = newv {
-            *value = v.clone();
+            let (class_opt, slot_opt) = match current {
+                LinkMLInstance::Object { class, .. } => (Some(class.clone()), None),
+                LinkMLInstance::List { class, slot, .. } => (class.clone(), Some(slot.clone())),
+                LinkMLInstance::Mapping { class, slot, .. } => (class.clone(), Some(slot.clone())),
+                LinkMLInstance::Scalar { class, slot, .. } => (class.clone(), Some(slot.clone())),
+                LinkMLInstance::Null { class, slot, .. } => (class.clone(), Some(slot.clone())),
+            };
+            let conv = sv.converter();
+            if let Some(cls) = class_opt {
+                let new_node =
+                    LinkMLInstance::from_json(v.clone(), cls, slot_opt, sv, &conv, false)?;
+                if opts.ignore_no_ops && current.equals(&new_node, opts.treat_missing_as_null) {
+                    // No-op delta; skip to preserve node IDs
+                    return Ok(());
+                }
+                mark_deleted_subtree(current, trace);
+                mark_added_subtree(&new_node, trace);
+                *current = new_node;
+            }
         }
-        return;
+        return Ok(());
     }
-    match value {
-        JsonValue::Object(map) => {
+
+    match current {
+        LinkMLInstance::Object { values, class, .. } => {
             let key = &path[0];
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
-                        map.insert(key.clone(), v.clone());
+                        let conv = sv.converter();
+                        let slot = class.slots().iter().find(|s| s.name == *key).cloned();
+                        let new_child = LinkMLInstance::from_json(
+                            v.clone(),
+                            class.clone(),
+                            slot.clone(),
+                            sv,
+                            &conv,
+                            false,
+                        )?;
+                        if let Some(old_child) = values.get_mut(key) {
+                            if opts.ignore_no_ops
+                                && old_child.equals(&new_child, opts.treat_missing_as_null)
+                            {
+                                // no-op; skip
+                                return Ok(());
+                            }
+                            match (&mut *old_child, &new_child) {
+                                (
+                                    LinkMLInstance::Scalar { value: ov, .. },
+                                    LinkMLInstance::Scalar { value: nv, .. },
+                                ) if !v.is_object() && !v.is_array() => {
+                                    // In-place scalar update: keep node_id stable and mark child node
+                                    *ov = nv.clone();
+                                    trace.updated.push(old_child.node_id());
+                                }
+                                _ => {
+                                    let old_snapshot = std::mem::replace(old_child, new_child);
+                                    mark_deleted_subtree(&old_snapshot, trace);
+                                    mark_added_subtree(old_child, trace);
+                                    trace.updated.push(current.node_id());
+                                }
+                            }
+                        } else {
+                            // adding a Null assignment may be a no-op when treating missing as null
+                            if opts.ignore_no_ops
+                                && opts.treat_missing_as_null
+                                && matches!(new_child, LinkMLInstance::Null { .. })
+                            {
+                                return Ok(());
+                            }
+                            // mark before insert
+                            mark_added_subtree(&new_child, trace);
+                            values.insert(key.clone(), new_child);
+                            trace.updated.push(current.node_id());
+                        }
                     }
                     None => {
-                        map.remove(key);
+                        if let Some(old_child) = values.get(key) {
+                            if opts.ignore_no_ops
+                                && opts.treat_missing_as_null
+                                && matches!(old_child, LinkMLInstance::Null { .. })
+                            {
+                                // deleting a Null assignment: no-op
+                                return Ok(());
+                            }
+                        }
+                        if let Some(old_child) = values.remove(key) {
+                            mark_deleted_subtree(&old_child, trace);
+                            trace.updated.push(current.node_id());
+                        }
                     }
                 }
-            } else {
-                let entry = map
-                    .entry(key.clone())
-                    .or_insert(JsonValue::Object(Map::new()));
-                apply_delta_inner(entry, &path[1..], newv);
+            } else if let Some(child) = values.get_mut(key) {
+                apply_delta_linkml(child, &path[1..], newv, sv, trace, opts)?;
             }
         }
-        JsonValue::Array(arr) => {
-            let idx: usize = path[0].parse().unwrap();
+        LinkMLInstance::Mapping { values, slot, .. } => {
+            let key = &path[0];
             if path.len() == 1 {
                 match newv {
                     Some(v) => {
-                        if idx < arr.len() {
-                            arr[idx] = v.clone();
-                        } else if idx == arr.len() {
-                            arr.push(v.clone());
-                        } else {
-                            while arr.len() < idx {
-                                arr.push(JsonValue::Null);
+                        let conv = sv.converter();
+                        let new_child = LinkMLInstance::build_mapping_entry_for_slot(
+                            slot,
+                            v.clone(),
+                            sv,
+                            &conv,
+                            Vec::new(),
+                        )?;
+                        if let Some(old_child) = values.get(key) {
+                            if opts.ignore_no_ops
+                                && old_child.equals(&new_child, opts.treat_missing_as_null)
+                            {
+                                return Ok(());
                             }
-                            arr.push(v.clone());
+                            mark_deleted_subtree(old_child, trace);
+                        }
+                        // mark before insert
+                        mark_added_subtree(&new_child, trace);
+                        values.insert(key.clone(), new_child);
+                        trace.updated.push(current.node_id());
+                    }
+                    None => {
+                        if let Some(old_child) = values.remove(key) {
+                            mark_deleted_subtree(&old_child, trace);
+                            trace.updated.push(current.node_id());
+                        }
+                    }
+                }
+            } else if let Some(child) = values.get_mut(key) {
+                apply_delta_linkml(child, &path[1..], newv, sv, trace, opts)?;
+            }
+        }
+        LinkMLInstance::List {
+            values,
+            slot,
+            class,
+            ..
+        } => {
+            let idx: usize = path[0].parse().map_err(|_| {
+                LinkMLError(format!("invalid list index '{}' in delta path", path[0]))
+            })?;
+            if path.len() == 1 {
+                match newv {
+                    Some(v) => {
+                        if idx < values.len() {
+                            let conv = sv.converter();
+                            let new_child = LinkMLInstance::build_list_item_for_slot(
+                                slot,
+                                class.as_ref(),
+                                v.clone(),
+                                sv,
+                                &conv,
+                                Vec::new(),
+                            )?;
+                            if opts.ignore_no_ops
+                                && values[idx].equals(&new_child, opts.treat_missing_as_null)
+                            {
+                                return Ok(());
+                            }
+                            match (&mut values[idx], &new_child) {
+                                (
+                                    LinkMLInstance::Scalar { value: ov, .. },
+                                    LinkMLInstance::Scalar { value: nv, .. },
+                                ) if !v.is_object() && !v.is_array() => {
+                                    *ov = nv.clone();
+                                    trace.updated.push(values[idx].node_id());
+                                }
+                                _ => {
+                                    let old = std::mem::replace(&mut values[idx], new_child);
+                                    mark_deleted_subtree(&old, trace);
+                                    mark_added_subtree(&values[idx], trace);
+                                    trace.updated.push(current.node_id());
+                                }
+                            }
+                        } else if idx == values.len() {
+                            let conv = sv.converter();
+                            let new_child = LinkMLInstance::build_list_item_for_slot(
+                                slot,
+                                class.as_ref(),
+                                v.clone(),
+                                sv,
+                                &conv,
+                                Vec::new(),
+                            )?;
+                            // mark before push
+                            mark_added_subtree(&new_child, trace);
+                            values.push(new_child);
+                            trace.updated.push(current.node_id());
+                        } else {
+                            return Err(LinkMLError(format!(
+                                "list index out of bounds in add: {} > {}",
+                                idx,
+                                values.len()
+                            )));
                         }
                     }
                     None => {
-                        if idx < arr.len() {
-                            arr.remove(idx);
+                        if idx < values.len() {
+                            let old = values.remove(idx);
+                            mark_deleted_subtree(&old, trace);
+                            trace.updated.push(current.node_id());
                         }
                     }
                 }
-            } else {
-                if idx >= arr.len() {
-                    arr.resize(idx + 1, JsonValue::Null);
-                }
-                apply_delta_inner(&mut arr[idx], &path[1..], newv);
+            } else if idx < values.len() {
+                apply_delta_linkml(&mut values[idx], &path[1..], newv, sv, trace, opts)?;
             }
         }
-        _ => {
-            if path.is_empty() {
-                if let Some(v) = newv {
-                    *value = v.clone();
-                }
-            }
-        }
+        LinkMLInstance::Scalar { .. } => {}
+        LinkMLInstance::Null { .. } => {}
     }
+    Ok(())
 }
