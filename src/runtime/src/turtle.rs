@@ -225,6 +225,9 @@ fn serialize_map<W: Write>(
                     }
                 }
             }
+            LinkMLValue::Null { .. } => {
+                // Null is treated as absent; emit nothing
+            }
             LinkMLValue::Object { values, class, .. } => {
                 let class_ref = &class;
                 let (obj, child_id) =
@@ -287,6 +290,9 @@ fn serialize_map<W: Write>(
                                     formatter.serialize_triple(triple.as_ref())?;
                                 }
                             }
+                        }
+                        LinkMLValue::Null { .. } => {
+                            // Skip null items
                         }
                         LinkMLValue::Object {
                             values: mv, class, ..
@@ -363,6 +369,9 @@ fn serialize_map<W: Write>(
                                     formatter.serialize_triple(triple.as_ref())?;
                                 }
                             }
+                        }
+                        LinkMLValue::Null { .. } => {
+                            // nothing
                         }
                         LinkMLValue::Object {
                             values: mv, class, ..
@@ -523,6 +532,7 @@ pub fn write_turtle<W: Write>(
                             formatter.serialize_triple(triple.as_ref())?;
                         }
                     }
+                    LinkMLValue::Null { .. } => {}
                     LinkMLValue::List { .. } => {}
                     LinkMLValue::Mapping { .. } => {}
                 }
@@ -578,12 +588,16 @@ pub fn write_turtle<W: Write>(
                             formatter.serialize_triple(triple.as_ref())?;
                         }
                     }
+                    LinkMLValue::Null { .. } => {
+                        // nothing
+                    }
                     LinkMLValue::List { .. } => {}
                     LinkMLValue::Mapping { .. } => {}
                 }
             }
         }
         LinkMLValue::Scalar { .. } => {}
+        LinkMLValue::Null { .. } => {}
     }
     let out_buf = formatter.finish()?;
     let mut out = String::from_utf8(out_buf).unwrap_or_default();
