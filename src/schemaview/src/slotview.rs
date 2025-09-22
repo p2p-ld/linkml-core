@@ -53,22 +53,32 @@ impl RangeInfo {
         e: &SlotExpressionOrSubtype,
         slotview: &SlotView,
     ) -> Option<ClassView> {
-        let conv = slotview.sv.converter_for_schema(&slotview.schema_uri)?;
         e.range().and_then(|r| {
+            if let Some(conv) = slotview.sv.converter_for_schema(&slotview.schema_uri) {
+                if let Ok(Some(cv)) = slotview.sv.get_class(&Identifier::new(r), conv) {
+                    return Some(cv);
+                }
+            }
+            let conv = slotview.sv.converter();
             slotview
                 .sv
-                .get_class(&Identifier::new(r), conv)
+                .get_class(&Identifier::new(r), &conv)
                 .ok()
                 .flatten()
         })
     }
 
     fn determine_range_enum(e: &SlotExpressionOrSubtype, slotview: &SlotView) -> Option<EnumView> {
-        let conv = slotview.sv.converter_for_schema(&slotview.schema_uri)?;
         e.range().and_then(|r| {
+            if let Some(conv) = slotview.sv.converter_for_schema(&slotview.schema_uri) {
+                if let Ok(Some(ev)) = slotview.sv.get_enum(&Identifier::new(r), conv) {
+                    return Some(ev);
+                }
+            }
+            let conv = slotview.sv.converter();
             slotview
                 .sv
-                .get_enum(&Identifier::new(r), conv)
+                .get_enum(&Identifier::new(r), &conv)
                 .ok()
                 .flatten()
         })

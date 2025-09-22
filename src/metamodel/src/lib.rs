@@ -8200,176 +8200,176 @@ impl<'py> FromPyObject<'py> for Box<AnonymousSlotExpression> {
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 #[derive(Merge)]
 pub struct SlotDefinition {
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub singular_name: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub domain: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub slot_uri: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub array: Option<ArrayExpression>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inherited: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub readonly: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub ifabsent: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub list_elements_unique: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub list_elements_ordered: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub shared: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub key: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub identifier: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub designates_type: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub alias: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub owner: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub domain_of: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub subproperty_of: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub symmetric: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub reflexive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub locally_reflexive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub irreflexive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub asymmetric: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub transitive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inverse: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_class_field: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub transitive_form_of: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub reflexive_transitive_form_of: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub role: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_usage_slot: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub usage_slot_name: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub relational_role: Option<RelationalRoleEnum>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub slot_group: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_grouping_slot: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub path_rule: Option<Box<PathExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub disjoint_with: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub children_are_mutually_disjoint: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub union_of: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub type_mappings: Option<HashMap<String, TypeMapping>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub range: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub range_expression: Option<Box<AnonymousClassExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub enum_range: Option<EnumExpressionOrSubtype>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub bindings: Option<Vec<EnumBinding>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub required: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub recommended: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub multivalued: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inlined: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inlined_as_list: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub minimum_value: Option<Anything>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub maximum_value: Option<Anything>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub pattern: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_pattern: Option<PatternExpression>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub unit: Option<UnitOfMeasure>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub implicit_prefix: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub value_presence: Option<PresenceEnum>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8378,56 +8378,56 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_number: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_expression: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub exact_cardinality: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub minimum_cardinality: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub maximum_cardinality: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub has_member: Option<Box<AnonymousSlotExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub all_members: Option<Box<AnonymousSlotExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub exactly_one_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub any_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_a: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     #[cfg_attr(feature = "serde", serde(alias = "abstract"))]
     pub abstract_: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub mixin: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub mixins: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub apply_to: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8436,12 +8436,12 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub values_from: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub string_serialization: Option<String>,
     #[merge(skip)]
     pub name: String,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8450,23 +8450,23 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Option<Vec<ncname>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub definition_uri: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: Option<HashMap<String, LocalName>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8475,7 +8475,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub implements: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8484,37 +8484,37 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: Option<HashMap<String, Annotation>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub description: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: Option<HashMap<String, AltDescription>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub title: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8523,7 +8523,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8532,7 +8532,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8541,25 +8541,25 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Option<Vec<Example>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_subset: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub from_schema: Option<uri>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub imported_from: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub source: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8568,13 +8568,13 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8583,10 +8583,10 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Option<Vec<StructuredAlias>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8595,7 +8595,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8604,7 +8604,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8613,7 +8613,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8622,7 +8622,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8631,7 +8631,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8640,10 +8640,10 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8652,22 +8652,22 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub last_updated_on: Option<NaiveDateTime>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub modified_by: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub status: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8676,7 +8676,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub categories: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -12867,5 +12867,12 @@ impl serde_utils::InlinedPair for TypeMapping {
             Ok(ok) => Ok(ok),
             Err(e) => Err(format!("at `{}`: {}", e.path(), e.inner())),
         }
+    }
+}
+
+/// Overwrite `left` with `right` unless `right` is `None`.
+fn overwrite_except_none<T>(left: &mut Option<T>, right: Option<T>) {
+    if right.is_some() {
+        *left = right;
     }
 }
