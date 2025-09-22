@@ -1,5 +1,5 @@
 use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
-use linkml_runtime::diff::{diff as diff_internal, patch as patch_internal, Delta};
+use linkml_runtime::diff::{diff as diff_internal, patch as patch_internal, Delta, PatchTrace};
 use linkml_runtime::turtle::{turtle_to_string, TurtleOptions};
 use linkml_runtime::{load_json_str, load_yaml_str, LinkMLInstance};
 use linkml_schemaview::identifier::Identifier;
@@ -446,6 +446,8 @@ pub fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_patch, m)?)?;
     m.add_function(wrap_pyfunction!(py_to_turtle, m)?)?;
     m.add_class::<PyLinkMLInstance>()?;
+    m.add_class::<PyPatchTrace>()?;
+    m.add_class::<PyPatchResult>()?;
     Ok(())
 }
 
@@ -698,6 +700,90 @@ impl PyLinkMLInstance {
     }
 }
 
+#[pyclass(name = "PatchTrace")]
+pub struct PyPatchTrace {
+    added: Vec<u64>,
+    deleted: Vec<u64>,
+    updated: Vec<u64>,
+}
+
+impl From<PatchTrace> for PyPatchTrace {
+    fn from(trace: PatchTrace) -> Self {
+        Self {
+            added: trace.added,
+            deleted: trace.deleted,
+            updated: trace.updated,
+        }
+    }
+}
+
+#[pymethods]
+impl PyPatchTrace {
+    #[getter]
+    fn added(&self) -> Vec<u64> {
+        self.added.clone()
+    }
+
+    #[getter]
+    fn deleted(&self) -> Vec<u64> {
+        self.deleted.clone()
+    }
+
+    #[getter]
+    fn updated(&self) -> Vec<u64> {
+        self.updated.clone()
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "PatchTrace(added={:?}, deleted={:?}, updated={:?})",
+            self.added, self.deleted, self.updated
+        )
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
+}
+
+#[pyclass(name = "PatchResult")]
+pub struct PyPatchResult {
+    value: Py<PyLinkMLInstance>,
+    trace: Py<PyPatchTrace>,
+}
+
+impl PyPatchResult {
+    fn new(value: Py<PyLinkMLInstance>, trace: Py<PyPatchTrace>) -> Self {
+        Self { value, trace }
+    }
+}
+
+#[pymethods]
+impl PyPatchResult {
+    #[getter]
+    fn value(&self, py: Python<'_>) -> Py<PyLinkMLInstance> {
+        self.value.clone_ref(py)
+    }
+
+    #[getter]
+    fn trace(&self, py: Python<'_>) -> Py<PyPatchTrace> {
+        self.trace.clone_ref(py)
+    }
+
+    fn __repr__(&self, py: Python<'_>) -> PyResult<String> {
+        let value_repr: String = self.value.bind(py).repr()?.extract()?;
+        let trace_repr: String = self.trace.bind(py).repr()?.extract()?;
+        Ok(format!(
+            "PatchResult(value={}, trace={})",
+            value_repr, trace_repr
+        ))
+    }
+
+    fn __str__(&self, py: Python<'_>) -> PyResult<String> {
+        self.__repr__(py)
+    }
+}
+
 #[pyfunction]
 fn load_yaml(
     py: Python<'_>,
@@ -774,7 +860,7 @@ fn py_patch(
     deltas: &Bound<'_, PyAny>,
     treat_missing_as_null: bool,
     ignore_no_ops: bool,
-) -> PyResult<PyObject> {
+) -> PyResult<Py<PyPatchResult>> {
     let json_mod = PyModule::import(py, "json")?;
     let deltas_str: String = json_mod.call_method1("dumps", (deltas,))?.extract()?;
     let deltas_vec: Vec<Delta> =
@@ -791,16 +877,13 @@ fn py_patch(
         },
     )
     .map_err(|e| PyException::new_err(e.to_string()))?;
-    let trace_json = serde_json::json!({
-        "added": trace.added,
-        "deleted": trace.deleted,
-        "updated": trace.updated,
-    });
-    let py_val = PyLinkMLInstance::new(new_value, source.sv.clone_ref(py));
-    let dict = pyo3::types::PyDict::new(py);
-    dict.set_item("value", Py::new(py, py_val)?)?;
-    dict.set_item("trace", json_value_to_py(py, &trace_json))?;
-    Ok(dict.into_any().unbind())
+    let py_val = Py::new(
+        py,
+        PyLinkMLInstance::new(new_value, source.sv.clone_ref(py)),
+    )?;
+    let py_trace = Py::new(py, PyPatchTrace::from(trace))?;
+    let result = PyPatchResult::new(py_val, py_trace);
+    Py::new(py, result)
 }
 
 #[pyfunction(name = "to_turtle", signature = (value, skolem=None))]
