@@ -11,7 +11,7 @@ use linkml_schemaview::{classview::ClassView, enumview::EnumView, slotview::Slot
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 use pyo3::types::PyAnyMethods;
-use pyo3::types::{PyAny, PyModule};
+use pyo3::types::{PyAny, PyDict, PyModule};
 use pyo3::Bound;
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 #[cfg(feature = "stubgen")]
@@ -596,6 +596,15 @@ impl PyDelta {
 
     fn __str__(&self) -> PyResult<String> {
         self.__repr__()
+    }
+
+    fn to_dict(&self, py: Python<'_>) -> PyResult<Py<PyDict>> {
+        let dict = PyDict::new(py);
+        dict.set_item("path", self.inner.path.clone())?;
+        dict.set_item("op", self.op())?;
+        dict.set_item("old", self.old(py))?;
+        dict.set_item("new", self.new(py))?;
+        Ok(dict.into())
     }
 }
 

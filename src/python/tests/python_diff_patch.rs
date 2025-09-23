@@ -70,15 +70,7 @@ assert result.value['internal_id'].as_python() == 'id1'
 assert result.value['name'].as_python() == 'Alice'
 
 # roundtrip through Python-side serialization and constructor
-serialized = [
-    {
-        'path': list(d.path),
-        'old': d.old,
-        'new': d.new,
-        'op': d.op,
-    }
-    for d in deltas
-]
+serialized = [d.to_dict() for d in deltas]
 rebuilt = [
     lr.Delta(item['path'], item['op'], old=item['old'], new=item['new'])
     for item in serialized
