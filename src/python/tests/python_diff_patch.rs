@@ -67,6 +67,24 @@ result = lr.patch(older, deltas)
 assert result.value['age'].as_python() == 33
 assert result.value['internal_id'].as_python() == 'id1'
 assert result.value['name'].as_python() == 'Alice'
+
+# roundtrip through Python-side serialization and constructor
+serialized = [
+    {
+        'path': list(d.path),
+        'old': d.old,
+        'new': d.new,
+    }
+    for d in deltas
+]
+rebuilt = [
+    lr.Delta(item['path'], item['old'], item['new'])
+    for item in serialized
+]
+result2 = lr.patch(older, rebuilt)
+assert result2.value['age'].as_python() == 33
+assert result2.value['internal_id'].as_python() == 'id1'
+assert result2.value['name'].as_python() == 'Alice'
 "#
         );
     });

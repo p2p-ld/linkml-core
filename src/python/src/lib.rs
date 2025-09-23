@@ -502,6 +502,31 @@ impl PyDelta {
 #[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PyDelta {
+    #[new]
+    #[pyo3(signature = (path, old=None, new=None))]
+    fn py_new(
+        py: Python<'_>,
+        path: Vec<String>,
+        old: Option<PyObject>,
+        new: Option<PyObject>,
+    ) -> PyResult<Self> {
+        let old_value = match old {
+            Some(obj) => Some(py_to_json_value(py, obj.bind(py))?),
+            None => None,
+        };
+        let new_value = match new {
+            Some(obj) => Some(py_to_json_value(py, obj.bind(py))?),
+            None => None,
+        };
+        Ok(Self {
+            inner: Delta {
+                path,
+                old: old_value,
+                new: new_value,
+            },
+        })
+    }
+
     #[getter]
     fn path(&self) -> Vec<String> {
         self.inner.path.clone()
@@ -552,6 +577,12 @@ fn json_value_to_py(py: Python<'_>, v: &JsonValue) -> PyObject {
     let s = serde_json::to_string(v).unwrap();
     let json_mod = PyModule::import(py, "json").unwrap();
     json_mod.call_method1("loads", (s,)).unwrap().unbind()
+}
+
+fn py_to_json_value(py: Python<'_>, obj: &Bound<'_, PyAny>) -> PyResult<JsonValue> {
+    let json_mod = PyModule::import(py, "json")?;
+    let s: String = json_mod.call_method1("dumps", (obj,))?.extract()?;
+    serde_json::from_str(&s).map_err(|e| PyException::new_err(e.to_string()))
 }
 
 impl Clone for PyLinkMLInstance {
