@@ -227,3 +227,35 @@ fn patch_missing_to_null_semantics() {
         panic!("expected object root");
     }
 }
+
+#[test]
+fn patch_records_failed_paths() {
+    let schema = from_yaml(Path::new(&data_path("schema.yaml"))).unwrap();
+    let mut sv = SchemaView::new();
+    sv.add_schema(schema.clone()).unwrap();
+    let conv = converter_from_schema(&schema);
+    let class = sv
+        .get_class(&Identifier::new("Person"), &conv)
+        .unwrap()
+        .expect("class not found");
+    let src = load_yaml_file(
+        Path::new(&data_path("person_valid.yaml")),
+        &sv,
+        &class,
+        &conv,
+    )
+    .unwrap();
+
+    let deltas = vec![linkml_runtime::Delta {
+        path: vec!["no_such_slot".to_string()],
+        op: linkml_runtime::diff::DeltaOp::Remove,
+        old: Some(serde_json::json!("irrelevant")),
+        new: None,
+    }];
+
+    let (_patched, trace) = linkml_runtime::patch(&src, &deltas, &sv, Default::default()).unwrap();
+    assert_eq!(trace.failed, vec![vec!["no_such_slot".to_string()]]);
+    assert!(trace.updated.is_empty());
+    assert!(trace.added.is_empty());
+    assert!(trace.deleted.is_empty());
+}

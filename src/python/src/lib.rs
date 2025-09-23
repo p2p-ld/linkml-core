@@ -858,6 +858,7 @@ pub struct PyPatchTrace {
     added: Vec<u64>,
     deleted: Vec<u64>,
     updated: Vec<u64>,
+    failed: Vec<Vec<String>>,
 }
 
 impl From<PatchTrace> for PyPatchTrace {
@@ -866,6 +867,7 @@ impl From<PatchTrace> for PyPatchTrace {
             added: trace.added,
             deleted: trace.deleted,
             updated: trace.updated,
+            failed: trace.failed,
         }
     }
 }
@@ -888,10 +890,15 @@ impl PyPatchTrace {
         self.updated.clone()
     }
 
+    #[getter]
+    fn failed(&self) -> Vec<Vec<String>> {
+        self.failed.clone()
+    }
+
     fn __repr__(&self) -> String {
         format!(
-            "PatchTrace(added={:?}, deleted={:?}, updated={:?})",
-            self.added, self.deleted, self.updated
+            "PatchTrace(added={:?}, deleted={:?}, updated={:?}, failed={:?})",
+            self.added, self.deleted, self.updated, self.failed
         )
     }
 

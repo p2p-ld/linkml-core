@@ -315,6 +315,8 @@ pub struct PatchTrace {
     pub deleted: Vec<NodeId>,
     /// Node IDs of nodes that were directly updated (e.g., parent containers, scalars).
     pub updated: Vec<NodeId>,
+    /// Paths of deltas that could not be applied (missing targets, etc.).
+    pub failed: Vec<Vec<String>>,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -341,7 +343,10 @@ pub fn patch(
     let mut out = source.clone();
     let mut trace = PatchTrace::default();
     for d in deltas {
-        apply_delta_linkml(&mut out, d, sv, &mut trace, opts)?;
+        let applied = apply_delta_linkml(&mut out, d, sv, &mut trace, opts)?;
+        if !applied {
+            trace.failed.push(d.path.clone());
+        }
     }
     Ok((out, trace))
 }
@@ -380,7 +385,7 @@ fn apply_delta_linkml(
     sv: &SchemaView,
     trace: &mut PatchTrace,
     opts: PatchOptions,
-) -> LResult<()> {
+) -> LResult<bool> {
     apply_delta_linkml_inner(
         current,
         &delta.path,
@@ -400,75 +405,68 @@ fn apply_delta_linkml_inner(
     sv: &SchemaView,
     trace: &mut PatchTrace,
     opts: PatchOptions,
-) -> LResult<()> {
+) -> LResult<bool> {
     if path.is_empty() {
-        match op {
+        return match op {
             DeltaOp::Add => {
                 let v = newv.expect("add delta must supply new value");
                 let (class_opt, slot_opt) = match current {
                     LinkMLInstance::Object { class, .. } => (Some(class.clone()), None),
                     LinkMLInstance::List { class, slot, .. } => (class.clone(), Some(slot.clone())),
-                    LinkMLInstance::Mapping { class, slot, .. } => {
+                    LinkMLInstance::Mapping { class, slot, .. }
+                    | LinkMLInstance::Scalar { class, slot, .. }
+                    | LinkMLInstance::Null { class, slot, .. } => {
                         (class.clone(), Some(slot.clone()))
                     }
-                    LinkMLInstance::Scalar { class, slot, .. } => {
-                        (class.clone(), Some(slot.clone()))
-                    }
-                    LinkMLInstance::Null { class, slot, .. } => (class.clone(), Some(slot.clone())),
                 };
-                let conv = sv.converter();
                 if let Some(cls) = class_opt {
+                    let conv = sv.converter();
                     let new_node =
                         LinkMLInstance::from_json(v.clone(), cls, slot_opt, sv, &conv, false)?;
                     mark_added_subtree(&new_node, trace);
                     *current = new_node;
+                    Ok(true)
+                } else {
+                    Ok(false)
                 }
             }
-            DeltaOp::Remove => {
-                // Removing the root is unsupported; treat as no-op.
-                return Ok(());
-            }
+            DeltaOp::Remove => Ok(false),
             DeltaOp::Update => {
                 if let Some(v) = newv {
                     let (class_opt, slot_opt) = match current {
                         LinkMLInstance::Object { class, .. } => (Some(class.clone()), None),
-                        LinkMLInstance::List { class, slot, .. } => {
-                            (class.clone(), Some(slot.clone()))
-                        }
-                        LinkMLInstance::Mapping { class, slot, .. } => {
-                            (class.clone(), Some(slot.clone()))
-                        }
-                        LinkMLInstance::Scalar { class, slot, .. } => {
-                            (class.clone(), Some(slot.clone()))
-                        }
-                        LinkMLInstance::Null { class, slot, .. } => {
+                        LinkMLInstance::List { class, slot, .. }
+                        | LinkMLInstance::Mapping { class, slot, .. }
+                        | LinkMLInstance::Scalar { class, slot, .. }
+                        | LinkMLInstance::Null { class, slot, .. } => {
                             (class.clone(), Some(slot.clone()))
                         }
                     };
-                    let conv = sv.converter();
                     if let Some(cls) = class_opt {
+                        let conv = sv.converter();
                         let new_node =
                             LinkMLInstance::from_json(v.clone(), cls, slot_opt, sv, &conv, false)?;
                         if opts.ignore_no_ops
                             && current.equals(&new_node, opts.treat_missing_as_null)
                         {
-                            return Ok(());
+                            return Ok(true);
                         }
                         mark_deleted_subtree(current, trace);
                         mark_added_subtree(&new_node, trace);
                         *current = new_node;
+                        return Ok(true);
                     }
                 }
+                Ok(false)
             }
-        }
-        return Ok(());
+        };
     }
 
     match current {
         LinkMLInstance::Object { values, class, .. } => {
             let key = &path[0];
             if path.len() == 1 {
-                match op {
+                return match op {
                     DeltaOp::Add | DeltaOp::Update => {
                         let v = newv.expect("change/add delta must supply new value");
                         let conv = sv.converter();
@@ -485,15 +483,13 @@ fn apply_delta_linkml_inner(
                             if opts.ignore_no_ops
                                 && old_child.equals(&new_child, opts.treat_missing_as_null)
                             {
-                                // no-op; skip
-                                return Ok(());
+                                return Ok(true);
                             }
                             match (&mut *old_child, &new_child) {
                                 (
                                     LinkMLInstance::Scalar { value: ov, .. },
                                     LinkMLInstance::Scalar { value: nv, .. },
                                 ) if !v.is_object() && !v.is_array() => {
-                                    // In-place scalar update: keep node_id stable and mark child node
                                     *ov = nv.clone();
                                     trace.updated.push(old_child.node_id());
                                 }
@@ -505,18 +501,17 @@ fn apply_delta_linkml_inner(
                                 }
                             }
                         } else {
-                            // adding a Null assignment may be a no-op when treating missing as null
                             if opts.ignore_no_ops
                                 && opts.treat_missing_as_null
                                 && matches!(new_child, LinkMLInstance::Null { .. })
                             {
-                                return Ok(());
+                                return Ok(true);
                             }
-                            // mark before insert
                             mark_added_subtree(&new_child, trace);
                             values.insert(key.clone(), new_child);
                             trace.updated.push(current.node_id());
                         }
+                        Ok(true)
                     }
                     DeltaOp::Remove => {
                         if let Some(old_child) = values.get(key) {
@@ -524,24 +519,28 @@ fn apply_delta_linkml_inner(
                                 && opts.treat_missing_as_null
                                 && matches!(old_child, LinkMLInstance::Null { .. })
                             {
-                                // deleting a Null assignment: no-op
-                                return Ok(());
+                                return Ok(true);
                             }
                         }
                         if let Some(old_child) = values.remove(key) {
                             mark_deleted_subtree(&old_child, trace);
                             trace.updated.push(current.node_id());
+                            Ok(true)
+                        } else {
+                            Ok(false)
                         }
                     }
-                }
-            } else if let Some(child) = values.get_mut(key) {
-                apply_delta_linkml_inner(child, &path[1..], op, newv, sv, trace, opts)?;
+                };
             }
+            if let Some(child) = values.get_mut(key) {
+                return apply_delta_linkml_inner(child, &path[1..], op, newv, sv, trace, opts);
+            }
+            Ok(false)
         }
         LinkMLInstance::Mapping { values, slot, .. } => {
             let key = &path[0];
             if path.len() == 1 {
-                match op {
+                return match op {
                     DeltaOp::Add | DeltaOp::Update => {
                         let v = newv.expect("change/add delta must supply new value");
                         let conv = sv.converter();
@@ -556,25 +555,30 @@ fn apply_delta_linkml_inner(
                             if opts.ignore_no_ops
                                 && old_child.equals(&new_child, opts.treat_missing_as_null)
                             {
-                                return Ok(());
+                                return Ok(true);
                             }
                             mark_deleted_subtree(old_child, trace);
                         }
-                        // mark before insert
                         mark_added_subtree(&new_child, trace);
                         values.insert(key.clone(), new_child);
                         trace.updated.push(current.node_id());
+                        Ok(true)
                     }
                     DeltaOp::Remove => {
                         if let Some(old_child) = values.remove(key) {
                             mark_deleted_subtree(&old_child, trace);
                             trace.updated.push(current.node_id());
+                            Ok(true)
+                        } else {
+                            Ok(false)
                         }
                     }
-                }
-            } else if let Some(child) = values.get_mut(key) {
-                apply_delta_linkml_inner(child, &path[1..], op, newv, sv, trace, opts)?;
+                };
             }
+            if let Some(child) = values.get_mut(key) {
+                return apply_delta_linkml_inner(child, &path[1..], op, newv, sv, trace, opts);
+            }
+            Ok(false)
         }
         LinkMLInstance::List {
             values,
@@ -582,14 +586,12 @@ fn apply_delta_linkml_inner(
             class,
             ..
         } => {
-            // Support index or identifier-based list addressing
             let key = &path[0];
             let idx_opt = key
                 .parse::<usize>()
                 .ok()
                 .filter(|i| *i < values.len())
                 .or_else(|| {
-                    // Attempt identifier-based lookup
                     values.iter().enumerate().find_map(|(i, v)| {
                         if let LinkMLInstance::Object {
                             values: mv, class, ..
@@ -612,7 +614,7 @@ fn apply_delta_linkml_inner(
                     })
                 });
             if path.len() == 1 {
-                match op {
+                return match op {
                     DeltaOp::Add | DeltaOp::Update => {
                         let v = newv.expect("change/add delta must supply new value");
                         if let Some(idx) = idx_opt.filter(|i| *i < values.len()) {
@@ -628,7 +630,7 @@ fn apply_delta_linkml_inner(
                             if opts.ignore_no_ops
                                 && values[idx].equals(&new_child, opts.treat_missing_as_null)
                             {
-                                return Ok(());
+                                return Ok(true);
                             }
                             match (&mut values[idx], &new_child) {
                                 (
@@ -655,26 +657,38 @@ fn apply_delta_linkml_inner(
                                 &conv,
                                 Vec::new(),
                             )?;
-                            // mark before push
                             mark_added_subtree(&new_child, trace);
                             values.push(new_child);
                             trace.updated.push(current.node_id());
                         }
+                        Ok(true)
                     }
                     DeltaOp::Remove => {
                         if let Some(idx) = idx_opt.filter(|i| *i < values.len()) {
                             let old = values.remove(idx);
                             mark_deleted_subtree(&old, trace);
                             trace.updated.push(current.node_id());
+                            Ok(true)
+                        } else {
+                            Ok(false)
                         }
                     }
-                }
-            } else if let Some(idx) = idx_opt.filter(|i| *i < values.len()) {
-                apply_delta_linkml_inner(&mut values[idx], &path[1..], op, newv, sv, trace, opts)?;
+                };
             }
+            if let Some(idx) = idx_opt.filter(|i| *i < values.len()) {
+                return apply_delta_linkml_inner(
+                    &mut values[idx],
+                    &path[1..],
+                    op,
+                    newv,
+                    sv,
+                    trace,
+                    opts,
+                );
+            }
+            Ok(false)
         }
-        LinkMLInstance::Scalar { .. } => {}
-        LinkMLInstance::Null { .. } => {}
+        LinkMLInstance::Scalar { .. } => Ok(false),
+        LinkMLInstance::Null { .. } => Ok(false),
     }
-    Ok(())
 }

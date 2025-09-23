@@ -68,6 +68,7 @@ result = lr.patch(older, deltas)
 assert result.value['age'].as_python() == 33
 assert result.value['internal_id'].as_python() == 'id1'
 assert result.value['name'].as_python() == 'Alice'
+assert result.trace.failed == []
 
 # roundtrip through Python-side serialization and constructor
 serialized = [d.to_dict() for d in deltas]
@@ -79,6 +80,12 @@ result2 = lr.patch(older, rebuilt)
 assert result2.value['age'].as_python() == 33
 assert result2.value['internal_id'].as_python() == 'id1'
 assert result2.value['name'].as_python() == 'Alice'
+assert result2.trace.failed == []
+
+# failed delta is reported
+bad_delta = lr.Delta(['bogus'], 'remove', old='x')
+bad_result = lr.patch(older, [bad_delta])
+assert bad_result.trace.failed == [['bogus']]
 "#
         );
     });
