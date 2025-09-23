@@ -175,6 +175,7 @@ fn patch_missing_to_null_semantics() {
     // Build delta: set age to explicit null
     let deltas = vec![linkml_runtime::Delta {
         path: vec!["age".to_string()],
+        op: linkml_runtime::diff::DeltaOp::Update,
         old: None,
         new: Some(serde_json::Value::Null),
     }];

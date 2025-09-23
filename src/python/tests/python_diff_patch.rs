@@ -54,6 +54,7 @@ deltas = lr.diff(older, current)
 assert isinstance(deltas, list)
 for d in deltas:
     assert isinstance(d, lr.Delta)
+    assert d.op in {'add', 'remove', 'update'}
 paths = {tuple(d.path) for d in deltas}
 if paths != {('age',), ('name',)}:
     raise RuntimeError(('paths', paths, [(tuple(d.path), d.old, d.new) for d in deltas]))
@@ -74,11 +75,12 @@ serialized = [
         'path': list(d.path),
         'old': d.old,
         'new': d.new,
+        'op': d.op,
     }
     for d in deltas
 ]
 rebuilt = [
-    lr.Delta(item['path'], item['old'], item['new'])
+    lr.Delta(item['path'], item['op'], old=item['old'], new=item['new'])
     for item in serialized
 ]
 result2 = lr.patch(older, rebuilt)

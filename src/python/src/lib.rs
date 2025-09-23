@@ -1,5 +1,7 @@
 use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
-use linkml_runtime::diff::{diff as diff_internal, patch as patch_internal, Delta, PatchTrace};
+use linkml_runtime::diff::{
+    diff as diff_internal, patch as patch_internal, Delta, DeltaOp, PatchTrace,
+};
 use linkml_runtime::turtle::{turtle_to_string, TurtleOptions};
 use linkml_runtime::{load_json_str, load_yaml_str, LinkMLInstance};
 use linkml_schemaview::identifier::Identifier;
@@ -503,10 +505,11 @@ impl PyDelta {
 #[pymethods]
 impl PyDelta {
     #[new]
-    #[pyo3(signature = (path, old=None, new=None))]
+    #[pyo3(signature = (path, op, old=None, new=None))]
     fn py_new(
         py: Python<'_>,
         path: Vec<String>,
+        op: &str,
         old: Option<PyObject>,
         new: Option<PyObject>,
     ) -> PyResult<Self> {
@@ -518,9 +521,22 @@ impl PyDelta {
             Some(obj) => Some(py_to_json_value(py, obj.bind(py))?),
             None => None,
         };
+        let op_norm = op.to_ascii_lowercase();
+        let op_value = match op_norm.as_str() {
+            "add" => DeltaOp::Add,
+            "remove" => DeltaOp::Remove,
+            "update" => DeltaOp::Update,
+            _ => {
+                return Err(PyException::new_err(format!(
+                    "invalid delta op '{}'; expected 'add', 'remove', or 'update'",
+                    op
+                )))
+            }
+        };
         Ok(Self {
             inner: Delta {
                 path,
+                op: op_value,
                 old: old_value,
                 new: new_value,
             },
@@ -530,6 +546,15 @@ impl PyDelta {
     #[getter]
     fn path(&self) -> Vec<String> {
         self.inner.path.clone()
+    }
+
+    #[getter]
+    fn op(&self) -> &'static str {
+        match self.inner.op {
+            DeltaOp::Add => "add",
+            DeltaOp::Remove => "remove",
+            DeltaOp::Update => "update",
+        }
     }
 
     #[getter]
@@ -550,6 +575,7 @@ impl PyDelta {
     }
 
     fn __repr__(&self) -> PyResult<String> {
+        let op_label = self.op();
         let old_repr = self
             .inner
             .old
@@ -563,8 +589,8 @@ impl PyDelta {
             .map(|v| v.to_string())
             .unwrap_or_else(|| "None".to_string());
         Ok(format!(
-            "Delta(path={:?}, old={}, new={})",
-            self.inner.path, old_repr, new_repr
+            "Delta(op='{}', path={:?}, old={}, new={})",
+            op_label, self.inner.path, old_repr, new_repr
         ))
     }
 
