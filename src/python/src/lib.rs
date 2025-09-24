@@ -8,19 +8,22 @@ use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io;
 use linkml_schemaview::schemaview::SchemaView;
 use linkml_schemaview::{classview::ClassView, enumview::EnumView, slotview::SlotView};
-use pyo3::exceptions::PyException;
+use pyo3::conversion::IntoPyObject;
+use pyo3::exceptions::{PyException, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyAnyMethods;
-use pyo3::types::{PyAny, PyDict, PyModule};
+use pyo3::types::{PyAny, PyDict, PyModule, PyString};
 use pyo3::Bound;
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 #[cfg(feature = "stubgen")]
 use pyo3_stub_gen::{
     define_stub_info_gatherer,
     derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods},
+    PyStubType, TypeInfo,
 };
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
+use std::fmt;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -507,6 +510,80 @@ impl PyLinkMLInstance {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum PyDeltaOp {
+    Add,
+    Remove,
+    Update,
+}
+
+impl fmt::Display for PyDeltaOp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            PyDeltaOp::Add => "add",
+            PyDeltaOp::Remove => "remove",
+            PyDeltaOp::Update => "update",
+        })
+    }
+}
+
+impl From<PyDeltaOp> for DeltaOp {
+    fn from(value: PyDeltaOp) -> Self {
+        match value {
+            PyDeltaOp::Add => DeltaOp::Add,
+            PyDeltaOp::Remove => DeltaOp::Remove,
+            PyDeltaOp::Update => DeltaOp::Update,
+        }
+    }
+}
+
+impl From<DeltaOp> for PyDeltaOp {
+    fn from(value: DeltaOp) -> Self {
+        match value {
+            DeltaOp::Add => PyDeltaOp::Add,
+            DeltaOp::Remove => PyDeltaOp::Remove,
+            DeltaOp::Update => PyDeltaOp::Update,
+        }
+    }
+}
+
+impl<'py> FromPyObject<'py> for PyDeltaOp {
+    fn extract_bound(ob: &Bound<'py, PyAny>) -> PyResult<Self> {
+        let raw: &str = ob.extract()?;
+        match raw.to_ascii_lowercase().as_str() {
+            "add" => Ok(PyDeltaOp::Add),
+            "remove" => Ok(PyDeltaOp::Remove),
+            "update" => Ok(PyDeltaOp::Update),
+            _ => Err(PyValueError::new_err(format!(
+                "invalid delta op '{}'; expected 'add', 'remove', or 'update'",
+                raw
+            ))),
+        }
+    }
+}
+
+impl<'py> IntoPyObject<'py> for PyDeltaOp {
+    type Target = PyAny;
+    type Output = Bound<'py, PyAny>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> PyResult<Self::Output> {
+        let value = match self {
+            PyDeltaOp::Add => "add",
+            PyDeltaOp::Remove => "remove",
+            PyDeltaOp::Update => "update",
+        };
+        Ok(PyString::new(py, value).into_any())
+    }
+}
+
+#[cfg(feature = "stubgen")]
+impl PyStubType for PyDeltaOp {
+    fn type_output() -> TypeInfo {
+        TypeInfo::with_module("typing.Literal['add', 'remove', 'update']", "typing".into())
+    }
+}
+
 #[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[pyclass(name = "Delta")]
 #[derive(Clone)]
@@ -534,7 +611,7 @@ impl PyDelta {
     fn py_new(
         py: Python<'_>,
         path: Vec<String>,
-        op: &str,
+        op: PyDeltaOp,
         old: Option<PyObject>,
         new: Option<PyObject>,
     ) -> PyResult<Self> {
@@ -546,22 +623,10 @@ impl PyDelta {
             Some(obj) => Some(py_to_json_value(py, obj.bind(py))?),
             None => None,
         };
-        let op_norm = op.to_ascii_lowercase();
-        let op_value = match op_norm.as_str() {
-            "add" => DeltaOp::Add,
-            "remove" => DeltaOp::Remove,
-            "update" => DeltaOp::Update,
-            _ => {
-                return Err(PyException::new_err(format!(
-                    "invalid delta op '{}'; expected 'add', 'remove', or 'update'",
-                    op
-                )))
-            }
-        };
         Ok(Self {
             inner: Delta {
                 path,
-                op: op_value,
+                op: op.into(),
                 old: old_value,
                 new: new_value,
             },
@@ -574,12 +639,8 @@ impl PyDelta {
     }
 
     #[getter]
-    fn op(&self) -> &'static str {
-        match self.inner.op {
-            DeltaOp::Add => "add",
-            DeltaOp::Remove => "remove",
-            DeltaOp::Update => "update",
-        }
+    fn op(&self) -> PyDeltaOp {
+        self.inner.op.clone().into()
     }
 
     #[getter]
