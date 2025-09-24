@@ -4,6 +4,7 @@ use linkml_schemaview::io::from_yaml;
 #[cfg(feature = "resolve")]
 use linkml_schemaview::resolve::resolve_schemas;
 use linkml_schemaview::schemaview::{ClassView, SchemaView};
+use linkml_schemaview::Converter;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -29,7 +30,7 @@ fn load_value(
     path: &Path,
     sv: &SchemaView,
     class: &ClassView,
-    conv: &curies::Converter,
+    conv: &Converter,
 ) -> Result<linkml_runtime::LinkMLInstance, Box<dyn std::error::Error>> {
     if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
         if ext == "json" {

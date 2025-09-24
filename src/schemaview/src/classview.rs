@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, OnceLock};
 
-use curies::Converter;
+use crate::converter::Converter;
 use linkml_meta::{ClassDefinition, SchemaDefinition, SlotDefinition};
 
 use crate::identifier::{Identifier, IdentifierError};

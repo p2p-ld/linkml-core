@@ -1,4 +1,4 @@
-use curies::{error::CuriesError, Converter, Record};
+use crate::converter::{Converter, ConverterError, Record};
 use linkml_meta::SchemaDefinition;
 use std::str::FromStr;
 
@@ -7,15 +7,15 @@ use std::str::FromStr;
 pub enum IdentifierError {
     /// Conversion failed because the identifier is just a name
     NameNotResolvable(String),
-    /// Error from the `curies` crate while expanding or compressing
-    CurieError(CuriesError),
+    /// Error from the internal converter while expanding or compressing
+    CurieError(ConverterError),
     /// Attempted to convert an [`Identifier`] into the wrong variant
     WrongVariant,
     NoConverter,
 }
 
-impl From<CuriesError> for IdentifierError {
-    fn from(err: CuriesError) -> Self {
+impl From<ConverterError> for IdentifierError {
+    fn from(err: ConverterError) -> Self {
         IdentifierError::CurieError(err)
     }
 }

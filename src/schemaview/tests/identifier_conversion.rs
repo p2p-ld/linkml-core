@@ -1,4 +1,4 @@
-use curies::{Converter, Record};
+use linkml_schemaview::converter::{Converter, Record};
 use linkml_schemaview::identifier::{Curie, Identifier, IdentifierError, Uri};
 
 #[test]

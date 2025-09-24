@@ -1,5 +1,5 @@
-use curies::Converter;
 use linkml_meta::SchemaDefinition;
+use linkml_schemaview::Converter;
 
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::schemaview::{ClassView, SchemaView};

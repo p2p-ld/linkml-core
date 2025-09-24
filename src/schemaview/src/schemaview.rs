@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
+use crate::converter::Converter;
 use crate::identifier::{
     converter_from_schema, converter_from_schemas, Identifier, IdentifierError,
 };
-use curies::Converter;
 use linkml_meta::SchemaDefinition;
 
 use crate::curie::curie2uri;

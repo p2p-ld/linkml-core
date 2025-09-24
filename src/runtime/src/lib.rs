@@ -1,6 +1,6 @@
-use curies::Converter;
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::schemaview::{ClassView, SchemaView, SlotContainerMode, SlotView};
+use linkml_schemaview::Converter;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::fs;
