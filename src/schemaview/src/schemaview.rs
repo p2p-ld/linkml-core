@@ -183,12 +183,29 @@ impl SchemaView {
         self.add_schema_with_import_ref(schema, None)
     }
 
-    /**
-     * Adds a schema to the view with an optional import reference.
-     * Import reference is a tuple containing the:
-     *    * schema_id of the schema that had the import statement
-     *    * the URI of the schema that was imported
-     */
+    /// Adds `schema` to the view and optionally records which unresolved import triggered it.
+    ///
+    /// # Arguments
+    /// * `schema` - The parsed [`SchemaDefinition`] to merge into this view.
+    /// * `import_reference` - When `Some`, identifies the importing schema (`schema_id`) and the
+    ///   import target `uri` that yielded `schema`. This mirrors the tuples returned by
+    ///   [`SchemaView::get_unresolved_schemas`].
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use linkml_schemaview::schemaview::SchemaView;
+    /// use linkml_meta::SchemaDefinition;
+    ///
+    /// let mut sv = SchemaView::new();
+    /// let schema: SchemaDefinition = serde_yml::from_str(
+    ///     "id: https://example.org/schema\nname: ExampleSchema\n",
+    /// )
+    /// .unwrap();
+    /// sv.add_schema_with_import_ref(schema, Some((
+    ///     "personinfo".to_string(),
+    ///     "https://example.org/personinfo.yaml".to_string(),
+    /// ))).unwrap();
+    /// ```
     pub fn add_schema_with_import_ref(
         &mut self,
         schema: SchemaDefinition,
