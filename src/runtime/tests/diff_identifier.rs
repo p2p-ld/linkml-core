@@ -1,4 +1,4 @@
-use linkml_runtime::{diff, load_json_str, load_yaml_file, patch};
+use linkml_runtime::{diff, load_json_str, load_yaml_file, patch, DiffOptions};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
@@ -59,10 +59,10 @@ fn single_inlined_object_identifier_change_is_replacement() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false);
-    // Expect a single replacement at the diagnosis object path
-    assert_eq!(deltas.len(), 1);
-    let d = &deltas[0];
+    let deltas_default = diff(&src, &tgt, DiffOptions::default());
+    // Expect a single replacement at the diagnosis object path with default behaviour
+    assert_eq!(deltas_default.len(), 1);
+    let d = &deltas_default[0];
     assert_eq!(
         d.path,
         vec![
@@ -75,10 +75,10 @@ fn single_inlined_object_identifier_change_is_replacement() {
     );
     assert!(d.old.is_some() && d.new.is_some());
 
-    // Patch should yield target
-    let (patched, _trace) = patch(
+    // Patch should yield target for default behaviour
+    let (patched_default, _trace_default) = patch(
         &src,
-        &deltas,
+        &deltas_default,
         &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
@@ -86,7 +86,43 @@ fn single_inlined_object_identifier_change_is_replacement() {
         },
     )
     .unwrap();
-    assert_eq!(patched.to_json(), tgt.to_json());
+    assert_eq!(patched_default.to_json(), tgt.to_json());
+
+    // When treating identifier changes as regular field updates, expect an update on the id slot only
+    let deltas_plain = diff(
+        &src,
+        &tgt,
+        DiffOptions {
+            treat_changed_identifier_as_new_object: false,
+            ..DiffOptions::default()
+        },
+    );
+    assert_eq!(deltas_plain.len(), 1);
+    let id_delta = &deltas_plain[0];
+    assert_eq!(
+        id_delta.path,
+        vec![
+            "objects".to_string(),
+            "P:002".to_string(),
+            "has_medical_history".to_string(),
+            "0".to_string(),
+            "diagnosis".to_string(),
+            "id".to_string()
+        ]
+    );
+    assert!(id_delta.old.is_some() && id_delta.new.is_some());
+
+    let (patched_plain, _trace_plain) = patch(
+        &src,
+        &deltas_plain,
+        &sv,
+        linkml_runtime::diff::PatchOptions {
+            ignore_no_ops: true,
+            treat_missing_as_null: false,
+        },
+    )
+    .unwrap();
+    assert_eq!(patched_plain.to_json(), tgt.to_json());
 }
 
 #[test]
@@ -134,7 +170,7 @@ fn single_inlined_object_non_identifier_change_is_field_delta() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false);
+    let deltas = diff(&src, &tgt, DiffOptions::default());
     assert!(deltas.iter().any(|d| d.path
         == vec![
             "objects".to_string(),
@@ -203,7 +239,7 @@ fn list_inlined_object_identifier_change_is_replacement() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false);
+    let deltas = diff(&src, &tgt, DiffOptions::default());
     // Expect a single replacement at the list item path
     assert!(deltas.iter().any(|d| {
         d.path == vec!["objects".to_string(), "P:002".to_string()]
@@ -257,7 +293,7 @@ fn mapping_inlined_identifier_change_is_add_delete() {
     }
     let tgt = load_json_str(&serde_json::to_string(&tgt_json).unwrap(), &sv, &bag, &conv).unwrap();
 
-    let deltas = diff(&src, &tgt, false);
+    let deltas = diff(&src, &tgt, DiffOptions::default());
     // Expect one delete and one add at mapping keys; no inner key-slot deltas
     assert!(deltas
         .iter()

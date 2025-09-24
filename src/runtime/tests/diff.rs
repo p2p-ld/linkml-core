@@ -1,4 +1,4 @@
-use linkml_runtime::{diff, load_json_str, load_yaml_file, patch};
+use linkml_runtime::{diff, load_json_str, load_yaml_file, patch, DiffOptions};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
@@ -45,7 +45,7 @@ fn diff_and_patch_person() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false);
+    let deltas = diff(&src, &tgt, DiffOptions::default());
     assert_eq!(deltas.len(), 1);
     // Ensure delta paths are navigable on respective values
     for d in &deltas {
@@ -100,7 +100,7 @@ fn diff_ignore_missing_target() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false);
+    let deltas = diff(&src, &tgt, DiffOptions::default());
     assert!(deltas.is_empty());
     let (patched, _trace) = patch(
         &src,
@@ -142,7 +142,7 @@ fn diff_and_patch_personinfo() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false);
+    let deltas = diff(&src, &tgt, DiffOptions::default());
     assert!(!deltas.is_empty());
     // Ensure delta paths are navigable on respective values, including mapping-list keys
     for d in &deltas {
@@ -199,7 +199,7 @@ fn diff_null_and_missing_semantics() {
             &conv,
         )
         .unwrap();
-        let deltas = diff(&src, &tgt, false);
+        let deltas = diff(&src, &tgt, DiffOptions::default());
         assert!(deltas
             .iter()
             .any(|d| d.path == vec!["age".to_string()] && d.new == Some(serde_json::Value::Null)));
@@ -218,7 +218,7 @@ fn diff_null_and_missing_semantics() {
             &conv,
         )
         .unwrap();
-        let deltas = diff(&src_with_null, &src, false);
+        let deltas = diff(&src_with_null, &src, DiffOptions::default());
         assert!(deltas.iter().any(|d| d.path == vec!["age".to_string()]
             && d.old == Some(serde_json::Value::Null)
             && d.new.is_some()));
@@ -237,7 +237,7 @@ fn diff_null_and_missing_semantics() {
             &conv,
         )
         .unwrap();
-        let deltas = diff(&src_missing, &src, false);
+        let deltas = diff(&src_missing, &src, DiffOptions::default());
         assert!(deltas
             .iter()
             .any(|d| d.path == vec!["age".to_string()] && d.old.is_none() && d.new.is_some()));
@@ -256,9 +256,16 @@ fn diff_null_and_missing_semantics() {
             &conv,
         )
         .unwrap();
-        let deltas = diff(&src, &tgt_missing, false);
+        let deltas = diff(&src, &tgt_missing, DiffOptions::default());
         assert!(deltas.iter().all(|d| d.path != vec!["age".to_string()]));
-        let deltas2 = diff(&src, &tgt_missing, true);
+        let deltas2 = diff(
+            &src,
+            &tgt_missing,
+            DiffOptions {
+                treat_missing_as_null: true,
+                ..DiffOptions::default()
+            },
+        );
         assert!(deltas2
             .iter()
             .any(|d| d.path == vec!["age".to_string()] && d.new == Some(serde_json::Value::Null)))

@@ -1,5 +1,5 @@
 use clap::Parser;
-use linkml_runtime::{diff, load_json_file, load_yaml_file};
+use linkml_runtime::{diff, load_json_file, load_yaml_file, DiffOptions};
 use linkml_schemaview::io::from_yaml;
 #[cfg(feature = "resolve")]
 use linkml_schemaview::resolve::resolve_schemas;
@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let src = load_value(&args.source, &sv, &class_view, &conv)?;
     let tgt = load_value(&args.target, &sv, &class_view, &conv)?;
-    let deltas = diff(&src, &tgt, false);
+    let deltas = diff(&src, &tgt, DiffOptions::default());
 
     let mut writer: Box<dyn Write> = if let Some(out) = &args.output {
         Box::new(File::create(out)?)

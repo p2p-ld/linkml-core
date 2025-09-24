@@ -1,4 +1,4 @@
-use linkml_runtime::{diff, load_json_str, load_yaml_file};
+use linkml_runtime::{diff, load_json_str, load_yaml_file, DiffOptions};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
@@ -69,7 +69,7 @@ fn node_ids_preserved_scalar_update() {
     )
     .unwrap();
 
-    let deltas = diff(&src, &tgt, false);
+    let deltas = diff(&src, &tgt, DiffOptions::default());
     let (patched, trace) = linkml_runtime::patch(
         &src,
         &deltas,
@@ -129,7 +129,7 @@ fn patch_trace_add_in_list() {
     )
     .unwrap();
 
-    let deltas = diff(&base, &target, false);
+    let deltas = diff(&base, &target, DiffOptions::default());
     let mut pre = Vec::new();
     collect_ids(&base, &mut pre);
     let (patched, trace) = linkml_runtime::patch(

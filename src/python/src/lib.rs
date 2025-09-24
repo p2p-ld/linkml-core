@@ -1,6 +1,6 @@
 use linkml_meta::{ClassDefinition, EnumDefinition, SchemaDefinition, SlotDefinition};
 use linkml_runtime::diff::{
-    diff as diff_internal, patch as patch_internal, Delta, DeltaOp, PatchTrace,
+    diff as diff_internal, patch as patch_internal, Delta, DeltaOp, DiffOptions, PatchTrace,
 };
 use linkml_runtime::turtle::{turtle_to_string, TurtleOptions};
 use linkml_runtime::{load_json_str, load_yaml_str, LinkMLInstance};
@@ -986,18 +986,33 @@ fn load_json(
 }
 
 #[cfg_attr(feature = "stubgen", gen_stub_pyfunction)]
-#[pyfunction(name = "diff", signature = (source, target, treat_missing_as_null=None))]
+#[pyfunction(
+    name = "diff",
+    signature = (
+        source,
+        target,
+        treat_missing_as_null = false,
+        treat_changed_identifier_as_new_object = true
+    ),
+    text_signature = "(source, target, treat_missing_as_null=False, treat_changed_identifier_as_new_object=True)"
+)]
+/// Compute deltas between two instances.
+///
+/// Defaults mirror `linkml_runtime.diff.DiffOptions::default()`: missing assignments are
+/// treated as absent (`treat_missing_as_null=False`) and identifier changes are emitted as
+/// whole-object replacements (`treat_changed_identifier_as_new_object=True`).
 fn py_diff(
     py: Python<'_>,
     source: &PyLinkMLInstance,
     target: &PyLinkMLInstance,
-    treat_missing_as_null: Option<bool>,
+    treat_missing_as_null: bool,
+    treat_changed_identifier_as_new_object: bool,
 ) -> PyResult<Vec<Py<PyDelta>>> {
-    let deltas = diff_internal(
-        &source.value,
-        &target.value,
-        treat_missing_as_null.unwrap_or(false),
-    );
+    let opts = DiffOptions {
+        treat_missing_as_null,
+        treat_changed_identifier_as_new_object,
+    };
+    let deltas = diff_internal(&source.value, &target.value, opts);
     deltas
         .into_iter()
         .map(|delta| Py::new(py, PyDelta::from(delta)))

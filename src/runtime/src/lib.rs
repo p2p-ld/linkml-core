@@ -9,7 +9,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 pub mod diff;
 pub mod turtle;
-pub use diff::{diff, patch, Delta, PatchTrace};
+pub use diff::{diff, patch, Delta, DiffOptions, PatchOptions, PatchTrace};
 #[derive(Debug)]
 pub struct LinkMLError(pub String);
 
@@ -112,6 +112,29 @@ fn new_node_id() -> NodeId {
 }
 
 impl LinkMLInstance {
+    /// Convert this instance into a plain `serde_json::Value` tree.
+    pub fn to_json(&self) -> JsonValue {
+        match self {
+            LinkMLInstance::Scalar { value, .. } => value.clone(),
+            LinkMLInstance::Null { .. } => JsonValue::Null,
+            LinkMLInstance::List { values, .. } => {
+                JsonValue::Array(values.iter().map(|v| v.to_json()).collect())
+            }
+            LinkMLInstance::Mapping { values, .. } => JsonValue::Object(
+                values
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.to_json()))
+                    .collect(),
+            ),
+            LinkMLInstance::Object { values, .. } => JsonValue::Object(
+                values
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.to_json()))
+                    .collect(),
+            ),
+        }
+    }
+
     /// Returns the internal [`NodeId`] of this node.
     ///
     /// This ID is only for internal provenance/update tracking and is not a

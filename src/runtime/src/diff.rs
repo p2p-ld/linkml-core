@@ -52,26 +52,17 @@ pub struct Delta {
     pub new: Option<JsonValue>,
 }
 
-impl LinkMLInstance {
-    pub fn to_json(&self) -> JsonValue {
-        match self {
-            LinkMLInstance::Scalar { value, .. } => value.clone(),
-            LinkMLInstance::Null { .. } => JsonValue::Null,
-            LinkMLInstance::List { values, .. } => {
-                JsonValue::Array(values.iter().map(|v| v.to_json()).collect())
-            }
-            LinkMLInstance::Mapping { values, .. } => JsonValue::Object(
-                values
-                    .iter()
-                    .map(|(k, v)| (k.clone(), v.to_json()))
-                    .collect(),
-            ),
-            LinkMLInstance::Object { values, .. } => JsonValue::Object(
-                values
-                    .iter()
-                    .map(|(k, v)| (k.clone(), v.to_json()))
-                    .collect(),
-            ),
+#[derive(Clone, Copy, Debug)]
+pub struct DiffOptions {
+    pub treat_missing_as_null: bool,
+    pub treat_changed_identifier_as_new_object: bool,
+}
+
+impl Default for DiffOptions {
+    fn default() -> Self {
+        Self {
+            treat_missing_as_null: false,
+            treat_changed_identifier_as_new_object: true,
         }
     }
 }
@@ -83,17 +74,13 @@ impl LinkMLInstance {
 /// - null -> X: update from null (old = null, new = X).
 /// - missing -> X: add (old = None, new = X).
 /// - X -> missing: ignored by default; if `treat_missing_as_null` is true, update to null (old = X, new = null).
-pub fn diff(
-    source: &LinkMLInstance,
-    target: &LinkMLInstance,
-    treat_missing_as_null: bool,
-) -> Vec<Delta> {
+pub fn diff(source: &LinkMLInstance, target: &LinkMLInstance, opts: DiffOptions) -> Vec<Delta> {
     fn inner(
         path: &mut Vec<String>,
         slot: Option<&SlotView>,
         s: &LinkMLInstance,
         t: &LinkMLInstance,
-        treat_missing_as_null: bool,
+        opts: DiffOptions,
         out: &mut Vec<Delta>,
     ) {
         if let Some(sl) = slot {
@@ -116,26 +103,28 @@ pub fn diff(
             ) => {
                 // If objects have an identifier or key slot and it changed, treat as whole-object replacement
                 // This applies for single-valued and list-valued inlined objects.
-                let key_slot_name = sc
-                    .key_or_identifier_slot()
-                    .or_else(|| tc.key_or_identifier_slot())
-                    .map(|s| s.name.clone());
-                if let Some(ks) = key_slot_name {
-                    let sid = sm.get(&ks);
-                    let tid = tm.get(&ks);
-                    if let (
-                        Some(LinkMLInstance::Scalar { value: s_id, .. }),
-                        Some(LinkMLInstance::Scalar { value: t_id, .. }),
-                    ) = (sid, tid)
-                    {
-                        if s_id != t_id {
-                            out.push(Delta {
-                                path: path.clone(),
-                                op: DeltaOp::Update,
-                                old: Some(s.to_json()),
-                                new: Some(t.to_json()),
-                            });
-                            return;
+                if opts.treat_changed_identifier_as_new_object {
+                    let key_slot_name = sc
+                        .key_or_identifier_slot()
+                        .or_else(|| tc.key_or_identifier_slot())
+                        .map(|s| s.name.clone());
+                    if let Some(ks) = key_slot_name {
+                        let sid = sm.get(&ks);
+                        let tid = tm.get(&ks);
+                        if let (
+                            Some(LinkMLInstance::Scalar { value: s_id, .. }),
+                            Some(LinkMLInstance::Scalar { value: t_id, .. }),
+                        ) = (sid, tid)
+                        {
+                            if s_id != t_id {
+                                out.push(Delta {
+                                    path: path.clone(),
+                                    op: DeltaOp::Update,
+                                    old: Some(s.to_json()),
+                                    new: Some(t.to_json()),
+                                });
+                                return;
+                            }
                         }
                     }
                 }
@@ -147,11 +136,11 @@ pub fn diff(
                         .or_else(|| tc.slots().iter().find(|s| s.name == *k));
                     path.push(k.clone());
                     match tm.get(k) {
-                        Some(tv) => inner(path, slot_view, sv, tv, treat_missing_as_null, out),
+                        Some(tv) => inner(path, slot_view, sv, tv, opts, out),
                         None => {
                             if !slot_view.is_some_and(slot_is_ignored) {
                                 // Missing target slot: either ignore (default) or treat as update to null
-                                if treat_missing_as_null {
+                                if opts.treat_missing_as_null {
                                     out.push(Delta {
                                         path: path.clone(),
                                         op: DeltaOp::Update,
@@ -212,9 +201,7 @@ pub fn diff(
                     };
                     path.push(step);
                     match (sl.get(i), tl.get(i)) {
-                        (Some(sv), Some(tv)) => {
-                            inner(path, None, sv, tv, treat_missing_as_null, out)
-                        }
+                        (Some(sv), Some(tv)) => inner(path, None, sv, tv, opts, out),
                         (Some(sv), None) => out.push(Delta {
                             path: path.clone(),
                             op: DeltaOp::Remove,
@@ -241,9 +228,7 @@ pub fn diff(
                 for k in keys {
                     path.push(k.clone());
                     match (sm.get(&k), tm.get(&k)) {
-                        (Some(sv), Some(tv)) => {
-                            inner(path, None, sv, tv, treat_missing_as_null, out)
-                        }
+                        (Some(sv), Some(tv)) => inner(path, None, sv, tv, opts, out),
                         (Some(sv), None) => out.push(Delta {
                             path: path.clone(),
                             op: DeltaOp::Remove,
@@ -293,14 +278,7 @@ pub fn diff(
         }
     }
     let mut out = Vec::new();
-    inner(
-        &mut Vec::new(),
-        None,
-        source,
-        target,
-        treat_missing_as_null,
-        &mut out,
-    );
+    inner(&mut Vec::new(), None, source, target, opts, &mut out);
     out
 }
 
