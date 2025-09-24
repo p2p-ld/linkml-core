@@ -29,6 +29,6 @@ predicates = "2"
 tempfile = "3"
 
 [features]
-default = ["resolve", "ttl"]
+default = ["ttl"]
 resolve = ["linkml_schemaview/resolve"]
 ttl = ["oxrdf", "oxttl", "regex", "percent-encoding"]
