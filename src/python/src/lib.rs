@@ -279,6 +279,42 @@ impl PySchemaView {
                                   ids.into_iter().collect()*/
     }
 
+    fn class_views(&self) -> PyResult<Vec<PyClassView>> {
+        self.inner
+            .class_views()
+            .map(|views| {
+                views
+                    .into_iter()
+                    .map(|cv| PyClassView { inner: cv })
+                    .collect()
+            })
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))
+    }
+
+    fn enum_views(&self) -> PyResult<Vec<PyEnumView>> {
+        self.inner
+            .enum_views()
+            .map(|views| {
+                views
+                    .into_iter()
+                    .map(|ev| PyEnumView { inner: ev })
+                    .collect()
+            })
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))
+    }
+
+    fn slot_views(&self) -> PyResult<Vec<PySlotView>> {
+        self.inner
+            .slot_views()
+            .map(|views| {
+                views
+                    .into_iter()
+                    .map(|sv| PySlotView { inner: sv })
+                    .collect()
+            })
+            .map_err(|e| PyException::new_err(format!("{:?}", e)))
+    }
+
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
             "SchemaView(n_schemas={}, n_classes={}, n_slots={})",

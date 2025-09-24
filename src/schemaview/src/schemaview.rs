@@ -706,6 +706,66 @@ impl SchemaView {
             .collect::<Vec<String>>();
     }
 
+    /// Return all classes as [`ClassView`]s across every schema in the view.
+    pub fn class_views(&self) -> Result<Vec<ClassView>, SchemaViewError> {
+        let mut out = Vec::new();
+        for (schema_uri, schema) in &self.data.schema_definitions {
+            if let Some(classes) = &schema.classes {
+                for class_name in classes.keys() {
+                    if let Some(cv) = self.get_class_by_schema(schema_uri, class_name)? {
+                        out.push(cv);
+                    }
+                }
+            }
+        }
+        Ok(out)
+    }
+
+    /// Return all enums as [`EnumView`]s across every schema in the view.
+    pub fn enum_views(&self) -> Result<Vec<EnumView>, SchemaViewError> {
+        let mut out = Vec::new();
+        for (schema_uri, schema) in &self.data.schema_definitions {
+            if let Some(enums) = &schema.enums {
+                if self.converter_for_schema(schema_uri).is_none() {
+                    return Err(SchemaViewError::NoConverterForSchema(schema_uri.clone()));
+                }
+                for enum_def in enums.values() {
+                    out.push(EnumView::new(enum_def, self, &schema.id));
+                }
+            }
+        }
+        Ok(out)
+    }
+
+    /// Return all unique slots referenced by the schemas as [`SlotView`]s.
+    pub fn slot_views(&self) -> Result<Vec<SlotView>, SchemaViewError> {
+        use std::collections::HashMap;
+
+        let mut slot_map: HashMap<String, SlotView> = HashMap::new();
+
+        // Include globally declared slot definitions.
+        for schema in self.data.schema_definitions.values() {
+            if let Some(slots) = &schema.slot_definitions {
+                for (slot_name, slot_def) in slots {
+                    slot_map.entry(slot_name.clone()).or_insert_with(|| {
+                        SlotView::new(slot_name.clone(), vec![slot_def.clone()], &schema.id, self)
+                    });
+                }
+            }
+        }
+
+        // Include slots referenced via classes (captures inline slot usage).
+        for class_view in self.class_views()? {
+            for slot in class_view.slots() {
+                slot_map
+                    .entry(slot.name.clone())
+                    .or_insert_with(|| slot.clone());
+            }
+        }
+
+        Ok(slot_map.into_values().collect())
+    }
+
     pub fn get_slot(
         &self,
         id: &Identifier,
