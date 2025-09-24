@@ -227,6 +227,10 @@ impl SlotView {
         &self.data.definitions
     }
 
+    pub fn schema_id(&self) -> &str {
+        &self.schema_uri
+    }
+
     pub fn get_range_info(&self) -> &Vec<RangeInfo> {
         self.data.cached_range_info.get_or_init(|| {
             let def = self.definition();
