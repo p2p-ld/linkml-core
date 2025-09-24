@@ -10,7 +10,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 pyo3 = { version = "0.25.0" }
 pyo3-stub-gen = { version = "0.13.1", optional = true }
-linkml_runtime = { path = "../runtime", default-features = false, features = ["ttl"] }
+linkml_runtime = { path = "../runtime", default-features = false, features = ["ttl", "curies"] }
 linkml_schemaview = { path = "../schemaview", package = "schemaview" }
 linkml_meta = { path = "../metamodel", features = ["pyo3"] }
 serde_json = "1.0"
@@ -20,3 +20,4 @@ serde_path_to_error = "0.1.17"
 [features]
 default = []
 stubgen = ["dep:pyo3-stub-gen", "linkml_meta/stubgen"]
+curies = ["linkml_runtime/curies"]

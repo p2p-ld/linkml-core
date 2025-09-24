@@ -40,6 +40,7 @@ predicates = "2"
 tempfile = "3"
 
 [features]
-default = ["resolve", "ttl"]
+default = ["resolve", "ttl", "curies"]
 resolve = ["linkml_schemaview/resolve", "linkml_runtime/resolve"]
 ttl = ["linkml_runtime/ttl"]
+curies = ["linkml_runtime/curies", "linkml_schemaview/curies"]
