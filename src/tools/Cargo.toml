@@ -24,17 +24,13 @@ name = "linkml-schema-validate"
 path = "src/bin/linkml_schema_validate.rs"
 
 [dependencies]
-linkml_runtime = { path = "../runtime" }
+linkml_runtime = { path = "../runtime", default-features = false }
 linkml_schemaview = { path = "../schemaview", package = "schemaview" }
 linkml_meta = { path = "../metamodel" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"
 clap = { version = "4.5", features = ["derive"] }
-oxrdf = "0.2"
-oxttl = "0.1"
-regex = "1"
-percent-encoding = "2.3"
 serde_yml = "0.0.12"
 serde_path_to_error = "0.1.17"
 
@@ -44,5 +40,6 @@ predicates = "2"
 tempfile = "3"
 
 [features]
-default = ["resolve"]
-resolve = ["linkml_schemaview/resolve"]
+default = ["resolve", "ttl"]
+resolve = ["linkml_schemaview/resolve", "linkml_runtime/resolve"]
+ttl = ["linkml_runtime/ttl"]

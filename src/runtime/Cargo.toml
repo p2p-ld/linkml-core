@@ -15,13 +15,13 @@ serde_yaml = "0.9"
 serde = { version = "1.0", features = ["derive"] }
 clap = { version = "4.5", features = ["derive"] }
 linkml_meta = { path = "../metamodel" }
-oxrdf = "0.2"
-oxttl = "0.1"
- 
+oxrdf = { version = "0.2", optional = true }
+oxttl = { version = "0.1", optional = true }
+
 serde_yml = "0.0.12"
 serde_path_to_error = "0.1.17"
-regex = "1"
-percent-encoding = "2.3"
+regex = { version = "1", optional = true }
+percent-encoding = { version = "2.3", optional = true }
 
 [dev-dependencies]
 assert_cmd = "2"
@@ -29,5 +29,6 @@ predicates = "2"
 tempfile = "3"
 
 [features]
-default = ["resolve"]
+default = ["resolve", "ttl"]
 resolve = ["linkml_schemaview/resolve"]
+ttl = ["oxrdf", "oxttl", "regex", "percent-encoding"]

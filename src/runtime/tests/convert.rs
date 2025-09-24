@@ -1,3 +1,5 @@
+#![cfg(feature = "ttl")]
+
 use linkml_runtime::{
     load_yaml_file,
     turtle::{turtle_to_string, TurtleOptions},

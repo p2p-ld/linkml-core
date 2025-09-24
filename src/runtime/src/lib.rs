@@ -8,6 +8,7 @@ use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 pub mod diff;
+#[cfg(feature = "ttl")]
 pub mod turtle;
 pub use diff::{diff, patch, Delta, DiffOptions, PatchOptions, PatchTrace};
 #[derive(Debug)]
