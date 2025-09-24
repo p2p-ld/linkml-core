@@ -3596,7 +3596,33 @@ class SchemaView:
     def get_unresolved_schemas(self) -> builtins.list[builtins.str]: ...
     def get_unresolved_schema_refs(self) -> builtins.list[tuple[builtins.str, builtins.str]]: ...
     def get_resolution_uri_of_schema(self, id:builtins.str) -> typing.Optional[builtins.str]: ...
-    def add_schema_str_with_import_ref(self, data:builtins.str, schema_id:builtins.str, uri:builtins.str) -> None: ...
+    def add_schema_str_with_import_ref(self, data:builtins.str, schema_id:builtins.str, uri:builtins.str) -> None:
+        r"""
+        Add a schema payload that satisfies an unresolved import reference.
+        
+        Arguments
+        ---------
+        * `data` - The schema document as a YAML or JSON string.
+        * `schema_id` - The identifier of the schema that declared the import needing this payload.
+        * `uri` - The resolution URI (usually the import target) that produced the schema string.
+        
+        Example
+        -------
+        ```python
+        from linkml_runtime import make_schema_view
+        
+        sv = make_schema_view()
+        remote_text = """imports:
+          - alias: personinfo
+            import_from: https://example.org/personinfo.yaml
+        """
+        sv.add_schema_str_with_import_ref(
+            remote_text,
+            "personinfo",
+            "https://example.org/personinfo.yaml",
+        )
+        ```
+        """
     def get_schema(self, uri:builtins.str) -> typing.Optional[SchemaDefinition]: ...
     def get_class_view(self, id:builtins.str) -> typing.Optional[ClassView]: ...
     def get_slot_view(self, id:builtins.str) -> typing.Optional[SlotView]: ...

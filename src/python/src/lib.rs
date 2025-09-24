@@ -167,6 +167,31 @@ impl PySchemaView {
         self.inner.get_resolution_uri_of_schema(id)
     }
 
+    #[pyo3(text_signature = "(self, data, schema_id, uri)")]
+    /// Add a schema payload that satisfies an unresolved import reference.
+    ///
+    /// Arguments
+    /// ---------
+    /// * `data` - The schema document as a YAML or JSON string.
+    /// * `schema_id` - The identifier of the schema that declared the import needing this payload.
+    /// * `uri` - The resolution URI (usually the import target) that produced the schema string.
+    ///
+    /// Example
+    /// -------
+    /// ```python
+    /// from linkml_runtime import make_schema_view
+    ///
+    /// sv = make_schema_view()
+    /// remote_text = """imports:
+    ///   - alias: personinfo
+    ///     import_from: https://example.org/personinfo.yaml
+    /// """
+    /// sv.add_schema_str_with_import_ref(
+    ///     remote_text,
+    ///     "personinfo",
+    ///     "https://example.org/personinfo.yaml",
+    /// )
+    /// ```
     fn add_schema_str_with_import_ref(
         &mut self,
         data: &str,
