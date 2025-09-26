@@ -73,7 +73,6 @@ fn node_ids_preserved_scalar_update() {
     let (patched, trace) = linkml_runtime::patch(
         &src,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,
@@ -135,7 +134,6 @@ fn patch_trace_add_in_list() {
     let (patched, trace) = linkml_runtime::patch(
         &base,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,
@@ -185,7 +183,6 @@ fn patch_missing_to_null_semantics() {
     let (patched_same, trace_same) = linkml_runtime::patch(
         &src,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: true,
@@ -209,7 +206,6 @@ fn patch_missing_to_null_semantics() {
     let (patched_null, trace_applied) = linkml_runtime::patch(
         &src,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,
@@ -253,7 +249,7 @@ fn patch_records_failed_paths() {
         new: None,
     }];
 
-    let (_patched, trace) = linkml_runtime::patch(&src, &deltas, &sv, Default::default()).unwrap();
+    let (_patched, trace) = linkml_runtime::patch(&src, &deltas, Default::default()).unwrap();
     assert_eq!(trace.failed, vec![vec!["no_such_slot".to_string()]]);
     assert!(trace.updated.is_empty());
     assert!(trace.added.is_empty());

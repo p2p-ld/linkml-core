@@ -50,6 +50,8 @@ cls = sv.get_class_view('Person')
 older_json = '{"name": "Alicia", "age": 40, "internal_id": "id1"}'
 older = lr.load_json(older_json, sv, cls)
 current = lr.load_yaml(current_path, sv, cls)
+assert older.schema_view is sv
+assert current.schema_view is sv
 deltas = lr.diff(older, current)
 assert isinstance(deltas, list)
 for d in deltas:

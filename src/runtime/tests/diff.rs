@@ -60,7 +60,6 @@ fn diff_and_patch_person() {
     let (patched, _trace) = patch(
         &src,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,
@@ -105,7 +104,6 @@ fn diff_ignore_missing_target() {
     let (patched, _trace) = patch(
         &src,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,
@@ -156,7 +154,6 @@ fn diff_and_patch_personinfo() {
     let (patched, _trace) = patch(
         &src,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,

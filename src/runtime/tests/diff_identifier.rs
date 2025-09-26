@@ -79,7 +79,6 @@ fn single_inlined_object_identifier_change_is_replacement() {
     let (patched_default, _trace_default) = patch(
         &src,
         &deltas_default,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,
@@ -115,7 +114,6 @@ fn single_inlined_object_identifier_change_is_replacement() {
     let (patched_plain, _trace_plain) = patch(
         &src,
         &deltas_plain,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,
@@ -193,7 +191,6 @@ fn single_inlined_object_non_identifier_change_is_field_delta() {
     let (patched, _trace) = patch(
         &src,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,
@@ -252,7 +249,6 @@ fn list_inlined_object_identifier_change_is_replacement() {
     let (patched, _trace) = patch(
         &src,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,
@@ -308,7 +304,6 @@ fn mapping_inlined_identifier_change_is_add_delete() {
     let (patched, _trace) = patch(
         &src,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: true,
             treat_missing_as_null: false,

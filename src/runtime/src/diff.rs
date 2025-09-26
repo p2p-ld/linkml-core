@@ -1,5 +1,5 @@
 use crate::{LResult, LinkMLInstance, NodeId};
-use linkml_schemaview::schemaview::{SchemaView, SlotView};
+use linkml_schemaview::schemaview::SlotView;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
@@ -315,13 +315,12 @@ impl Default for PatchOptions {
 pub fn patch(
     source: &LinkMLInstance,
     deltas: &[Delta],
-    sv: &SchemaView,
     opts: PatchOptions,
 ) -> LResult<(LinkMLInstance, PatchTrace)> {
     let mut out = source.clone();
     let mut trace = PatchTrace::default();
     for d in deltas {
-        let applied = apply_delta_linkml(&mut out, d, sv, &mut trace, opts)?;
+        let applied = apply_delta_linkml(&mut out, d, &mut trace, opts)?;
         if !applied {
             trace.failed.push(d.path.clone());
         }
@@ -360,7 +359,6 @@ fn mark_deleted_subtree(v: &LinkMLInstance, trace: &mut PatchTrace) {
 fn apply_delta_linkml(
     current: &mut LinkMLInstance,
     delta: &Delta,
-    sv: &SchemaView,
     trace: &mut PatchTrace,
     opts: PatchOptions,
 ) -> LResult<bool> {
@@ -369,7 +367,6 @@ fn apply_delta_linkml(
         &delta.path,
         &delta.op,
         delta.new.as_ref(),
-        sv,
         trace,
         opts,
     )
@@ -380,10 +377,10 @@ fn apply_delta_linkml_inner(
     path: &[String],
     op: &DeltaOp,
     newv: Option<&JsonValue>,
-    sv: &SchemaView,
     trace: &mut PatchTrace,
     opts: PatchOptions,
 ) -> LResult<bool> {
+    let schema_view = current.schema_view().clone();
     if path.is_empty() {
         return match op {
             DeltaOp::Add => {
@@ -398,9 +395,15 @@ fn apply_delta_linkml_inner(
                     }
                 };
                 if let Some(cls) = class_opt {
-                    let conv = sv.converter();
-                    let new_node =
-                        LinkMLInstance::from_json(v.clone(), cls, slot_opt, sv, &conv, false)?;
+                    let conv = schema_view.converter();
+                    let new_node = LinkMLInstance::from_json(
+                        v.clone(),
+                        cls,
+                        slot_opt,
+                        &schema_view,
+                        &conv,
+                        false,
+                    )?;
                     mark_added_subtree(&new_node, trace);
                     *current = new_node;
                     Ok(true)
@@ -421,9 +424,15 @@ fn apply_delta_linkml_inner(
                         }
                     };
                     if let Some(cls) = class_opt {
-                        let conv = sv.converter();
-                        let new_node =
-                            LinkMLInstance::from_json(v.clone(), cls, slot_opt, sv, &conv, false)?;
+                        let conv = schema_view.converter();
+                        let new_node = LinkMLInstance::from_json(
+                            v.clone(),
+                            cls,
+                            slot_opt,
+                            &schema_view,
+                            &conv,
+                            false,
+                        )?;
                         if opts.ignore_no_ops
                             && current.equals(&new_node, opts.treat_missing_as_null)
                         {
@@ -447,13 +456,13 @@ fn apply_delta_linkml_inner(
                 return match op {
                     DeltaOp::Add | DeltaOp::Update => {
                         let v = newv.expect("change/add delta must supply new value");
-                        let conv = sv.converter();
+                        let conv = schema_view.converter();
                         let slot = class.slots().iter().find(|s| s.name == *key).cloned();
                         let new_child = LinkMLInstance::from_json(
                             v.clone(),
                             class.clone(),
                             slot.clone(),
-                            sv,
+                            &schema_view,
                             &conv,
                             false,
                         )?;
@@ -511,7 +520,7 @@ fn apply_delta_linkml_inner(
                 };
             }
             if let Some(child) = values.get_mut(key) {
-                return apply_delta_linkml_inner(child, &path[1..], op, newv, sv, trace, opts);
+                return apply_delta_linkml_inner(child, &path[1..], op, newv, trace, opts);
             }
             Ok(false)
         }
@@ -521,11 +530,11 @@ fn apply_delta_linkml_inner(
                 return match op {
                     DeltaOp::Add | DeltaOp::Update => {
                         let v = newv.expect("change/add delta must supply new value");
-                        let conv = sv.converter();
+                        let conv = schema_view.converter();
                         let new_child = LinkMLInstance::build_mapping_entry_for_slot(
                             slot,
                             v.clone(),
-                            sv,
+                            &schema_view,
                             &conv,
                             Vec::new(),
                         )?;
@@ -554,7 +563,7 @@ fn apply_delta_linkml_inner(
                 };
             }
             if let Some(child) = values.get_mut(key) {
-                return apply_delta_linkml_inner(child, &path[1..], op, newv, sv, trace, opts);
+                return apply_delta_linkml_inner(child, &path[1..], op, newv, trace, opts);
             }
             Ok(false)
         }
@@ -596,12 +605,12 @@ fn apply_delta_linkml_inner(
                     DeltaOp::Add | DeltaOp::Update => {
                         let v = newv.expect("change/add delta must supply new value");
                         if let Some(idx) = idx_opt.filter(|i| *i < values.len()) {
-                            let conv = sv.converter();
+                            let conv = schema_view.converter();
                             let new_child = LinkMLInstance::build_list_item_for_slot(
                                 slot,
                                 class.as_ref(),
                                 v.clone(),
-                                sv,
+                                &schema_view,
                                 &conv,
                                 Vec::new(),
                             )?;
@@ -626,12 +635,12 @@ fn apply_delta_linkml_inner(
                                 }
                             }
                         } else {
-                            let conv = sv.converter();
+                            let conv = schema_view.converter();
                             let new_child = LinkMLInstance::build_list_item_for_slot(
                                 slot,
                                 class.as_ref(),
                                 v.clone(),
-                                sv,
+                                &schema_view,
                                 &conv,
                                 Vec::new(),
                             )?;
@@ -659,7 +668,6 @@ fn apply_delta_linkml_inner(
                     &path[1..],
                     op,
                     newv,
-                    sv,
                     trace,
                     opts,
                 );

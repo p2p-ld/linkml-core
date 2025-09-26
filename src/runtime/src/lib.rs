@@ -149,6 +149,17 @@ impl LinkMLInstance {
             | LinkMLInstance::Null { node_id, .. } => *node_id,
         }
     }
+
+    /// Return the [`SchemaView`] associated with this instance.
+    pub fn schema_view(&self) -> &SchemaView {
+        match self {
+            LinkMLInstance::Scalar { sv, .. }
+            | LinkMLInstance::Null { sv, .. }
+            | LinkMLInstance::List { sv, .. }
+            | LinkMLInstance::Mapping { sv, .. }
+            | LinkMLInstance::Object { sv, .. } => sv,
+        }
+    }
     /// Navigate the value by a path of strings, where each element is either
     /// a dictionary key (for maps) or a list index (for lists).
     /// Returns `Some(&LinkMLInstance)` if the full path can be resolved, otherwise `None`.

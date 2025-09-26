@@ -102,7 +102,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (patched, _trace) = patch(
         &src,
         &deltas,
-        &sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops: args.ignore_noop,
             treat_missing_as_null: args.treat_missing_as_null,

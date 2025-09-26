@@ -782,6 +782,11 @@ impl PyLinkMLInstance {
     }
 
     #[getter]
+    fn schema_view<'py>(&self, py: Python<'py>) -> Py<PySchemaView> {
+        self.sv.clone_ref(py)
+    }
+
+    #[getter]
     fn node_id(&self) -> u64 {
         self.value.node_id()
     }
@@ -1155,12 +1160,9 @@ fn py_patch(
         let bound = delta.bind(py);
         deltas_vec.push(bound.borrow().clone_inner());
     }
-    let sv_ref = source.sv.bind(py).borrow();
-    let rust_sv = sv_ref.as_rust();
     let (new_value, trace) = patch_internal(
         &source.value,
         &deltas_vec,
-        rust_sv,
         linkml_runtime::diff::PatchOptions {
             ignore_no_ops,
             treat_missing_as_null,
