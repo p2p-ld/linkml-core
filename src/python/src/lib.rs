@@ -536,12 +536,12 @@ pub fn runtime_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
 #[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[pyclass(name = "LinkMLInstance")]
 pub struct PyLinkMLInstance {
-    value: LinkMLInstance,
-    sv: Py<PySchemaView>,
+    pub value: LinkMLInstance,
+    pub sv: Py<PySchemaView>,
 }
 
 impl PyLinkMLInstance {
-    fn new(value: LinkMLInstance, sv: Py<PySchemaView>) -> Self {
+    pub fn new(value: LinkMLInstance, sv: Py<PySchemaView>) -> Self {
         Self { value, sv }
     }
 }
@@ -634,7 +634,8 @@ impl From<Delta> for PyDelta {
 }
 
 impl PyDelta {
-    fn clone_inner(&self) -> Delta {
+    /// Returns a clone of the underlying Rust `Delta`.
+    pub fn clone_inner(&self) -> Delta {
         self.inner.clone()
     }
 }
