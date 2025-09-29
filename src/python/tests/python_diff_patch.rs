@@ -1,6 +1,7 @@
 use linkml_runtime_python::runtime_module;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
+use std::ffi::CString;
 use std::path::PathBuf;
 
 fn data_path(name: &str) -> PathBuf {
@@ -40,10 +41,7 @@ fn diff_and_patch_via_python() {
             )
             .unwrap();
 
-        pyo3::py_run!(
-            py,
-            *locals,
-            r#"
+        let code = r#"
 import linkml_runtime as lr
 sv = lr.make_schema_view(schema_path)
 cls = sv.get_class_view('Person')
@@ -88,7 +86,19 @@ assert result2.trace.failed == []
 bad_delta = lr.Delta(['bogus'], 'remove', old='x')
 bad_result = lr.patch(older, [bad_delta])
 assert bad_result.trace.failed == [['bogus']]
-"#
-        );
+"#;
+
+        let code_c = CString::new(code).unwrap();
+
+        if let Err(err) = py.run(code_c.as_c_str(), Some(&locals), Some(&locals)) {
+            err.print(py);
+            py.run(
+                pyo3::ffi::c_str!("import sys; sys.stderr.flush()"),
+                None,
+                None,
+            )
+            .unwrap();
+            panic!("{}", code);
+        }
     });
 }

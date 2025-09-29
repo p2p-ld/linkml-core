@@ -3,12 +3,12 @@ use linkml_runtime::diff::{
     diff as diff_internal, patch as patch_internal, Delta, DeltaOp, DiffOptions, PatchTrace,
 };
 use linkml_runtime::turtle::{turtle_to_string, TurtleOptions};
-use linkml_runtime::{load_json_str, load_yaml_str, LinkMLInstance};
+use linkml_runtime::{load_json_str, load_yaml_str, LinkMLInstance, NodeId};
 use linkml_schemaview::identifier::Identifier;
 use linkml_schemaview::io;
 use linkml_schemaview::schemaview::SchemaView;
 use linkml_schemaview::{classview::ClassView, enumview::EnumView, slotview::SlotView};
-use pyo3::conversion::IntoPyObject;
+use pyo3::conversion::{IntoPyObject, IntoPyObjectExt};
 use pyo3::exceptions::{PyException, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyAnyMethods;
@@ -63,6 +63,11 @@ pub struct PySchemaView {
 impl PySchemaView {
     pub fn as_rust(&self) -> &SchemaView {
         self.inner.as_ref()
+    }
+
+    /// Obtain a shared reference-counted handle to the underlying `SchemaView`.
+    pub fn shared_arc(&self) -> Arc<SchemaView> {
+        Arc::clone(&self.inner)
     }
 }
 
@@ -544,6 +549,25 @@ impl PyLinkMLInstance {
     pub fn new(value: LinkMLInstance, sv: Py<PySchemaView>) -> Self {
         Self { value, sv }
     }
+
+    /// Clone the underlying `LinkMLInstance` value for safe external use.
+    pub fn clone_value(&self) -> LinkMLInstance {
+        self.value.clone()
+    }
+
+    /// Clone the associated Python `SchemaView` handle.
+    pub fn clone_schema_view(&self, py: Python<'_>) -> Py<PySchemaView> {
+        self.sv.clone_ref(py)
+    }
+
+    /// Build a new `PyLinkMLInstance` wrapping `value` while reusing this instance's schema view.
+    pub fn wrap_with_value(
+        &self,
+        py: Python<'_>,
+        value: LinkMLInstance,
+    ) -> PyResult<Py<PyLinkMLInstance>> {
+        Py::new(py, PyLinkMLInstance::new(value, self.clone_schema_view(py)))
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -637,6 +661,17 @@ impl PyDelta {
     /// Returns a clone of the underlying Rust `Delta`.
     pub fn clone_inner(&self) -> Delta {
         self.inner.clone()
+    }
+
+    /// Convert any iterator of `Delta` values into owned Python handles.
+    pub fn from_deltas<I>(py: Python<'_>, deltas: I) -> PyResult<Vec<Py<PyDelta>>>
+    where
+        I: IntoIterator<Item = Delta>,
+    {
+        deltas
+            .into_iter()
+            .map(|delta| Py::new(py, PyDelta::from(delta)))
+            .collect()
     }
 }
 
@@ -741,6 +776,19 @@ fn py_to_json_value(py: Python<'_>, obj: &Bound<'_, PyAny>) -> PyResult<JsonValu
     let json_mod = PyModule::import(py, "json")?;
     let s: String = json_mod.call_method1("dumps", (obj,))?.extract()?;
     serde_json::from_str(&s).map_err(|e| PyException::new_err(e.to_string()))
+}
+
+/// Convert a mapping of `NodeId` keys into a Python dictionary.
+pub fn node_map_into_pydict<V, I>(py: Python<'_>, entries: I) -> PyResult<Py<PyDict>>
+where
+    I: IntoIterator<Item = (NodeId, V)>,
+    V: for<'py> IntoPyObject<'py>,
+{
+    let dict = PyDict::new(py);
+    for (node_id, value) in entries {
+        dict.set_item(node_id, value.into_py_any(py)?)?;
+    }
+    Ok(dict.into())
 }
 
 impl Clone for PyLinkMLInstance {
