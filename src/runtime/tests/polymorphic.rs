@@ -1,4 +1,4 @@
-use linkml_runtime::LinkMLValue;
+use linkml_runtime::LinkMLInstance;
 use linkml_runtime::{load_yaml_file, validate};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
@@ -105,20 +105,20 @@ fn array_polymorphism() {
         .expect("class not found");
     let v = load_yaml_file(Path::new(&data_path("poly_array.yaml")), &sv, &class, &conv).unwrap();
     assert!(validate(&v).is_ok());
-    if let LinkMLValue::Object { values, .. } = v {
+    if let LinkMLInstance::Object { values, .. } = v {
         let objs = values.get("objs").expect("objs not found");
-        if let LinkMLValue::List { values: arr, .. } = objs {
+        if let LinkMLInstance::List { values: arr, .. } = objs {
             assert_eq!(arr.len(), 3);
             match &arr[0] {
-                LinkMLValue::Object { class, .. } => assert_eq!(class.name(), "Child"),
+                LinkMLInstance::Object { class, .. } => assert_eq!(class.name(), "Child"),
                 _ => panic!("expected map"),
             }
             match &arr[1] {
-                LinkMLValue::Object { class, .. } => assert_eq!(class.name(), "Child"),
+                LinkMLInstance::Object { class, .. } => assert_eq!(class.name(), "Child"),
                 _ => panic!("expected map"),
             }
             match &arr[2] {
-                LinkMLValue::Object { class, .. } => assert_eq!(class.name(), "Parent"),
+                LinkMLInstance::Object { class, .. } => assert_eq!(class.name(), "Parent"),
                 _ => panic!("expected map"),
             }
         } else {

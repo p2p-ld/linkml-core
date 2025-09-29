@@ -53,22 +53,32 @@ impl RangeInfo {
         e: &SlotExpressionOrSubtype,
         slotview: &SlotView,
     ) -> Option<ClassView> {
-        let conv = slotview.sv.converter_for_schema(&slotview.schema_uri)?;
         e.range().and_then(|r| {
+            if let Some(conv) = slotview.sv.converter_for_schema(&slotview.schema_uri) {
+                if let Ok(Some(cv)) = slotview.sv.get_class(&Identifier::new(r), conv) {
+                    return Some(cv);
+                }
+            }
+            let conv = slotview.sv.converter();
             slotview
                 .sv
-                .get_class(&Identifier::new(r), conv)
+                .get_class(&Identifier::new(r), &conv)
                 .ok()
                 .flatten()
         })
     }
 
     fn determine_range_enum(e: &SlotExpressionOrSubtype, slotview: &SlotView) -> Option<EnumView> {
-        let conv = slotview.sv.converter_for_schema(&slotview.schema_uri)?;
         e.range().and_then(|r| {
+            if let Some(conv) = slotview.sv.converter_for_schema(&slotview.schema_uri) {
+                if let Ok(Some(ev)) = slotview.sv.get_enum(&Identifier::new(r), conv) {
+                    return Some(ev);
+                }
+            }
+            let conv = slotview.sv.converter();
             slotview
                 .sv
-                .get_enum(&Identifier::new(r), conv)
+                .get_enum(&Identifier::new(r), &conv)
                 .ok()
                 .flatten()
         })
@@ -196,6 +206,18 @@ impl SlotView {
             let mut b = self.data.definitions[0].clone();
             for d in self.data.definitions.iter().skip(1) {
                 b.merge_with(d);
+                // the merge crate only provides `option::overwrite_none`, so specialized
+                // slot_usage ranges would be dropped without manually copying them here;
+                // replace once we have an official overwrite_except_none strategy upstream
+                if let Some(range) = &d.range {
+                    b.range = Some(range.clone());
+                }
+                if let Some(expr) = &d.range_expression {
+                    b.range_expression = Some(expr.clone());
+                }
+                if let Some(enum_range) = &d.enum_range {
+                    b.enum_range = Some(enum_range.clone());
+                }
             }
             b
         })

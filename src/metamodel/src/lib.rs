@@ -9,6 +9,10 @@ use chrono::NaiveDateTime;
 use merge::Merge;
 #[cfg(feature = "pyo3")]
 use pyo3::{prelude::*, FromPyObject};
+#[cfg(feature = "stubgen")]
+use pyo3_stub_gen::{
+    define_stub_info_gatherer, derive::gen_stub_pyclass, derive::gen_stub_pymethods,
+};
 #[cfg(feature = "serde")]
 use serde::{de::IntoDeserializer, Deserialize, Serialize};
 #[cfg(feature = "serde")]
@@ -342,6 +346,16 @@ impl<'py> FromPyObject<'py> for PvFormulaOptions {
         }
     }
 }
+
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for PvFormulaOptions {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::with_module(
+            "typing.Literal['CODE', 'CURIE', 'URI', 'FHIRCODING', 'LABEL']",
+            "typing".into(),
+        )
+    }
+}
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum PresenceEnum {
@@ -394,6 +408,16 @@ impl<'py> FromPyObject<'py> for PresenceEnum {
                 stringify!(PresenceEnum)
             )))
         }
+    }
+}
+
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for PresenceEnum {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::with_module(
+            "typing.Literal['UNCOMMITTED', 'PRESENT', 'ABSENT']",
+            "typing".into(),
+        )
     }
 }
 #[derive(Debug, Clone, PartialEq)]
@@ -458,6 +482,16 @@ impl<'py> FromPyObject<'py> for RelationalRoleEnum {
         }
     }
 }
+
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for RelationalRoleEnum {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::with_module(
+            "typing.Literal['SUBJECT', 'OBJECT', 'PREDICATE', 'NODE', 'OTHERROLE']",
+            "typing".into(),
+        )
+    }
+}
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum AliasPredicateEnum {
@@ -514,6 +548,16 @@ impl<'py> FromPyObject<'py> for AliasPredicateEnum {
                 stringify!(AliasPredicateEnum)
             )))
         }
+    }
+}
+
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for AliasPredicateEnum {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::with_module(
+            "typing.Literal['EXACTSYNONYM', 'RELATEDSYNONYM', 'BROADSYNONYM', 'NARROWSYNONYM']",
+            "typing".into(),
+        )
     }
 }
 #[derive(Debug, Clone, PartialEq)]
@@ -579,12 +623,23 @@ impl<'py> FromPyObject<'py> for ObligationLevelEnum {
     }
 }
 
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for ObligationLevelEnum {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::with_module(
+            "typing.Literal['REQUIRED', 'RECOMMENDED', 'OPTIONAL', 'EXAMPLE', 'DISCOURAGED']",
+            "typing".into(),
+        )
+    }
+}
+
 // Classes
 
 pub type AnyValue = Anything;
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Extension {
     #[cfg_attr(feature = "serde", serde(alias = "tag"))]
@@ -599,6 +654,7 @@ pub struct Extension {
     pub extensions: Option<HashMap<String, Box<ExtensionOrSubtype>>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Extension {
     #[new]
@@ -758,8 +814,12 @@ impl serde_utils::InlinedPair for ExtensionOrSubtype {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(ExtensionOrSubtype = Annotation);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Extensible {
     #[cfg_attr(
@@ -770,6 +830,7 @@ pub struct Extensible {
     pub extensions: Option<HashMap<String, ExtensionOrSubtype>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Extensible {
     #[new]
@@ -1108,8 +1169,35 @@ impl<'py> FromPyObject<'py> for Box<ExtensibleOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    ExtensibleOrSubtype = Element
+        | EnumBinding
+        | StructuredAlias
+        | AnonymousExpression
+        | PathExpression
+        | ClassRule
+        | ArrayExpression
+        | DimensionExpression
+        | PatternExpression
+        | ImportExpression
+        | PermissibleValue
+        | UniqueKey
+        | TypeMapping
+        | AnonymousSlotExpression
+        | AnonymousClassExpression
+        | SchemaDefinition
+        | TypeDefinition
+        | SubsetDefinition
+        | Definition
+        | EnumDefinition
+        | SlotDefinition
+        | ClassDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Annotatable {
     #[cfg_attr(
@@ -1120,6 +1208,7 @@ pub struct Annotatable {
     pub annotations: Option<HashMap<String, Annotation>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Annotatable {
     #[new]
@@ -1474,8 +1563,36 @@ impl<'py> FromPyObject<'py> for Box<AnnotatableOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    AnnotatableOrSubtype = Annotation
+        | Element
+        | EnumBinding
+        | StructuredAlias
+        | AnonymousExpression
+        | PathExpression
+        | ClassRule
+        | ArrayExpression
+        | DimensionExpression
+        | PatternExpression
+        | ImportExpression
+        | PermissibleValue
+        | UniqueKey
+        | TypeMapping
+        | AnonymousSlotExpression
+        | AnonymousClassExpression
+        | SchemaDefinition
+        | TypeDefinition
+        | SubsetDefinition
+        | Definition
+        | EnumDefinition
+        | SlotDefinition
+        | ClassDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Annotation {
     #[cfg_attr(
@@ -1496,6 +1613,7 @@ pub struct Annotation {
     pub extensions: Option<HashMap<String, ExtensionOrSubtype>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Annotation {
     #[new]
@@ -1573,6 +1691,7 @@ impl serde_utils::InlinedPair for Annotation {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct UnitOfMeasure {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -1599,6 +1718,7 @@ pub struct UnitOfMeasure {
     pub iec61360code: Option<String>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl UnitOfMeasure {
     #[new]
@@ -1652,6 +1772,13 @@ pub struct Anything(
     #[cfg(feature = "serde")] pub serde_value::Value,
     #[cfg(not(feature = "serde"))] pub (),
 );
+
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for Anything {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::any()
+    }
+}
 
 #[cfg(feature = "serde")]
 impl Serialize for Anything {
@@ -1794,6 +1921,7 @@ impl std::fmt::Debug for Anything {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct CommonMetadata {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -1952,6 +2080,7 @@ pub struct CommonMetadata {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl CommonMetadata {
     #[new]
@@ -2364,6 +2493,32 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadataOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    CommonMetadataOrSubtype = Element
+        | EnumBinding
+        | StructuredAlias
+        | AnonymousExpression
+        | PathExpression
+        | ClassRule
+        | ArrayExpression
+        | DimensionExpression
+        | PatternExpression
+        | ImportExpression
+        | PermissibleValue
+        | UniqueKey
+        | TypeMapping
+        | AnonymousSlotExpression
+        | AnonymousClassExpression
+        | SchemaDefinition
+        | TypeDefinition
+        | SubsetDefinition
+        | Definition
+        | EnumDefinition
+        | SlotDefinition
+        | ClassDefinition
+);
+
 pub mod element_utl {
     use super::*;
     #[derive(Debug, Clone, PartialEq)]
@@ -2427,10 +2582,14 @@ pub mod element_utl {
             ))
         }
     }
+
+    #[cfg(feature = "stubgen")]
+    ::pyo3_stub_gen::impl_stub_type!(name_range = String | ncname);
 }
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Element {
     pub name: String,
@@ -2638,6 +2797,7 @@ pub struct Element {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Element {
     #[new]
@@ -2991,8 +3151,20 @@ impl serde_utils::InlinedPair for ElementOrSubtype {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    ElementOrSubtype = SchemaDefinition
+        | TypeDefinition
+        | SubsetDefinition
+        | Definition
+        | EnumDefinition
+        | SlotDefinition
+        | ClassDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SchemaDefinition {
     pub id: uri,
@@ -3290,6 +3462,7 @@ pub struct SchemaDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl SchemaDefinition {
     #[new]
@@ -3489,6 +3662,7 @@ impl serde_utils::InlinedPair for SchemaDefinition {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousTypeExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -3525,6 +3699,7 @@ pub struct AnonymousTypeExpression {
     pub all_of: Option<Vec<Box<AnonymousTypeExpression>>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AnonymousTypeExpression {
     #[new]
@@ -3585,6 +3760,7 @@ impl<'py> FromPyObject<'py> for Box<AnonymousTypeExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct TypeDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -3836,6 +4012,7 @@ pub struct TypeDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl TypeDefinition {
     #[new]
@@ -4027,6 +4204,7 @@ impl serde_utils::InlinedPair for TypeDefinition {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SubsetDefinition {
     pub name: String,
@@ -4234,6 +4412,7 @@ pub struct SubsetDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl SubsetDefinition {
     #[new]
@@ -4457,6 +4636,9 @@ pub mod definition_utl {
             ))
         }
     }
+
+    #[cfg(feature = "stubgen")]
+    ::pyo3_stub_gen::impl_stub_type!(is_a_range = Definition | SlotDefinition | ClassDefinition);
     #[derive(Debug, Clone, PartialEq)]
     #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
     pub enum mixins_range {
@@ -4525,6 +4707,9 @@ pub mod definition_utl {
             ))
         }
     }
+
+    #[cfg(feature = "stubgen")]
+    ::pyo3_stub_gen::impl_stub_type!(mixins_range = Definition | SlotDefinition | ClassDefinition);
     #[derive(Debug, Clone, PartialEq)]
     #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
     pub enum apply_to_range {
@@ -4593,10 +4778,16 @@ pub mod definition_utl {
             ))
         }
     }
+
+    #[cfg(feature = "stubgen")]
+    ::pyo3_stub_gen::impl_stub_type!(
+        apply_to_range = Definition | SlotDefinition | ClassDefinition
+    );
 }
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Definition {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -4825,6 +5016,7 @@ pub struct Definition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Definition {
     #[new]
@@ -5118,8 +5310,14 @@ impl serde_utils::InlinedPair for DefinitionOrSubtype {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    DefinitionOrSubtype = EnumDefinition | SlotDefinition | ClassDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousEnumExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5156,6 +5354,7 @@ pub struct AnonymousEnumExpression {
     pub concepts: Option<Vec<uriorcurie>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AnonymousEnumExpression {
     #[new]
@@ -5212,6 +5411,7 @@ impl<'py> FromPyObject<'py> for Box<AnonymousEnumExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct EnumDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5474,6 +5674,7 @@ pub struct EnumDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl EnumDefinition {
     #[new]
@@ -5667,6 +5868,7 @@ impl serde_utils::InlinedPair for EnumDefinition {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct EnumBinding {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5845,6 +6047,7 @@ pub struct EnumBinding {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl EnumBinding {
     #[new]
@@ -5957,6 +6160,7 @@ impl<'py> FromPyObject<'py> for Box<EnumBinding> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct MatchQuery {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5965,6 +6169,7 @@ pub struct MatchQuery {
     pub source_ontology: Option<uriorcurie>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl MatchQuery {
     #[new]
@@ -6000,6 +6205,7 @@ impl<'py> FromPyObject<'py> for Box<MatchQuery> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ReachabilityQuery {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -6028,6 +6234,7 @@ pub struct ReachabilityQuery {
     pub traverse_up: Option<bool>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ReachabilityQuery {
     #[new]
@@ -6074,6 +6281,7 @@ impl<'py> FromPyObject<'py> for Box<ReachabilityQuery> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct StructuredAlias {
     pub literal_form: String,
@@ -6257,6 +6465,7 @@ pub struct StructuredAlias {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl StructuredAlias {
     #[new]
@@ -6367,6 +6576,7 @@ impl<'py> FromPyObject<'py> for Box<StructuredAlias> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Expression {}
 #[derive(Debug, Clone, PartialEq)]
@@ -6575,8 +6785,26 @@ impl<'py> FromPyObject<'py> for Box<ExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    ExpressionOrSubtype = TypeExpression
+        | EnumExpression
+        | StructuredAlias
+        | AnonymousExpression
+        | PathExpression
+        | SlotExpression
+        | AnonymousSlotExpression
+        | SlotDefinition
+        | AnonymousClassExpression
+        | AnonymousEnumExpression
+        | EnumDefinition
+        | AnonymousTypeExpression
+        | TypeDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct TypeExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -6613,6 +6841,7 @@ pub struct TypeExpression {
     pub all_of: Option<Vec<AnonymousTypeExpression>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl TypeExpression {
     #[new]
@@ -6745,8 +6974,14 @@ impl<'py> FromPyObject<'py> for Box<TypeExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    TypeExpressionOrSubtype = AnonymousTypeExpression | TypeDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct EnumExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -6783,6 +7018,7 @@ pub struct EnumExpression {
     pub concepts: Option<Vec<uriorcurie>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl EnumExpression {
     #[new]
@@ -6911,8 +7147,14 @@ impl<'py> FromPyObject<'py> for Box<EnumExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    EnumExpressionOrSubtype = AnonymousEnumExpression | EnumDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousExpression {
     #[cfg_attr(
@@ -7083,6 +7325,7 @@ pub struct AnonymousExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AnonymousExpression {
     #[new]
@@ -7259,8 +7502,14 @@ impl<'py> FromPyObject<'py> for Box<AnonymousExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    AnonymousExpressionOrSubtype = AnonymousSlotExpression | AnonymousClassExpression
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct PathExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -7447,6 +7696,7 @@ pub struct PathExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PathExpression {
     #[new]
@@ -7567,6 +7817,7 @@ impl<'py> FromPyObject<'py> for Box<PathExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SlotExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -7635,6 +7886,7 @@ pub struct SlotExpression {
     pub all_of: Option<Vec<AnonymousSlotExpression>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl SlotExpression {
     #[new]
@@ -7799,8 +8051,14 @@ impl<'py> FromPyObject<'py> for Box<SlotExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    SlotExpressionOrSubtype = AnonymousSlotExpression | SlotDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousSlotExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -8035,6 +8293,7 @@ pub struct AnonymousSlotExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AnonymousSlotExpression {
     #[new]
@@ -8197,179 +8456,180 @@ impl<'py> FromPyObject<'py> for Box<AnonymousSlotExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 #[derive(Merge)]
 pub struct SlotDefinition {
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub singular_name: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub domain: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub slot_uri: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub array: Option<ArrayExpression>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inherited: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub readonly: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub ifabsent: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub list_elements_unique: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub list_elements_ordered: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub shared: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub key: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub identifier: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub designates_type: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub alias: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub owner: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub domain_of: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub subproperty_of: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub symmetric: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub reflexive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub locally_reflexive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub irreflexive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub asymmetric: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub transitive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inverse: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_class_field: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub transitive_form_of: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub reflexive_transitive_form_of: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub role: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_usage_slot: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub usage_slot_name: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub relational_role: Option<RelationalRoleEnum>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub slot_group: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_grouping_slot: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub path_rule: Option<Box<PathExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub disjoint_with: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub children_are_mutually_disjoint: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub union_of: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub type_mappings: Option<HashMap<String, TypeMapping>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub range: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub range_expression: Option<Box<AnonymousClassExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub enum_range: Option<EnumExpressionOrSubtype>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub bindings: Option<Vec<EnumBinding>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub required: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub recommended: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub multivalued: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inlined: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inlined_as_list: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub minimum_value: Option<Anything>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub maximum_value: Option<Anything>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub pattern: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_pattern: Option<PatternExpression>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub unit: Option<UnitOfMeasure>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub implicit_prefix: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub value_presence: Option<PresenceEnum>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8378,56 +8638,56 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_number: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_expression: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub exact_cardinality: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub minimum_cardinality: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub maximum_cardinality: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub has_member: Option<Box<AnonymousSlotExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub all_members: Option<Box<AnonymousSlotExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub exactly_one_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub any_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_a: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     #[cfg_attr(feature = "serde", serde(alias = "abstract"))]
     pub abstract_: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub mixin: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub mixins: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub apply_to: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8436,12 +8696,12 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub values_from: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub string_serialization: Option<String>,
     #[merge(skip)]
     pub name: String,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8450,23 +8710,23 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Option<Vec<ncname>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub definition_uri: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: Option<HashMap<String, LocalName>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8475,7 +8735,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub implements: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8484,37 +8744,37 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: Option<HashMap<String, Annotation>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub description: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: Option<HashMap<String, AltDescription>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub title: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8523,7 +8783,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8532,7 +8792,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8541,25 +8801,25 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Option<Vec<Example>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_subset: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub from_schema: Option<uri>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub imported_from: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub source: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8568,13 +8828,13 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8583,10 +8843,10 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Option<Vec<StructuredAlias>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8595,7 +8855,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8604,7 +8864,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8613,7 +8873,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8622,7 +8882,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8631,7 +8891,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8640,10 +8900,10 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8652,22 +8912,22 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub last_updated_on: Option<NaiveDateTime>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub modified_by: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub status: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8676,7 +8936,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub categories: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8687,6 +8947,7 @@ pub struct SlotDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl SlotDefinition {
     #[new]
@@ -8996,6 +9257,7 @@ impl serde_utils::InlinedPair for SlotDefinition {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -9014,6 +9276,7 @@ pub struct ClassExpression {
     pub slot_conditions: Option<HashMap<String, SlotDefinition>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ClassExpression {
     #[new]
@@ -9130,8 +9393,14 @@ impl<'py> FromPyObject<'py> for Box<ClassExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    ClassExpressionOrSubtype = AnonymousClassExpression | ClassDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousClassExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -9318,6 +9587,7 @@ pub struct AnonymousClassExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AnonymousClassExpression {
     #[new]
@@ -9434,6 +9704,7 @@ impl<'py> FromPyObject<'py> for Box<AnonymousClassExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -9718,6 +9989,7 @@ pub struct ClassDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ClassDefinition {
     #[new]
@@ -9927,6 +10199,7 @@ impl serde_utils::InlinedPair for ClassDefinition {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassLevelRule {}
 #[derive(Debug, Clone, PartialEq)]
@@ -9991,8 +10264,12 @@ impl<'py> FromPyObject<'py> for Box<ClassLevelRuleOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(ClassLevelRuleOrSubtype = ClassRule);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassRule {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -10175,6 +10452,7 @@ pub struct ClassRule {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ClassRule {
     #[new]
@@ -10359,10 +10637,14 @@ pub mod array_expression_utl {
             ))
         }
     }
+
+    #[cfg(feature = "stubgen")]
+    ::pyo3_stub_gen::impl_stub_type!(maximum_number_dimensions_range = Anything | isize | bool);
 }
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ArrayExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -10541,6 +10823,7 @@ pub struct ArrayExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ArrayExpression {
     #[new]
@@ -10653,6 +10936,7 @@ impl<'py> FromPyObject<'py> for Box<ArrayExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct DimensionExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -10831,6 +11115,7 @@ pub struct DimensionExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl DimensionExpression {
     #[new]
@@ -10943,6 +11228,7 @@ impl<'py> FromPyObject<'py> for Box<DimensionExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct PatternExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -11119,6 +11405,7 @@ pub struct PatternExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PatternExpression {
     #[new]
@@ -11229,6 +11516,7 @@ impl<'py> FromPyObject<'py> for Box<PatternExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ImportExpression {
     pub import_from: uriorcurie,
@@ -11408,6 +11696,7 @@ pub struct ImportExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ImportExpression {
     #[new]
@@ -11518,12 +11807,14 @@ impl<'py> FromPyObject<'py> for Box<ImportExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Setting {
     pub setting_key: ncname,
     pub setting_value: String,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Setting {
     #[new]
@@ -11594,12 +11885,14 @@ impl serde_utils::InlinedPair for Setting {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Prefix {
     pub prefix_prefix: ncname,
     pub prefix_reference: uri,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Prefix {
     #[new]
@@ -11670,12 +11963,14 @@ impl serde_utils::InlinedPair for Prefix {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct LocalName {
     pub local_name_source: ncname,
     pub local_name_value: String,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl LocalName {
     #[new]
@@ -11746,6 +12041,7 @@ impl serde_utils::InlinedPair for LocalName {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Example {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -11758,6 +12054,7 @@ pub struct Example {
     pub value_object: Option<Anything>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Example {
     #[new]
@@ -11798,6 +12095,7 @@ impl<'py> FromPyObject<'py> for Box<Example> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AltDescription {
     #[cfg_attr(feature = "serde", serde(alias = "source"))]
@@ -11806,6 +12104,7 @@ pub struct AltDescription {
     pub alt_description_text: String,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AltDescription {
     #[new]
@@ -11882,6 +12181,7 @@ impl serde_utils::InlinedPair for AltDescription {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct PermissibleValue {
     pub text: String,
@@ -12077,6 +12377,7 @@ pub struct PermissibleValue {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PermissibleValue {
     #[new]
@@ -12230,6 +12531,7 @@ impl serde_utils::InlinedPair for PermissibleValue {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct UniqueKey {
     pub unique_key_name: String,
@@ -12405,6 +12707,7 @@ pub struct UniqueKey {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl UniqueKey {
     #[new]
@@ -12550,6 +12853,7 @@ impl serde_utils::InlinedPair for UniqueKey {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct TypeMapping {
     #[cfg_attr(feature = "serde", serde(alias = "framework"))]
@@ -12727,6 +13031,7 @@ pub struct TypeMapping {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl TypeMapping {
     #[new]
@@ -12869,3 +13174,13 @@ impl serde_utils::InlinedPair for TypeMapping {
         }
     }
 }
+
+/// Overwrite `left` with `right` unless `right` is `None`.
+fn overwrite_except_none<T>(left: &mut Option<T>, right: Option<T>) {
+    if right.is_some() {
+        *left = right;
+    }
+}
+
+#[cfg(feature = "stubgen")]
+define_stub_info_gatherer!(stub_info);
