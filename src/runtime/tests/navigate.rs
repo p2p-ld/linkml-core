@@ -31,7 +31,7 @@ fn navigate_basic() {
     .unwrap();
     // Map root should have key 'objects'
     match &v {
-        linkml_runtime::LinkMLValue::Object { values, .. } => {
+        linkml_runtime::LinkMLInstance::Object { values, .. } => {
             assert!(values.contains_key("objects"));
             let inner = v.navigate_path([
                 "objects",

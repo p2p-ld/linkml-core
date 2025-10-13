@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, OnceLock};
 
-use curies::Converter;
+use crate::converter::Converter;
 use linkml_meta::{ClassDefinition, SchemaDefinition, SlotDefinition};
 
 use crate::identifier::{Identifier, IdentifierError};
@@ -35,6 +35,9 @@ impl ClassViewData {
     }
 }
 
+/// Lightweight view over a LinkML class definition.
+///
+/// Cloning this type is cheap because it only clones an internal `Arc` handle.
 #[derive(Clone)]
 pub struct ClassView {
     data: Arc<ClassViewData>,
@@ -90,6 +93,7 @@ impl ClassView {
                     }
                     if let Some(cu) = &class_def.slot_usage {
                         if let Some(usage) = cu.get(slot_ref) {
+                            slot_schema_uri = schema_uri.to_owned();
                             defs.push(*usage.clone());
                         }
                     }
@@ -172,7 +176,12 @@ impl ClassView {
                 format!("{}:{}", default_prefix, self.data.class.name)
             }
         } else {
-            self.data.class.class_uri.as_ref().unwrap().clone()
+            self.data.class.class_uri.clone().ok_or_else(|| {
+                IdentifierError::NameNotResolvable(format!(
+                    "class {} missing URI",
+                    self.data.class.name
+                ))
+            })?
         };
 
         if expand {
@@ -244,10 +253,29 @@ impl ClassView {
         Ok(vals)
     }
 
+    /// Returns the canonical URI for this class, preferring explicit
+    /// `class_uri` declarations when available.
     pub fn canonical_uri(&self) -> Identifier {
-        self.data
+        if let Some(explicit_uri) = &self.data.class.class_uri {
+            let id = Identifier::new(explicit_uri);
+            if let Some(conv) = self.data.sv.converter_for_schema(&self.data.schema_uri) {
+                if let Ok(uri) = id.to_uri(conv) {
+                    return Identifier::Uri(uri);
+                }
+            }
+            return id;
+        }
+
+        let fallback = self
+            .data
             .sv
-            .get_uri(&self.data.schema_uri, &self.data.class.name)
+            .get_uri(&self.data.schema_uri, &self.data.class.name);
+        if let Some(conv) = self.data.sv.converter_for_schema(&self.data.schema_uri) {
+            if let Ok(uri) = fallback.to_uri(conv) {
+                return Identifier::Uri(uri);
+            }
+        }
+        fallback
     }
 
     fn compute_descendant_identifiers(
@@ -322,24 +350,30 @@ impl ClassView {
         recurse: bool,
         include_mixins: bool,
     ) -> Result<Vec<ClassView>, SchemaViewError> {
-        let idx = self
+        let idx_lock = self
             .data
             .descendants_index
             .get(&(recurse, include_mixins))
-            .unwrap()
-            .get_or_init(|| {
-                let mut res = Vec::new();
-                self.compute_descendant_identifiers(
-                    recurse,
-                    include_mixins,
-                    &self.data.schema_uri,
-                    &self.canonical_uri(),
-                    self.name(),
-                    &mut res,
-                )
-                .unwrap(); // fix this with try_get_or_init once stable!
-                res
-            });
+            .expect("descendants index is initialized for all recurse/include_mixins combinations");
+        let idx = if let Some(existing) = idx_lock.get() {
+            existing
+        } else {
+            let mut res = Vec::new();
+            self.compute_descendant_identifiers(
+                recurse,
+                include_mixins,
+                &self.data.schema_uri,
+                &self.canonical_uri(),
+                self.name(),
+                &mut res,
+            )?;
+            if let Err(res) = idx_lock.set(res) {
+                drop(res);
+            }
+            idx_lock
+                .get()
+                .expect("descendants index should be initialized after computation")
+        };
         idx.iter()
             .map(|(schema_uri, class_name)| {
                 self.data
@@ -373,5 +407,135 @@ impl ClassView {
             .slots
             .iter()
             .find(|s| s.definition().identifier.unwrap_or(false))
+    }
+
+    fn collect_ancestors_map(
+        class_view: &ClassView,
+        include_mixins: bool,
+    ) -> Result<HashMap<String, (ClassView, usize)>, SchemaViewError> {
+        fn collect_recursive(
+            current: &ClassView,
+            depth: usize,
+            include_mixins: bool,
+            acc: &mut HashMap<String, (ClassView, usize)>,
+        ) -> Result<(), SchemaViewError> {
+            let key = current.canonical_uri().to_string();
+            let mut should_descend = false;
+            match acc.get_mut(&key) {
+                Some((_, existing_depth)) => {
+                    if depth < *existing_depth {
+                        *existing_depth = depth;
+                        should_descend = true;
+                    }
+                }
+                None => {
+                    acc.insert(key.clone(), (current.clone(), depth));
+                    should_descend = true;
+                }
+            }
+
+            if !should_descend {
+                return Ok(());
+            }
+
+            if let Some(parent) = current.parent_class()? {
+                collect_recursive(&parent, depth + 1, include_mixins, acc)?;
+            }
+
+            if include_mixins {
+                if let Some(mixins) = &current.data.class.mixins {
+                    let conv = current
+                        .data
+                        .sv
+                        .converter_for_schema(&current.data.schema_uri)
+                        .ok_or_else(|| {
+                            SchemaViewError::NoConverterForSchema(current.data.schema_uri.clone())
+                        })?;
+                    for mixin in mixins {
+                        if let Some(mixin_view) =
+                            current.data.sv.get_class(&Identifier::new(mixin), conv)?
+                        {
+                            collect_recursive(&mixin_view, depth + 1, include_mixins, acc)?;
+                        }
+                    }
+                }
+            }
+
+            Ok(())
+        }
+
+        let mut acc = HashMap::new();
+        collect_recursive(class_view, 0, include_mixins, &mut acc)?;
+        Ok(acc)
+    }
+
+    /// Determine the most specific common ancestor across one or more class views.
+    pub fn most_specific_common_ancestor(
+        class_views: &[ClassView],
+        include_mixins: bool,
+    ) -> Result<Option<ClassView>, SchemaViewError> {
+        if class_views.is_empty() {
+            return Ok(None);
+        }
+
+        let reference_sv = &class_views[0].data.sv;
+        for cv in class_views.iter().skip(1) {
+            if !reference_sv.is_same(&cv.data.sv) {
+                return Err(SchemaViewError::SchemaViewMismatch);
+            }
+        }
+
+        let mut iter = class_views.iter();
+        let first = iter.next().expect("non-empty slice has a first element");
+
+        struct AncestorAggregate {
+            class_view: ClassView,
+            max_depth: usize,
+            total_depth: usize,
+        }
+
+        let mut common: HashMap<String, AncestorAggregate> =
+            Self::collect_ancestors_map(first, include_mixins)?
+                .into_iter()
+                .map(|(key, (class_view, depth))| {
+                    (
+                        key,
+                        AncestorAggregate {
+                            class_view,
+                            max_depth: depth,
+                            total_depth: depth,
+                        },
+                    )
+                })
+                .collect();
+
+        for other in iter {
+            let candidates = Self::collect_ancestors_map(other, include_mixins)?;
+            common.retain(|key, aggregate| {
+                if let Some((_, depth)) = candidates.get(key) {
+                    if *depth > aggregate.max_depth {
+                        aggregate.max_depth = *depth;
+                    }
+                    aggregate.total_depth += *depth;
+                    true
+                } else {
+                    false
+                }
+            });
+
+            if common.is_empty() {
+                return Ok(None);
+            }
+        }
+
+        Ok(common
+            .into_iter()
+            .min_by(|(_, a), (_, b)| {
+                a.max_depth
+                    .cmp(&b.max_depth)
+                    .then_with(|| a.total_depth.cmp(&b.total_depth))
+                    .then_with(|| a.class_view.name().cmp(b.class_view.name()))
+            })
+            .map(|(_, aggregate)| aggregate.class_view))
     }
 }

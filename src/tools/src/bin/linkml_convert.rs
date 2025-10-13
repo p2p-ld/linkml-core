@@ -1,16 +1,23 @@
+#[cfg(feature = "ttl")]
 use clap::Parser;
+#[cfg(feature = "ttl")]
 use linkml_runtime::{
     load_json_file, load_yaml_file,
     turtle::{write_turtle, TurtleOptions},
     validate,
 };
+#[cfg(feature = "ttl")]
 use linkml_schemaview::io::from_yaml;
-#[cfg(feature = "resolve")]
+#[cfg(all(feature = "ttl", feature = "resolve"))]
 use linkml_schemaview::resolve::resolve_schemas;
+#[cfg(feature = "ttl")]
 use linkml_schemaview::schemaview::SchemaView;
+#[cfg(feature = "ttl")]
 use std::fs::File;
+#[cfg(feature = "ttl")]
 use std::path::PathBuf;
 
+#[cfg(feature = "ttl")]
 #[derive(Parser)]
 struct Args {
     /// LinkML schema YAML file
@@ -28,6 +35,15 @@ struct Args {
     skolem: bool,
 }
 
+#[cfg(not(feature = "ttl"))]
+fn main() {
+    eprintln!(
+        "linkml-convert was built without Turtle support. Enable the `ttl` feature to use this binary.",
+    );
+    std::process::exit(1);
+}
+
+#[cfg(feature = "ttl")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let schema = from_yaml(&args.schema)?;

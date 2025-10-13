@@ -1,4 +1,4 @@
-use linkml_runtime::{load_yaml_file, validate, LinkMLValue};
+use linkml_runtime::{load_yaml_file, validate, LinkMLInstance};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
@@ -33,10 +33,10 @@ fn enum_valid_value() {
     assert!(validate(&v).is_ok());
 
     // Sanity check parsed value shape
-    if let LinkMLValue::Object { values, .. } = v {
+    if let LinkMLInstance::Object { values, .. } = v {
         let status = values.get("status").expect("status not found");
         match status {
-            LinkMLValue::Scalar { value, .. } => {
+            LinkMLInstance::Scalar { value, .. } => {
                 assert_eq!(value.as_str(), Some("active"));
             }
             _ => panic!("expected scalar for status"),

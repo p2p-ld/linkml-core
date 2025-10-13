@@ -1,7 +1,7 @@
 use clap::{Parser, ValueEnum};
 #[cfg(feature = "resolve")]
 use linkml_schemaview::resolve::resolve_schemas;
-use linkml_schemaview::{identifier::Identifier, io::from_yaml, schemaview::SchemaView};
+use linkml_schemaview::{identifier::Identifier, io::from_yaml, schemaview::SchemaView, Converter};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -23,7 +23,7 @@ enum OutputFormat {
 fn type_exists(
     sv: &SchemaView,
     id: &Identifier,
-    conv: &curies::Converter,
+    conv: &Converter,
 ) -> Result<bool, linkml_schemaview::identifier::IdentifierError> {
     use linkml_schemaview::identifier::Identifier as Id;
     match id {
@@ -61,7 +61,7 @@ fn type_exists(
 fn enum_exists(
     sv: &SchemaView,
     id: &Identifier,
-    conv: &curies::Converter,
+    conv: &Converter,
 ) -> Result<bool, linkml_schemaview::identifier::IdentifierError> {
     use linkml_schemaview::identifier::Identifier as Id;
     match id {

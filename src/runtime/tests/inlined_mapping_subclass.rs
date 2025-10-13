@@ -1,4 +1,4 @@
-use linkml_runtime::{load_json_file, validate, LinkMLValue};
+use linkml_runtime::{load_json_file, validate, LinkMLInstance};
 use linkml_schemaview::identifier::{converter_from_schema, Identifier};
 use linkml_schemaview::io::from_yaml;
 use linkml_schemaview::schemaview::SchemaView;
@@ -34,16 +34,16 @@ fn inlined_mapping_selects_subclass_by_typeuri() {
 
     // Ensure inlined mapping children select subclasses based on typeURI
     match v {
-        LinkMLValue::Object { values, .. } => {
+        LinkMLInstance::Object { values, .. } => {
             let things = values.get("things").expect("things slot missing");
             match things {
-                LinkMLValue::Mapping { values, .. } => {
+                LinkMLInstance::Mapping { values, .. } => {
                     match values.get("alpha").expect("alpha missing") {
-                        LinkMLValue::Object { class, .. } => assert_eq!(class.name(), "ThingA"),
+                        LinkMLInstance::Object { class, .. } => assert_eq!(class.name(), "ThingA"),
                         _ => panic!("alpha should be an object"),
                     }
                     match values.get("beta").expect("beta missing") {
-                        LinkMLValue::Object { class, .. } => assert_eq!(class.name(), "ThingB"),
+                        LinkMLInstance::Object { class, .. } => assert_eq!(class.name(), "ThingB"),
                         _ => panic!("beta should be an object"),
                     }
                 }

@@ -9,6 +9,10 @@ use chrono::NaiveDateTime;
 use merge::Merge;
 #[cfg(feature = "pyo3")]
 use pyo3::{prelude::*, FromPyObject};
+#[cfg(feature = "stubgen")]
+use pyo3_stub_gen::{
+    define_stub_info_gatherer, derive::gen_stub_pyclass, derive::gen_stub_pymethods,
+};
 #[cfg(feature = "serde")]
 use serde::{de::IntoDeserializer, Deserialize, Serialize};
 #[cfg(feature = "serde")]
@@ -283,10 +287,15 @@ pub type relational_role = RelationalRoleEnum;
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum PvFormulaOptions {
+    #[cfg_attr(feature = "serde", serde(rename = "CODE"))]
     CODE,
+    #[cfg_attr(feature = "serde", serde(rename = "CURIE"))]
     CURIE,
+    #[cfg_attr(feature = "serde", serde(rename = "URI"))]
     URI,
+    #[cfg_attr(feature = "serde", serde(rename = "FHIR_CODING"))]
     FHIRCODING,
+    #[cfg_attr(feature = "serde", serde(rename = "LABEL"))]
     LABEL,
 }
 
@@ -296,7 +305,7 @@ impl core::fmt::Display for PvFormulaOptions {
             PvFormulaOptions::CODE => f.write_str("CODE"),
             PvFormulaOptions::CURIE => f.write_str("CURIE"),
             PvFormulaOptions::URI => f.write_str("URI"),
-            PvFormulaOptions::FHIRCODING => f.write_str("FHIRCODING"),
+            PvFormulaOptions::FHIRCODING => f.write_str("FHIR_CODING"),
             PvFormulaOptions::LABEL => f.write_str("LABEL"),
         }
     }
@@ -312,7 +321,7 @@ impl<'py> IntoPyObject<'py> for PvFormulaOptions {
             PvFormulaOptions::CODE => "CODE",
             PvFormulaOptions::CURIE => "CURIE",
             PvFormulaOptions::URI => "URI",
-            PvFormulaOptions::FHIRCODING => "FHIRCODING",
+            PvFormulaOptions::FHIRCODING => "FHIR_CODING",
             PvFormulaOptions::LABEL => "LABEL",
         };
         Ok(pyo3::types::PyString::new(py, s).into_any())
@@ -327,7 +336,7 @@ impl<'py> FromPyObject<'py> for PvFormulaOptions {
                 "CODE" => Ok(PvFormulaOptions::CODE),
                 "CURIE" => Ok(PvFormulaOptions::CURIE),
                 "URI" => Ok(PvFormulaOptions::URI),
-                "FHIRCODING" => Ok(PvFormulaOptions::FHIRCODING),
+                "FHIR_CODING" | "FHIRCODING" => Ok(PvFormulaOptions::FHIRCODING),
                 "LABEL" => Ok(PvFormulaOptions::LABEL),
                 _ => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
                     "invalid value for PvFormulaOptions: {}",
@@ -342,11 +351,24 @@ impl<'py> FromPyObject<'py> for PvFormulaOptions {
         }
     }
 }
+
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for PvFormulaOptions {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::with_module(
+            "typing.Literal['CODE', 'CURIE', 'URI', 'FHIR_CODING', 'LABEL']",
+            "typing".into(),
+        )
+    }
+}
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum PresenceEnum {
+    #[cfg_attr(feature = "serde", serde(rename = "UNCOMMITTED"))]
     UNCOMMITTED,
+    #[cfg_attr(feature = "serde", serde(rename = "PRESENT"))]
     PRESENT,
+    #[cfg_attr(feature = "serde", serde(rename = "ABSENT"))]
     ABSENT,
 }
 
@@ -396,13 +418,28 @@ impl<'py> FromPyObject<'py> for PresenceEnum {
         }
     }
 }
+
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for PresenceEnum {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::with_module(
+            "typing.Literal['UNCOMMITTED', 'PRESENT', 'ABSENT']",
+            "typing".into(),
+        )
+    }
+}
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum RelationalRoleEnum {
+    #[cfg_attr(feature = "serde", serde(rename = "SUBJECT"))]
     SUBJECT,
+    #[cfg_attr(feature = "serde", serde(rename = "OBJECT"))]
     OBJECT,
+    #[cfg_attr(feature = "serde", serde(rename = "PREDICATE"))]
     PREDICATE,
+    #[cfg_attr(feature = "serde", serde(rename = "NODE"))]
     NODE,
+    #[cfg_attr(feature = "serde", serde(rename = "OTHER_ROLE"))]
     OTHERROLE,
 }
 
@@ -413,7 +450,7 @@ impl core::fmt::Display for RelationalRoleEnum {
             RelationalRoleEnum::OBJECT => f.write_str("OBJECT"),
             RelationalRoleEnum::PREDICATE => f.write_str("PREDICATE"),
             RelationalRoleEnum::NODE => f.write_str("NODE"),
-            RelationalRoleEnum::OTHERROLE => f.write_str("OTHERROLE"),
+            RelationalRoleEnum::OTHERROLE => f.write_str("OTHER_ROLE"),
         }
     }
 }
@@ -429,7 +466,7 @@ impl<'py> IntoPyObject<'py> for RelationalRoleEnum {
             RelationalRoleEnum::OBJECT => "OBJECT",
             RelationalRoleEnum::PREDICATE => "PREDICATE",
             RelationalRoleEnum::NODE => "NODE",
-            RelationalRoleEnum::OTHERROLE => "OTHERROLE",
+            RelationalRoleEnum::OTHERROLE => "OTHER_ROLE",
         };
         Ok(pyo3::types::PyString::new(py, s).into_any())
     }
@@ -444,7 +481,7 @@ impl<'py> FromPyObject<'py> for RelationalRoleEnum {
                 "OBJECT" => Ok(RelationalRoleEnum::OBJECT),
                 "PREDICATE" => Ok(RelationalRoleEnum::PREDICATE),
                 "NODE" => Ok(RelationalRoleEnum::NODE),
-                "OTHERROLE" => Ok(RelationalRoleEnum::OTHERROLE),
+                "OTHER_ROLE" | "OTHERROLE" => Ok(RelationalRoleEnum::OTHERROLE),
                 _ => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
                     "invalid value for RelationalRoleEnum: {}",
                     s
@@ -458,22 +495,36 @@ impl<'py> FromPyObject<'py> for RelationalRoleEnum {
         }
     }
 }
+
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for RelationalRoleEnum {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::with_module(
+            "typing.Literal['SUBJECT', 'OBJECT', 'PREDICATE', 'NODE', 'OTHER_ROLE']",
+            "typing".into(),
+        )
+    }
+}
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum AliasPredicateEnum {
+    #[cfg_attr(feature = "serde", serde(rename = "EXACT_SYNONYM"))]
     EXACTSYNONYM,
+    #[cfg_attr(feature = "serde", serde(rename = "RELATED_SYNONYM"))]
     RELATEDSYNONYM,
+    #[cfg_attr(feature = "serde", serde(rename = "BROAD_SYNONYM"))]
     BROADSYNONYM,
+    #[cfg_attr(feature = "serde", serde(rename = "NARROW_SYNONYM"))]
     NARROWSYNONYM,
 }
 
 impl core::fmt::Display for AliasPredicateEnum {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            AliasPredicateEnum::EXACTSYNONYM => f.write_str("EXACTSYNONYM"),
-            AliasPredicateEnum::RELATEDSYNONYM => f.write_str("RELATEDSYNONYM"),
-            AliasPredicateEnum::BROADSYNONYM => f.write_str("BROADSYNONYM"),
-            AliasPredicateEnum::NARROWSYNONYM => f.write_str("NARROWSYNONYM"),
+            AliasPredicateEnum::EXACTSYNONYM => f.write_str("EXACT_SYNONYM"),
+            AliasPredicateEnum::RELATEDSYNONYM => f.write_str("RELATED_SYNONYM"),
+            AliasPredicateEnum::BROADSYNONYM => f.write_str("BROAD_SYNONYM"),
+            AliasPredicateEnum::NARROWSYNONYM => f.write_str("NARROW_SYNONYM"),
         }
     }
 }
@@ -485,10 +536,10 @@ impl<'py> IntoPyObject<'py> for AliasPredicateEnum {
     type Error = PyErr;
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         let s: &str = match self {
-            AliasPredicateEnum::EXACTSYNONYM => "EXACTSYNONYM",
-            AliasPredicateEnum::RELATEDSYNONYM => "RELATEDSYNONYM",
-            AliasPredicateEnum::BROADSYNONYM => "BROADSYNONYM",
-            AliasPredicateEnum::NARROWSYNONYM => "NARROWSYNONYM",
+            AliasPredicateEnum::EXACTSYNONYM => "EXACT_SYNONYM",
+            AliasPredicateEnum::RELATEDSYNONYM => "RELATED_SYNONYM",
+            AliasPredicateEnum::BROADSYNONYM => "BROAD_SYNONYM",
+            AliasPredicateEnum::NARROWSYNONYM => "NARROW_SYNONYM",
         };
         Ok(pyo3::types::PyString::new(py, s).into_any())
     }
@@ -499,10 +550,10 @@ impl<'py> FromPyObject<'py> for AliasPredicateEnum {
     fn extract_bound(ob: &pyo3::Bound<'py, pyo3::types::PyAny>) -> pyo3::PyResult<Self> {
         if let Ok(s) = ob.extract::<&str>() {
             match s {
-                "EXACTSYNONYM" => Ok(AliasPredicateEnum::EXACTSYNONYM),
-                "RELATEDSYNONYM" => Ok(AliasPredicateEnum::RELATEDSYNONYM),
-                "BROADSYNONYM" => Ok(AliasPredicateEnum::BROADSYNONYM),
-                "NARROWSYNONYM" => Ok(AliasPredicateEnum::NARROWSYNONYM),
+                "EXACT_SYNONYM" | "EXACTSYNONYM" => Ok(AliasPredicateEnum::EXACTSYNONYM),
+                "RELATED_SYNONYM" | "RELATEDSYNONYM" => Ok(AliasPredicateEnum::RELATEDSYNONYM),
+                "BROAD_SYNONYM" | "BROADSYNONYM" => Ok(AliasPredicateEnum::BROADSYNONYM),
+                "NARROW_SYNONYM" | "NARROWSYNONYM" => Ok(AliasPredicateEnum::NARROWSYNONYM),
                 _ => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
                     "invalid value for AliasPredicateEnum: {}",
                     s
@@ -516,13 +567,28 @@ impl<'py> FromPyObject<'py> for AliasPredicateEnum {
         }
     }
 }
+
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for AliasPredicateEnum {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::with_module(
+            "typing.Literal['EXACT_SYNONYM', 'RELATED_SYNONYM', 'BROAD_SYNONYM', 'NARROW_SYNONYM']",
+            "typing".into(),
+        )
+    }
+}
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum ObligationLevelEnum {
+    #[cfg_attr(feature = "serde", serde(rename = "REQUIRED"))]
     REQUIRED,
+    #[cfg_attr(feature = "serde", serde(rename = "RECOMMENDED"))]
     RECOMMENDED,
+    #[cfg_attr(feature = "serde", serde(rename = "OPTIONAL"))]
     OPTIONAL,
+    #[cfg_attr(feature = "serde", serde(rename = "EXAMPLE"))]
     EXAMPLE,
+    #[cfg_attr(feature = "serde", serde(rename = "DISCOURAGED"))]
     DISCOURAGED,
 }
 
@@ -579,12 +645,23 @@ impl<'py> FromPyObject<'py> for ObligationLevelEnum {
     }
 }
 
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for ObligationLevelEnum {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::with_module(
+            "typing.Literal['REQUIRED', 'RECOMMENDED', 'OPTIONAL', 'EXAMPLE', 'DISCOURAGED']",
+            "typing".into(),
+        )
+    }
+}
+
 // Classes
 
 pub type AnyValue = Anything;
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Extension {
     #[cfg_attr(feature = "serde", serde(alias = "tag"))]
@@ -599,14 +676,18 @@ pub struct Extension {
     pub extensions: Option<HashMap<String, Box<ExtensionOrSubtype>>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Extension {
     #[new]
+    #[pyo3(signature = (extension_tag, extension_value, extensions=None))]
     pub fn new(
         extension_tag: uriorcurie,
-        extension_value: AnyValue,
-        extensions: Option<HashMap<String, Box<ExtensionOrSubtype>>>,
+        extension_value: serde_utils::PyValue<AnyValue>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, Box<ExtensionOrSubtype>>>>,
     ) -> Self {
+        let extension_value = extension_value.into_inner();
+        let extensions = extensions.map(|v| v.into_inner());
         Extension {
             extension_tag,
             extension_value,
@@ -758,8 +839,12 @@ impl serde_utils::InlinedPair for ExtensionOrSubtype {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(ExtensionOrSubtype = Annotation);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Extensible {
     #[cfg_attr(
@@ -770,10 +855,15 @@ pub struct Extensible {
     pub extensions: Option<HashMap<String, ExtensionOrSubtype>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Extensible {
     #[new]
-    pub fn new(extensions: Option<HashMap<String, ExtensionOrSubtype>>) -> Self {
+    #[pyo3(signature = (extensions=None))]
+    pub fn new(
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+    ) -> Self {
+        let extensions = extensions.map(|v| v.into_inner());
         Extensible { extensions }
     }
 }
@@ -1108,8 +1198,35 @@ impl<'py> FromPyObject<'py> for Box<ExtensibleOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    ExtensibleOrSubtype = Element
+        | EnumBinding
+        | StructuredAlias
+        | AnonymousExpression
+        | PathExpression
+        | ClassRule
+        | ArrayExpression
+        | DimensionExpression
+        | PatternExpression
+        | ImportExpression
+        | PermissibleValue
+        | UniqueKey
+        | TypeMapping
+        | AnonymousSlotExpression
+        | AnonymousClassExpression
+        | SchemaDefinition
+        | TypeDefinition
+        | SubsetDefinition
+        | Definition
+        | EnumDefinition
+        | SlotDefinition
+        | ClassDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Annotatable {
     #[cfg_attr(
@@ -1120,10 +1237,13 @@ pub struct Annotatable {
     pub annotations: Option<HashMap<String, Annotation>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Annotatable {
     #[new]
-    pub fn new(annotations: Option<HashMap<String, Annotation>>) -> Self {
+    #[pyo3(signature = (annotations=None))]
+    pub fn new(annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>) -> Self {
+        let annotations = annotations.map(|v| v.into_inner());
         Annotatable { annotations }
     }
 }
@@ -1474,8 +1594,36 @@ impl<'py> FromPyObject<'py> for Box<AnnotatableOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    AnnotatableOrSubtype = Annotation
+        | Element
+        | EnumBinding
+        | StructuredAlias
+        | AnonymousExpression
+        | PathExpression
+        | ClassRule
+        | ArrayExpression
+        | DimensionExpression
+        | PatternExpression
+        | ImportExpression
+        | PermissibleValue
+        | UniqueKey
+        | TypeMapping
+        | AnonymousSlotExpression
+        | AnonymousClassExpression
+        | SchemaDefinition
+        | TypeDefinition
+        | SubsetDefinition
+        | Definition
+        | EnumDefinition
+        | SlotDefinition
+        | ClassDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Annotation {
     #[cfg_attr(
@@ -1496,19 +1644,24 @@ pub struct Annotation {
     pub extensions: Option<HashMap<String, ExtensionOrSubtype>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Annotation {
     #[new]
+    #[pyo3(signature = (extension_tag, extension_value, annotations=None, extensions=None))]
     pub fn new(
-        annotations: Option<HashMap<String, Box<Annotation>>>,
         extension_tag: uriorcurie,
-        extension_value: AnyValue,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
+        extension_value: serde_utils::PyValue<AnyValue>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Box<Annotation>>>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
     ) -> Self {
+        let extension_value = extension_value.into_inner();
+        let annotations = annotations.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
         Annotation {
-            annotations,
             extension_tag,
             extension_value,
+            annotations,
             extensions,
         }
     }
@@ -1573,6 +1726,7 @@ impl serde_utils::InlinedPair for Annotation {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct UnitOfMeasure {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -1599,9 +1753,11 @@ pub struct UnitOfMeasure {
     pub iec61360code: Option<String>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl UnitOfMeasure {
     #[new]
+    #[pyo3(signature = (symbol=None, abbreviation=None, descriptive_name=None, exact_mappings=None, ucum_code=None, derivation=None, has_quantity_kind=None, iec61360code=None))]
     pub fn new(
         symbol: Option<String>,
         abbreviation: Option<String>,
@@ -1652,6 +1808,13 @@ pub struct Anything(
     #[cfg(feature = "serde")] pub serde_value::Value,
     #[cfg(not(feature = "serde"))] pub (),
 );
+
+#[cfg(feature = "stubgen")]
+impl ::pyo3_stub_gen::PyStubType for Anything {
+    fn type_output() -> ::pyo3_stub_gen::TypeInfo {
+        ::pyo3_stub_gen::TypeInfo::any()
+    }
+}
 
 #[cfg(feature = "serde")]
 impl Serialize for Anything {
@@ -1743,7 +1906,6 @@ impl<'py> IntoPyObject<'py> for Anything {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         use pyo3::types::{PyAny, PyDict, PyList, PyString};
-        use pyo3::PyObject;
         use serde_value::Value;
 
         fn value_to_py<'py>(py: Python<'py>, v: &Value) -> pyo3::PyResult<Bound<'py, PyAny>> {
@@ -1794,6 +1956,7 @@ impl std::fmt::Debug for Anything {
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct CommonMetadata {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -1952,18 +2115,20 @@ pub struct CommonMetadata {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl CommonMetadata {
     #[new]
+    #[pyo3(signature = (description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -1973,7 +2138,7 @@ impl CommonMetadata {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -1990,6 +2155,9 @@ impl CommonMetadata {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         CommonMetadata {
             description,
             alt_descriptions,
@@ -2364,6 +2532,32 @@ impl<'py> FromPyObject<'py> for Box<CommonMetadataOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    CommonMetadataOrSubtype = Element
+        | EnumBinding
+        | StructuredAlias
+        | AnonymousExpression
+        | PathExpression
+        | ClassRule
+        | ArrayExpression
+        | DimensionExpression
+        | PatternExpression
+        | ImportExpression
+        | PermissibleValue
+        | UniqueKey
+        | TypeMapping
+        | AnonymousSlotExpression
+        | AnonymousClassExpression
+        | SchemaDefinition
+        | TypeDefinition
+        | SubsetDefinition
+        | Definition
+        | EnumDefinition
+        | SlotDefinition
+        | ClassDefinition
+);
+
 pub mod element_utl {
     use super::*;
     #[derive(Debug, Clone, PartialEq)]
@@ -2427,10 +2621,14 @@ pub mod element_utl {
             ))
         }
     }
+
+    #[cfg(feature = "stubgen")]
+    ::pyo3_stub_gen::impl_stub_type!(name_range = String | ncname);
 }
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Element {
     pub name: String,
@@ -2638,28 +2836,30 @@ pub struct Element {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Element {
     #[new]
+    #[pyo3(signature = (name, id_prefixes=None, id_prefixes_are_closed=None, definition_uri=None, local_names=None, conforms_to=None, implements=None, instantiates=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         name: String,
         id_prefixes: Option<Vec<ncname>>,
         id_prefixes_are_closed: Option<bool>,
         definition_uri: Option<uriorcurie>,
-        local_names: Option<HashMap<String, LocalName>>,
+        local_names: Option<serde_utils::PyValue<HashMap<String, LocalName>>>,
         conforms_to: Option<String>,
         implements: Option<Vec<uriorcurie>>,
         instantiates: Option<Vec<uriorcurie>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -2669,7 +2869,7 @@ impl Element {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -2686,6 +2886,12 @@ impl Element {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let local_names = local_names.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         Element {
             name,
             id_prefixes,
@@ -2991,8 +3197,20 @@ impl serde_utils::InlinedPair for ElementOrSubtype {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    ElementOrSubtype = SchemaDefinition
+        | TypeDefinition
+        | SubsetDefinition
+        | Definition
+        | EnumDefinition
+        | SlotDefinition
+        | ClassDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SchemaDefinition {
     pub id: uri,
@@ -3290,50 +3508,52 @@ pub struct SchemaDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl SchemaDefinition {
     #[new]
+    #[pyo3(signature = (id, name, version=None, imports=None, license=None, prefixes=None, emit_prefixes=None, default_curi_maps=None, default_prefix=None, default_range=None, subsets=None, types=None, enums=None, slot_definitions=None, classes=None, metamodel_version=None, source_file=None, source_file_date=None, source_file_size=None, generation_date=None, slot_names_unique=None, settings=None, bindings=None, id_prefixes=None, id_prefixes_are_closed=None, definition_uri=None, local_names=None, conforms_to=None, implements=None, instantiates=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         id: uri,
+        name: ncname,
         version: Option<String>,
         imports: Option<Vec<uriorcurie>>,
         license: Option<String>,
-        prefixes: Option<HashMap<String, Prefix>>,
+        prefixes: Option<serde_utils::PyValue<HashMap<String, Prefix>>>,
         emit_prefixes: Option<Vec<ncname>>,
         default_curi_maps: Option<Vec<String>>,
         default_prefix: Option<String>,
         default_range: Option<String>,
-        subsets: Option<HashMap<String, SubsetDefinition>>,
-        types: Option<HashMap<String, TypeDefinition>>,
-        enums: Option<HashMap<String, EnumDefinition>>,
-        slot_definitions: Option<HashMap<String, SlotDefinition>>,
-        classes: Option<HashMap<String, ClassDefinition>>,
+        subsets: Option<serde_utils::PyValue<HashMap<String, SubsetDefinition>>>,
+        types: Option<serde_utils::PyValue<HashMap<String, TypeDefinition>>>,
+        enums: Option<serde_utils::PyValue<HashMap<String, EnumDefinition>>>,
+        slot_definitions: Option<serde_utils::PyValue<HashMap<String, SlotDefinition>>>,
+        classes: Option<serde_utils::PyValue<HashMap<String, ClassDefinition>>>,
         metamodel_version: Option<String>,
         source_file: Option<String>,
         source_file_date: Option<NaiveDateTime>,
         source_file_size: Option<isize>,
         generation_date: Option<NaiveDateTime>,
         slot_names_unique: Option<bool>,
-        settings: Option<HashMap<String, Setting>>,
-        bindings: Option<Vec<EnumBinding>>,
-        name: ncname,
+        settings: Option<serde_utils::PyValue<HashMap<String, Setting>>>,
+        bindings: Option<serde_utils::PyValue<Vec<EnumBinding>>>,
         id_prefixes: Option<Vec<ncname>>,
         id_prefixes_are_closed: Option<bool>,
         definition_uri: Option<uriorcurie>,
-        local_names: Option<HashMap<String, LocalName>>,
+        local_names: Option<serde_utils::PyValue<HashMap<String, LocalName>>>,
         conforms_to: Option<String>,
         implements: Option<Vec<uriorcurie>>,
         instantiates: Option<Vec<uriorcurie>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -3343,7 +3563,7 @@ impl SchemaDefinition {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -3360,8 +3580,23 @@ impl SchemaDefinition {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let prefixes = prefixes.map(|v| v.into_inner());
+        let subsets = subsets.map(|v| v.into_inner());
+        let types = types.map(|v| v.into_inner());
+        let enums = enums.map(|v| v.into_inner());
+        let slot_definitions = slot_definitions.map(|v| v.into_inner());
+        let classes = classes.map(|v| v.into_inner());
+        let settings = settings.map(|v| v.into_inner());
+        let bindings = bindings.map(|v| v.into_inner());
+        let local_names = local_names.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         SchemaDefinition {
             id,
+            name,
             version,
             imports,
             license,
@@ -3383,7 +3618,6 @@ impl SchemaDefinition {
             slot_names_unique,
             settings,
             bindings,
-            name,
             id_prefixes,
             id_prefixes_are_closed,
             definition_uri,
@@ -3489,6 +3723,7 @@ impl serde_utils::InlinedPair for SchemaDefinition {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousTypeExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -3525,24 +3760,34 @@ pub struct AnonymousTypeExpression {
     pub all_of: Option<Vec<Box<AnonymousTypeExpression>>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AnonymousTypeExpression {
     #[new]
+    #[pyo3(signature = (pattern=None, structured_pattern=None, unit=None, implicit_prefix=None, equals_string=None, equals_string_in=None, equals_number=None, minimum_value=None, maximum_value=None, none_of=None, exactly_one_of=None, any_of=None, all_of=None))]
     pub fn new(
         pattern: Option<String>,
-        structured_pattern: Option<PatternExpression>,
-        unit: Option<UnitOfMeasure>,
+        structured_pattern: Option<serde_utils::PyValue<PatternExpression>>,
+        unit: Option<serde_utils::PyValue<UnitOfMeasure>>,
         implicit_prefix: Option<String>,
         equals_string: Option<String>,
         equals_string_in: Option<Vec<String>>,
         equals_number: Option<isize>,
-        minimum_value: Option<Anything>,
-        maximum_value: Option<Anything>,
-        none_of: Option<Vec<Box<AnonymousTypeExpression>>>,
-        exactly_one_of: Option<Vec<Box<AnonymousTypeExpression>>>,
-        any_of: Option<Vec<Box<AnonymousTypeExpression>>>,
-        all_of: Option<Vec<Box<AnonymousTypeExpression>>>,
+        minimum_value: Option<serde_utils::PyValue<Anything>>,
+        maximum_value: Option<serde_utils::PyValue<Anything>>,
+        none_of: Option<serde_utils::PyValue<Vec<Box<AnonymousTypeExpression>>>>,
+        exactly_one_of: Option<serde_utils::PyValue<Vec<Box<AnonymousTypeExpression>>>>,
+        any_of: Option<serde_utils::PyValue<Vec<Box<AnonymousTypeExpression>>>>,
+        all_of: Option<serde_utils::PyValue<Vec<Box<AnonymousTypeExpression>>>>,
     ) -> Self {
+        let structured_pattern = structured_pattern.map(|v| v.into_inner());
+        let unit = unit.map(|v| v.into_inner());
+        let minimum_value = minimum_value.map(|v| v.into_inner());
+        let maximum_value = maximum_value.map(|v| v.into_inner());
+        let none_of = none_of.map(|v| v.into_inner());
+        let exactly_one_of = exactly_one_of.map(|v| v.into_inner());
+        let any_of = any_of.map(|v| v.into_inner());
+        let all_of = all_of.map(|v| v.into_inner());
         AnonymousTypeExpression {
             pattern,
             structured_pattern,
@@ -3585,6 +3830,7 @@ impl<'py> FromPyObject<'py> for Box<AnonymousTypeExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct TypeDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -3836,46 +4082,48 @@ pub struct TypeDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl TypeDefinition {
     #[new]
+    #[pyo3(signature = (name, typeof_=None, base=None, type_uri=None, repr=None, union_of=None, pattern=None, structured_pattern=None, unit=None, implicit_prefix=None, equals_string=None, equals_string_in=None, equals_number=None, minimum_value=None, maximum_value=None, none_of=None, exactly_one_of=None, any_of=None, all_of=None, id_prefixes=None, id_prefixes_are_closed=None, definition_uri=None, local_names=None, conforms_to=None, implements=None, instantiates=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
+        name: String,
         typeof_: Option<String>,
         base: Option<String>,
         type_uri: Option<uriorcurie>,
         repr: Option<String>,
         union_of: Option<Vec<String>>,
         pattern: Option<String>,
-        structured_pattern: Option<PatternExpression>,
-        unit: Option<UnitOfMeasure>,
+        structured_pattern: Option<serde_utils::PyValue<PatternExpression>>,
+        unit: Option<serde_utils::PyValue<UnitOfMeasure>>,
         implicit_prefix: Option<String>,
         equals_string: Option<String>,
         equals_string_in: Option<Vec<String>>,
         equals_number: Option<isize>,
-        minimum_value: Option<Anything>,
-        maximum_value: Option<Anything>,
-        none_of: Option<Vec<AnonymousTypeExpression>>,
-        exactly_one_of: Option<Vec<AnonymousTypeExpression>>,
-        any_of: Option<Vec<AnonymousTypeExpression>>,
-        all_of: Option<Vec<AnonymousTypeExpression>>,
-        name: String,
+        minimum_value: Option<serde_utils::PyValue<Anything>>,
+        maximum_value: Option<serde_utils::PyValue<Anything>>,
+        none_of: Option<serde_utils::PyValue<Vec<AnonymousTypeExpression>>>,
+        exactly_one_of: Option<serde_utils::PyValue<Vec<AnonymousTypeExpression>>>,
+        any_of: Option<serde_utils::PyValue<Vec<AnonymousTypeExpression>>>,
+        all_of: Option<serde_utils::PyValue<Vec<AnonymousTypeExpression>>>,
         id_prefixes: Option<Vec<ncname>>,
         id_prefixes_are_closed: Option<bool>,
         definition_uri: Option<uriorcurie>,
-        local_names: Option<HashMap<String, LocalName>>,
+        local_names: Option<serde_utils::PyValue<HashMap<String, LocalName>>>,
         conforms_to: Option<String>,
         implements: Option<Vec<uriorcurie>>,
         instantiates: Option<Vec<uriorcurie>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -3885,7 +4133,7 @@ impl TypeDefinition {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -3902,7 +4150,22 @@ impl TypeDefinition {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let structured_pattern = structured_pattern.map(|v| v.into_inner());
+        let unit = unit.map(|v| v.into_inner());
+        let minimum_value = minimum_value.map(|v| v.into_inner());
+        let maximum_value = maximum_value.map(|v| v.into_inner());
+        let none_of = none_of.map(|v| v.into_inner());
+        let exactly_one_of = exactly_one_of.map(|v| v.into_inner());
+        let any_of = any_of.map(|v| v.into_inner());
+        let all_of = all_of.map(|v| v.into_inner());
+        let local_names = local_names.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         TypeDefinition {
+            name,
             typeof_,
             base,
             type_uri,
@@ -3921,7 +4184,6 @@ impl TypeDefinition {
             exactly_one_of,
             any_of,
             all_of,
-            name,
             id_prefixes,
             id_prefixes_are_closed,
             definition_uri,
@@ -4027,6 +4289,7 @@ impl serde_utils::InlinedPair for TypeDefinition {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SubsetDefinition {
     pub name: String,
@@ -4234,28 +4497,30 @@ pub struct SubsetDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl SubsetDefinition {
     #[new]
+    #[pyo3(signature = (name, id_prefixes=None, id_prefixes_are_closed=None, definition_uri=None, local_names=None, conforms_to=None, implements=None, instantiates=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         name: String,
         id_prefixes: Option<Vec<ncname>>,
         id_prefixes_are_closed: Option<bool>,
         definition_uri: Option<uriorcurie>,
-        local_names: Option<HashMap<String, LocalName>>,
+        local_names: Option<serde_utils::PyValue<HashMap<String, LocalName>>>,
         conforms_to: Option<String>,
         implements: Option<Vec<uriorcurie>>,
         instantiates: Option<Vec<uriorcurie>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -4265,7 +4530,7 @@ impl SubsetDefinition {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<Box<StructuredAlias>>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<Box<StructuredAlias>>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -4282,6 +4547,12 @@ impl SubsetDefinition {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let local_names = local_names.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         SubsetDefinition {
             name,
             id_prefixes,
@@ -4457,6 +4728,9 @@ pub mod definition_utl {
             ))
         }
     }
+
+    #[cfg(feature = "stubgen")]
+    ::pyo3_stub_gen::impl_stub_type!(is_a_range = Definition | SlotDefinition | ClassDefinition);
     #[derive(Debug, Clone, PartialEq)]
     #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
     pub enum mixins_range {
@@ -4525,6 +4799,9 @@ pub mod definition_utl {
             ))
         }
     }
+
+    #[cfg(feature = "stubgen")]
+    ::pyo3_stub_gen::impl_stub_type!(mixins_range = Definition | SlotDefinition | ClassDefinition);
     #[derive(Debug, Clone, PartialEq)]
     #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
     pub enum apply_to_range {
@@ -4593,10 +4870,16 @@ pub mod definition_utl {
             ))
         }
     }
+
+    #[cfg(feature = "stubgen")]
+    ::pyo3_stub_gen::impl_stub_type!(
+        apply_to_range = Definition | SlotDefinition | ClassDefinition
+    );
 }
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Definition {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -4825,10 +5108,13 @@ pub struct Definition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Definition {
     #[new]
+    #[pyo3(signature = (name, is_a=None, abstract_=None, mixin=None, mixins=None, apply_to=None, values_from=None, string_serialization=None, id_prefixes=None, id_prefixes_are_closed=None, definition_uri=None, local_names=None, conforms_to=None, implements=None, instantiates=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
+        name: String,
         is_a: Option<String>,
         abstract_: Option<bool>,
         mixin: Option<bool>,
@@ -4836,24 +5122,23 @@ impl Definition {
         apply_to: Option<Vec<String>>,
         values_from: Option<Vec<uriorcurie>>,
         string_serialization: Option<String>,
-        name: String,
         id_prefixes: Option<Vec<ncname>>,
         id_prefixes_are_closed: Option<bool>,
         definition_uri: Option<uriorcurie>,
-        local_names: Option<HashMap<String, LocalName>>,
+        local_names: Option<serde_utils::PyValue<HashMap<String, LocalName>>>,
         conforms_to: Option<String>,
         implements: Option<Vec<uriorcurie>>,
         instantiates: Option<Vec<uriorcurie>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -4863,7 +5148,7 @@ impl Definition {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -4880,7 +5165,14 @@ impl Definition {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let local_names = local_names.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         Definition {
+            name,
             is_a,
             abstract_,
             mixin,
@@ -4888,7 +5180,6 @@ impl Definition {
             apply_to,
             values_from,
             string_serialization,
-            name,
             id_prefixes,
             id_prefixes_are_closed,
             definition_uri,
@@ -5118,8 +5409,14 @@ impl serde_utils::InlinedPair for DefinitionOrSubtype {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    DefinitionOrSubtype = EnumDefinition | SlotDefinition | ClassDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousEnumExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5156,22 +5453,29 @@ pub struct AnonymousEnumExpression {
     pub concepts: Option<Vec<uriorcurie>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AnonymousEnumExpression {
     #[new]
+    #[pyo3(signature = (code_set=None, code_set_tag=None, code_set_version=None, pv_formula=None, permissible_values=None, include=None, minus=None, inherits=None, reachable_from=None, matches=None, concepts=None))]
     pub fn new(
         code_set: Option<uriorcurie>,
         code_set_tag: Option<String>,
         code_set_version: Option<String>,
         pv_formula: Option<PvFormulaOptions>,
-        permissible_values: Option<HashMap<String, PermissibleValue>>,
-        include: Option<Vec<Box<AnonymousEnumExpression>>>,
-        minus: Option<Vec<Box<AnonymousEnumExpression>>>,
+        permissible_values: Option<serde_utils::PyValue<HashMap<String, PermissibleValue>>>,
+        include: Option<serde_utils::PyValue<Vec<Box<AnonymousEnumExpression>>>>,
+        minus: Option<serde_utils::PyValue<Vec<Box<AnonymousEnumExpression>>>>,
         inherits: Option<Vec<String>>,
-        reachable_from: Option<ReachabilityQuery>,
-        matches: Option<MatchQuery>,
+        reachable_from: Option<serde_utils::PyValue<ReachabilityQuery>>,
+        matches: Option<serde_utils::PyValue<MatchQuery>>,
         concepts: Option<Vec<uriorcurie>>,
     ) -> Self {
+        let permissible_values = permissible_values.map(|v| v.into_inner());
+        let include = include.map(|v| v.into_inner());
+        let minus = minus.map(|v| v.into_inner());
+        let reachable_from = reachable_from.map(|v| v.into_inner());
+        let matches = matches.map(|v| v.into_inner());
         AnonymousEnumExpression {
             code_set,
             code_set_tag,
@@ -5212,6 +5516,7 @@ impl<'py> FromPyObject<'py> for Box<AnonymousEnumExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct EnumDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5474,21 +5779,24 @@ pub struct EnumDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl EnumDefinition {
     #[new]
+    #[pyo3(signature = (name, enum_uri=None, code_set=None, code_set_tag=None, code_set_version=None, pv_formula=None, permissible_values=None, include=None, minus=None, inherits=None, reachable_from=None, matches=None, concepts=None, is_a=None, abstract_=None, mixin=None, mixins=None, apply_to=None, values_from=None, string_serialization=None, id_prefixes=None, id_prefixes_are_closed=None, definition_uri=None, local_names=None, conforms_to=None, implements=None, instantiates=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
+        name: String,
         enum_uri: Option<uriorcurie>,
         code_set: Option<uriorcurie>,
         code_set_tag: Option<String>,
         code_set_version: Option<String>,
         pv_formula: Option<PvFormulaOptions>,
-        permissible_values: Option<HashMap<String, PermissibleValue>>,
-        include: Option<Vec<Box<AnonymousEnumExpression>>>,
-        minus: Option<Vec<Box<AnonymousEnumExpression>>>,
+        permissible_values: Option<serde_utils::PyValue<HashMap<String, PermissibleValue>>>,
+        include: Option<serde_utils::PyValue<Vec<Box<AnonymousEnumExpression>>>>,
+        minus: Option<serde_utils::PyValue<Vec<Box<AnonymousEnumExpression>>>>,
         inherits: Option<Vec<String>>,
-        reachable_from: Option<ReachabilityQuery>,
-        matches: Option<MatchQuery>,
+        reachable_from: Option<serde_utils::PyValue<ReachabilityQuery>>,
+        matches: Option<serde_utils::PyValue<MatchQuery>>,
         concepts: Option<Vec<uriorcurie>>,
         is_a: Option<String>,
         abstract_: Option<bool>,
@@ -5497,24 +5805,23 @@ impl EnumDefinition {
         apply_to: Option<Vec<String>>,
         values_from: Option<Vec<uriorcurie>>,
         string_serialization: Option<String>,
-        name: String,
         id_prefixes: Option<Vec<ncname>>,
         id_prefixes_are_closed: Option<bool>,
         definition_uri: Option<uriorcurie>,
-        local_names: Option<HashMap<String, LocalName>>,
+        local_names: Option<serde_utils::PyValue<HashMap<String, LocalName>>>,
         conforms_to: Option<String>,
         implements: Option<Vec<uriorcurie>>,
         instantiates: Option<Vec<uriorcurie>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -5524,7 +5831,7 @@ impl EnumDefinition {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -5541,7 +5848,19 @@ impl EnumDefinition {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let permissible_values = permissible_values.map(|v| v.into_inner());
+        let include = include.map(|v| v.into_inner());
+        let minus = minus.map(|v| v.into_inner());
+        let reachable_from = reachable_from.map(|v| v.into_inner());
+        let matches = matches.map(|v| v.into_inner());
+        let local_names = local_names.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         EnumDefinition {
+            name,
             enum_uri,
             code_set,
             code_set_tag,
@@ -5561,7 +5880,6 @@ impl EnumDefinition {
             apply_to,
             values_from,
             string_serialization,
-            name,
             id_prefixes,
             id_prefixes_are_closed,
             definition_uri,
@@ -5667,6 +5985,7 @@ impl serde_utils::InlinedPair for EnumDefinition {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct EnumBinding {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5845,24 +6164,26 @@ pub struct EnumBinding {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl EnumBinding {
     #[new]
+    #[pyo3(signature = (range=None, obligation_level=None, binds_value_of=None, pv_formula=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         range: Option<String>,
         obligation_level: Option<ObligationLevelEnum>,
         binds_value_of: Option<String>,
         pv_formula: Option<PvFormulaOptions>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -5872,7 +6193,7 @@ impl EnumBinding {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -5889,6 +6210,11 @@ impl EnumBinding {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         EnumBinding {
             range,
             obligation_level,
@@ -5957,6 +6283,7 @@ impl<'py> FromPyObject<'py> for Box<EnumBinding> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct MatchQuery {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -5965,9 +6292,11 @@ pub struct MatchQuery {
     pub source_ontology: Option<uriorcurie>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl MatchQuery {
     #[new]
+    #[pyo3(signature = (identifier_pattern=None, source_ontology=None))]
     pub fn new(identifier_pattern: Option<String>, source_ontology: Option<uriorcurie>) -> Self {
         MatchQuery {
             identifier_pattern,
@@ -6000,6 +6329,7 @@ impl<'py> FromPyObject<'py> for Box<MatchQuery> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ReachabilityQuery {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -6028,9 +6358,11 @@ pub struct ReachabilityQuery {
     pub traverse_up: Option<bool>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ReachabilityQuery {
     #[new]
+    #[pyo3(signature = (source_ontology=None, source_nodes=None, relationship_types=None, is_direct=None, include_self=None, traverse_up=None))]
     pub fn new(
         source_ontology: Option<uriorcurie>,
         source_nodes: Option<Vec<uriorcurie>>,
@@ -6074,6 +6406,7 @@ impl<'py> FromPyObject<'py> for Box<ReachabilityQuery> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct StructuredAlias {
     pub literal_form: String,
@@ -6257,24 +6590,26 @@ pub struct StructuredAlias {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl StructuredAlias {
     #[new]
+    #[pyo3(signature = (literal_form, alias_predicate=None, categories=None, alias_contexts=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, keywords=None))]
     pub fn new(
         literal_form: String,
         alias_predicate: Option<AliasPredicateEnum>,
         categories: Option<Vec<uriorcurie>>,
         alias_contexts: Option<Vec<uri>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -6284,7 +6619,7 @@ impl StructuredAlias {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<Box<StructuredAlias>>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<Box<StructuredAlias>>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -6300,6 +6635,11 @@ impl StructuredAlias {
         rank: Option<isize>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         StructuredAlias {
             literal_form,
             alias_predicate,
@@ -6367,6 +6707,7 @@ impl<'py> FromPyObject<'py> for Box<StructuredAlias> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Expression {}
 #[derive(Debug, Clone, PartialEq)]
@@ -6575,8 +6916,26 @@ impl<'py> FromPyObject<'py> for Box<ExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    ExpressionOrSubtype = TypeExpression
+        | EnumExpression
+        | StructuredAlias
+        | AnonymousExpression
+        | PathExpression
+        | SlotExpression
+        | AnonymousSlotExpression
+        | SlotDefinition
+        | AnonymousClassExpression
+        | AnonymousEnumExpression
+        | EnumDefinition
+        | AnonymousTypeExpression
+        | TypeDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct TypeExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -6613,24 +6972,34 @@ pub struct TypeExpression {
     pub all_of: Option<Vec<AnonymousTypeExpression>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl TypeExpression {
     #[new]
+    #[pyo3(signature = (pattern=None, structured_pattern=None, unit=None, implicit_prefix=None, equals_string=None, equals_string_in=None, equals_number=None, minimum_value=None, maximum_value=None, none_of=None, exactly_one_of=None, any_of=None, all_of=None))]
     pub fn new(
         pattern: Option<String>,
-        structured_pattern: Option<PatternExpression>,
-        unit: Option<UnitOfMeasure>,
+        structured_pattern: Option<serde_utils::PyValue<PatternExpression>>,
+        unit: Option<serde_utils::PyValue<UnitOfMeasure>>,
         implicit_prefix: Option<String>,
         equals_string: Option<String>,
         equals_string_in: Option<Vec<String>>,
         equals_number: Option<isize>,
-        minimum_value: Option<Anything>,
-        maximum_value: Option<Anything>,
-        none_of: Option<Vec<AnonymousTypeExpression>>,
-        exactly_one_of: Option<Vec<AnonymousTypeExpression>>,
-        any_of: Option<Vec<AnonymousTypeExpression>>,
-        all_of: Option<Vec<AnonymousTypeExpression>>,
+        minimum_value: Option<serde_utils::PyValue<Anything>>,
+        maximum_value: Option<serde_utils::PyValue<Anything>>,
+        none_of: Option<serde_utils::PyValue<Vec<AnonymousTypeExpression>>>,
+        exactly_one_of: Option<serde_utils::PyValue<Vec<AnonymousTypeExpression>>>,
+        any_of: Option<serde_utils::PyValue<Vec<AnonymousTypeExpression>>>,
+        all_of: Option<serde_utils::PyValue<Vec<AnonymousTypeExpression>>>,
     ) -> Self {
+        let structured_pattern = structured_pattern.map(|v| v.into_inner());
+        let unit = unit.map(|v| v.into_inner());
+        let minimum_value = minimum_value.map(|v| v.into_inner());
+        let maximum_value = maximum_value.map(|v| v.into_inner());
+        let none_of = none_of.map(|v| v.into_inner());
+        let exactly_one_of = exactly_one_of.map(|v| v.into_inner());
+        let any_of = any_of.map(|v| v.into_inner());
+        let all_of = all_of.map(|v| v.into_inner());
         TypeExpression {
             pattern,
             structured_pattern,
@@ -6745,8 +7114,14 @@ impl<'py> FromPyObject<'py> for Box<TypeExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    TypeExpressionOrSubtype = AnonymousTypeExpression | TypeDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct EnumExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -6783,22 +7158,29 @@ pub struct EnumExpression {
     pub concepts: Option<Vec<uriorcurie>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl EnumExpression {
     #[new]
+    #[pyo3(signature = (code_set=None, code_set_tag=None, code_set_version=None, pv_formula=None, permissible_values=None, include=None, minus=None, inherits=None, reachable_from=None, matches=None, concepts=None))]
     pub fn new(
         code_set: Option<uriorcurie>,
         code_set_tag: Option<String>,
         code_set_version: Option<String>,
         pv_formula: Option<PvFormulaOptions>,
-        permissible_values: Option<HashMap<String, PermissibleValue>>,
-        include: Option<Vec<AnonymousEnumExpression>>,
-        minus: Option<Vec<AnonymousEnumExpression>>,
+        permissible_values: Option<serde_utils::PyValue<HashMap<String, PermissibleValue>>>,
+        include: Option<serde_utils::PyValue<Vec<AnonymousEnumExpression>>>,
+        minus: Option<serde_utils::PyValue<Vec<AnonymousEnumExpression>>>,
         inherits: Option<Vec<String>>,
-        reachable_from: Option<ReachabilityQuery>,
-        matches: Option<MatchQuery>,
+        reachable_from: Option<serde_utils::PyValue<ReachabilityQuery>>,
+        matches: Option<serde_utils::PyValue<MatchQuery>>,
         concepts: Option<Vec<uriorcurie>>,
     ) -> Self {
+        let permissible_values = permissible_values.map(|v| v.into_inner());
+        let include = include.map(|v| v.into_inner());
+        let minus = minus.map(|v| v.into_inner());
+        let reachable_from = reachable_from.map(|v| v.into_inner());
+        let matches = matches.map(|v| v.into_inner());
         EnumExpression {
             code_set,
             code_set_tag,
@@ -6911,8 +7293,14 @@ impl<'py> FromPyObject<'py> for Box<EnumExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    EnumExpressionOrSubtype = AnonymousEnumExpression | EnumDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousExpression {
     #[cfg_attr(
@@ -7083,20 +7471,22 @@ pub struct AnonymousExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AnonymousExpression {
     #[new]
+    #[pyo3(signature = (extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -7106,7 +7496,7 @@ impl AnonymousExpression {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -7123,6 +7513,11 @@ impl AnonymousExpression {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         AnonymousExpression {
             extensions,
             annotations,
@@ -7259,8 +7654,14 @@ impl<'py> FromPyObject<'py> for Box<AnonymousExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    AnonymousExpressionOrSubtype = AnonymousSlotExpression | AnonymousClassExpression
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct PathExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -7447,28 +7848,30 @@ pub struct PathExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PathExpression {
     #[new]
+    #[pyo3(signature = (followed_by=None, none_of=None, any_of=None, all_of=None, exactly_one_of=None, reversed=None, traverse=None, range_expression=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
-        followed_by: Option<Box<PathExpression>>,
-        none_of: Option<Vec<Box<PathExpression>>>,
-        any_of: Option<Vec<Box<PathExpression>>>,
-        all_of: Option<Vec<Box<PathExpression>>>,
-        exactly_one_of: Option<Vec<Box<PathExpression>>>,
+        followed_by: Option<serde_utils::PyValue<Box<PathExpression>>>,
+        none_of: Option<serde_utils::PyValue<Vec<Box<PathExpression>>>>,
+        any_of: Option<serde_utils::PyValue<Vec<Box<PathExpression>>>>,
+        all_of: Option<serde_utils::PyValue<Vec<Box<PathExpression>>>>,
+        exactly_one_of: Option<serde_utils::PyValue<Vec<Box<PathExpression>>>>,
         reversed: Option<bool>,
         traverse: Option<String>,
-        range_expression: Option<Box<AnonymousClassExpression>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        range_expression: Option<serde_utils::PyValue<Box<AnonymousClassExpression>>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -7478,7 +7881,7 @@ impl PathExpression {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -7495,6 +7898,17 @@ impl PathExpression {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let followed_by = followed_by.map(|v| v.into_inner());
+        let none_of = none_of.map(|v| v.into_inner());
+        let any_of = any_of.map(|v| v.into_inner());
+        let all_of = all_of.map(|v| v.into_inner());
+        let exactly_one_of = exactly_one_of.map(|v| v.into_inner());
+        let range_expression = range_expression.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         PathExpression {
             followed_by,
             none_of,
@@ -7567,6 +7981,7 @@ impl<'py> FromPyObject<'py> for Box<PathExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct SlotExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -7635,24 +8050,26 @@ pub struct SlotExpression {
     pub all_of: Option<Vec<AnonymousSlotExpression>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl SlotExpression {
     #[new]
+    #[pyo3(signature = (range=None, range_expression=None, enum_range=None, bindings=None, required=None, recommended=None, multivalued=None, inlined=None, inlined_as_list=None, minimum_value=None, maximum_value=None, pattern=None, structured_pattern=None, unit=None, implicit_prefix=None, value_presence=None, equals_string=None, equals_string_in=None, equals_number=None, equals_expression=None, exact_cardinality=None, minimum_cardinality=None, maximum_cardinality=None, has_member=None, all_members=None, none_of=None, exactly_one_of=None, any_of=None, all_of=None))]
     pub fn new(
         range: Option<String>,
-        range_expression: Option<AnonymousClassExpression>,
-        enum_range: Option<EnumExpressionOrSubtype>,
-        bindings: Option<Vec<EnumBinding>>,
+        range_expression: Option<serde_utils::PyValue<AnonymousClassExpression>>,
+        enum_range: Option<serde_utils::PyValue<EnumExpressionOrSubtype>>,
+        bindings: Option<serde_utils::PyValue<Vec<EnumBinding>>>,
         required: Option<bool>,
         recommended: Option<bool>,
         multivalued: Option<bool>,
         inlined: Option<bool>,
         inlined_as_list: Option<bool>,
-        minimum_value: Option<Anything>,
-        maximum_value: Option<Anything>,
+        minimum_value: Option<serde_utils::PyValue<Anything>>,
+        maximum_value: Option<serde_utils::PyValue<Anything>>,
         pattern: Option<String>,
-        structured_pattern: Option<PatternExpression>,
-        unit: Option<UnitOfMeasure>,
+        structured_pattern: Option<serde_utils::PyValue<PatternExpression>>,
+        unit: Option<serde_utils::PyValue<UnitOfMeasure>>,
         implicit_prefix: Option<String>,
         value_presence: Option<PresenceEnum>,
         equals_string: Option<String>,
@@ -7662,13 +8079,26 @@ impl SlotExpression {
         exact_cardinality: Option<isize>,
         minimum_cardinality: Option<isize>,
         maximum_cardinality: Option<isize>,
-        has_member: Option<AnonymousSlotExpression>,
-        all_members: Option<AnonymousSlotExpression>,
-        none_of: Option<Vec<AnonymousSlotExpression>>,
-        exactly_one_of: Option<Vec<AnonymousSlotExpression>>,
-        any_of: Option<Vec<AnonymousSlotExpression>>,
-        all_of: Option<Vec<AnonymousSlotExpression>>,
+        has_member: Option<serde_utils::PyValue<AnonymousSlotExpression>>,
+        all_members: Option<serde_utils::PyValue<AnonymousSlotExpression>>,
+        none_of: Option<serde_utils::PyValue<Vec<AnonymousSlotExpression>>>,
+        exactly_one_of: Option<serde_utils::PyValue<Vec<AnonymousSlotExpression>>>,
+        any_of: Option<serde_utils::PyValue<Vec<AnonymousSlotExpression>>>,
+        all_of: Option<serde_utils::PyValue<Vec<AnonymousSlotExpression>>>,
     ) -> Self {
+        let range_expression = range_expression.map(|v| v.into_inner());
+        let enum_range = enum_range.map(|v| v.into_inner());
+        let bindings = bindings.map(|v| v.into_inner());
+        let minimum_value = minimum_value.map(|v| v.into_inner());
+        let maximum_value = maximum_value.map(|v| v.into_inner());
+        let structured_pattern = structured_pattern.map(|v| v.into_inner());
+        let unit = unit.map(|v| v.into_inner());
+        let has_member = has_member.map(|v| v.into_inner());
+        let all_members = all_members.map(|v| v.into_inner());
+        let none_of = none_of.map(|v| v.into_inner());
+        let exactly_one_of = exactly_one_of.map(|v| v.into_inner());
+        let any_of = any_of.map(|v| v.into_inner());
+        let all_of = all_of.map(|v| v.into_inner());
         SlotExpression {
             range,
             range_expression,
@@ -7799,8 +8229,14 @@ impl<'py> FromPyObject<'py> for Box<SlotExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    SlotExpressionOrSubtype = AnonymousSlotExpression | SlotDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousSlotExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -8035,24 +8471,26 @@ pub struct AnonymousSlotExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AnonymousSlotExpression {
     #[new]
+    #[pyo3(signature = (range=None, range_expression=None, enum_range=None, bindings=None, required=None, recommended=None, multivalued=None, inlined=None, inlined_as_list=None, minimum_value=None, maximum_value=None, pattern=None, structured_pattern=None, unit=None, implicit_prefix=None, value_presence=None, equals_string=None, equals_string_in=None, equals_number=None, equals_expression=None, exact_cardinality=None, minimum_cardinality=None, maximum_cardinality=None, has_member=None, all_members=None, none_of=None, exactly_one_of=None, any_of=None, all_of=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         range: Option<String>,
-        range_expression: Option<Box<AnonymousClassExpression>>,
-        enum_range: Option<EnumExpressionOrSubtype>,
-        bindings: Option<Vec<EnumBinding>>,
+        range_expression: Option<serde_utils::PyValue<Box<AnonymousClassExpression>>>,
+        enum_range: Option<serde_utils::PyValue<EnumExpressionOrSubtype>>,
+        bindings: Option<serde_utils::PyValue<Vec<EnumBinding>>>,
         required: Option<bool>,
         recommended: Option<bool>,
         multivalued: Option<bool>,
         inlined: Option<bool>,
         inlined_as_list: Option<bool>,
-        minimum_value: Option<Anything>,
-        maximum_value: Option<Anything>,
+        minimum_value: Option<serde_utils::PyValue<Anything>>,
+        maximum_value: Option<serde_utils::PyValue<Anything>>,
         pattern: Option<String>,
-        structured_pattern: Option<PatternExpression>,
-        unit: Option<UnitOfMeasure>,
+        structured_pattern: Option<serde_utils::PyValue<PatternExpression>>,
+        unit: Option<serde_utils::PyValue<UnitOfMeasure>>,
         implicit_prefix: Option<String>,
         value_presence: Option<PresenceEnum>,
         equals_string: Option<String>,
@@ -8062,22 +8500,22 @@ impl AnonymousSlotExpression {
         exact_cardinality: Option<isize>,
         minimum_cardinality: Option<isize>,
         maximum_cardinality: Option<isize>,
-        has_member: Option<Box<AnonymousSlotExpression>>,
-        all_members: Option<Box<AnonymousSlotExpression>>,
-        none_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-        exactly_one_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-        any_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-        all_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        has_member: Option<serde_utils::PyValue<Box<AnonymousSlotExpression>>>,
+        all_members: Option<serde_utils::PyValue<Box<AnonymousSlotExpression>>>,
+        none_of: Option<serde_utils::PyValue<Vec<Box<AnonymousSlotExpression>>>>,
+        exactly_one_of: Option<serde_utils::PyValue<Vec<Box<AnonymousSlotExpression>>>>,
+        any_of: Option<serde_utils::PyValue<Vec<Box<AnonymousSlotExpression>>>>,
+        all_of: Option<serde_utils::PyValue<Vec<Box<AnonymousSlotExpression>>>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -8087,7 +8525,7 @@ impl AnonymousSlotExpression {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -8104,6 +8542,24 @@ impl AnonymousSlotExpression {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let range_expression = range_expression.map(|v| v.into_inner());
+        let enum_range = enum_range.map(|v| v.into_inner());
+        let bindings = bindings.map(|v| v.into_inner());
+        let minimum_value = minimum_value.map(|v| v.into_inner());
+        let maximum_value = maximum_value.map(|v| v.into_inner());
+        let structured_pattern = structured_pattern.map(|v| v.into_inner());
+        let unit = unit.map(|v| v.into_inner());
+        let has_member = has_member.map(|v| v.into_inner());
+        let all_members = all_members.map(|v| v.into_inner());
+        let none_of = none_of.map(|v| v.into_inner());
+        let exactly_one_of = exactly_one_of.map(|v| v.into_inner());
+        let any_of = any_of.map(|v| v.into_inner());
+        let all_of = all_of.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         AnonymousSlotExpression {
             range,
             range_expression,
@@ -8197,179 +8653,180 @@ impl<'py> FromPyObject<'py> for Box<AnonymousSlotExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 #[derive(Merge)]
 pub struct SlotDefinition {
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub singular_name: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub domain: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub slot_uri: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub array: Option<ArrayExpression>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inherited: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub readonly: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub ifabsent: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub list_elements_unique: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub list_elements_ordered: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub shared: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub key: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub identifier: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub designates_type: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub alias: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub owner: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub domain_of: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub subproperty_of: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub symmetric: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub reflexive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub locally_reflexive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub irreflexive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub asymmetric: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub transitive: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inverse: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_class_field: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub transitive_form_of: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub reflexive_transitive_form_of: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub role: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_usage_slot: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub usage_slot_name: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub relational_role: Option<RelationalRoleEnum>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub slot_group: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_grouping_slot: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub path_rule: Option<Box<PathExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub disjoint_with: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub children_are_mutually_disjoint: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub union_of: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub type_mappings: Option<HashMap<String, TypeMapping>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub range: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub range_expression: Option<Box<AnonymousClassExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub enum_range: Option<EnumExpressionOrSubtype>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub bindings: Option<Vec<EnumBinding>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub required: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub recommended: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub multivalued: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inlined: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub inlined_as_list: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub minimum_value: Option<Anything>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub maximum_value: Option<Anything>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub pattern: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_pattern: Option<PatternExpression>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub unit: Option<UnitOfMeasure>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub implicit_prefix: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub value_presence: Option<PresenceEnum>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8378,56 +8835,56 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_string_in: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_number: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub equals_expression: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub exact_cardinality: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub minimum_cardinality: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub maximum_cardinality: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub has_member: Option<Box<AnonymousSlotExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub all_members: Option<Box<AnonymousSlotExpression>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub none_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub exactly_one_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub any_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub all_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub is_a: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     #[cfg_attr(feature = "serde", serde(alias = "abstract"))]
     pub abstract_: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub mixin: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub mixins: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub apply_to: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8436,12 +8893,12 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub values_from: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub string_serialization: Option<String>,
     #[merge(skip)]
     pub name: String,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8450,23 +8907,23 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes: Option<Vec<ncname>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub id_prefixes_are_closed: Option<bool>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub definition_uri: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub local_names: Option<HashMap<String, LocalName>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub conforms_to: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8475,7 +8932,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub implements: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8484,37 +8941,37 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub instantiates: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub annotations: Option<HashMap<String, Annotation>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub description: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(deserialize_with = "serde_utils::deserialize_inlined_dict_map_optional")
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub alt_descriptions: Option<HashMap<String, AltDescription>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub title: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8523,7 +8980,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub todos: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8532,7 +8989,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub notes: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8541,25 +8998,25 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub comments: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub examples: Option<Vec<Example>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_subset: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub from_schema: Option<uri>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub imported_from: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub source: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub in_language: Option<String>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8568,13 +9025,13 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub see_also: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_exact_replacement: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated_element_has_possible_replacement: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8583,10 +9040,10 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub aliases: Option<Vec<String>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub structured_aliases: Option<Vec<StructuredAlias>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8595,7 +9052,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8604,7 +9061,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub exact_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8613,7 +9070,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub close_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8622,7 +9079,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub related_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8631,7 +9088,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub narrow_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8640,10 +9097,10 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub broad_mappings: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_by: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8652,22 +9109,22 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub contributors: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub created_on: Option<NaiveDateTime>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub last_updated_on: Option<NaiveDateTime>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub modified_by: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub status: Option<uriorcurie>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(feature = "serde", serde(default))]
     pub rank: Option<isize>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8676,7 +9133,7 @@ pub struct SlotDefinition {
     )]
     #[cfg_attr(feature = "serde", serde(default))]
     pub categories: Option<Vec<uriorcurie>>,
-    #[merge(strategy = merge::option::overwrite_none)]
+    #[merge(strategy = overwrite_except_none)]
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -8687,14 +9144,17 @@ pub struct SlotDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl SlotDefinition {
     #[new]
+    #[pyo3(signature = (name, singular_name=None, domain=None, slot_uri=None, array=None, inherited=None, readonly=None, ifabsent=None, list_elements_unique=None, list_elements_ordered=None, shared=None, key=None, identifier=None, designates_type=None, alias=None, owner=None, domain_of=None, subproperty_of=None, symmetric=None, reflexive=None, locally_reflexive=None, irreflexive=None, asymmetric=None, transitive=None, inverse=None, is_class_field=None, transitive_form_of=None, reflexive_transitive_form_of=None, role=None, is_usage_slot=None, usage_slot_name=None, relational_role=None, slot_group=None, is_grouping_slot=None, path_rule=None, disjoint_with=None, children_are_mutually_disjoint=None, union_of=None, type_mappings=None, range=None, range_expression=None, enum_range=None, bindings=None, required=None, recommended=None, multivalued=None, inlined=None, inlined_as_list=None, minimum_value=None, maximum_value=None, pattern=None, structured_pattern=None, unit=None, implicit_prefix=None, value_presence=None, equals_string=None, equals_string_in=None, equals_number=None, equals_expression=None, exact_cardinality=None, minimum_cardinality=None, maximum_cardinality=None, has_member=None, all_members=None, none_of=None, exactly_one_of=None, any_of=None, all_of=None, is_a=None, abstract_=None, mixin=None, mixins=None, apply_to=None, values_from=None, string_serialization=None, id_prefixes=None, id_prefixes_are_closed=None, definition_uri=None, local_names=None, conforms_to=None, implements=None, instantiates=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
+        name: String,
         singular_name: Option<String>,
         domain: Option<String>,
         slot_uri: Option<uriorcurie>,
-        array: Option<ArrayExpression>,
+        array: Option<serde_utils::PyValue<ArrayExpression>>,
         inherited: Option<bool>,
         readonly: Option<String>,
         ifabsent: Option<String>,
@@ -8724,25 +9184,25 @@ impl SlotDefinition {
         relational_role: Option<RelationalRoleEnum>,
         slot_group: Option<String>,
         is_grouping_slot: Option<bool>,
-        path_rule: Option<Box<PathExpression>>,
+        path_rule: Option<serde_utils::PyValue<Box<PathExpression>>>,
         disjoint_with: Option<Vec<String>>,
         children_are_mutually_disjoint: Option<bool>,
         union_of: Option<Vec<String>>,
-        type_mappings: Option<HashMap<String, TypeMapping>>,
+        type_mappings: Option<serde_utils::PyValue<HashMap<String, TypeMapping>>>,
         range: Option<String>,
-        range_expression: Option<Box<AnonymousClassExpression>>,
-        enum_range: Option<EnumExpressionOrSubtype>,
-        bindings: Option<Vec<EnumBinding>>,
+        range_expression: Option<serde_utils::PyValue<Box<AnonymousClassExpression>>>,
+        enum_range: Option<serde_utils::PyValue<EnumExpressionOrSubtype>>,
+        bindings: Option<serde_utils::PyValue<Vec<EnumBinding>>>,
         required: Option<bool>,
         recommended: Option<bool>,
         multivalued: Option<bool>,
         inlined: Option<bool>,
         inlined_as_list: Option<bool>,
-        minimum_value: Option<Anything>,
-        maximum_value: Option<Anything>,
+        minimum_value: Option<serde_utils::PyValue<Anything>>,
+        maximum_value: Option<serde_utils::PyValue<Anything>>,
         pattern: Option<String>,
-        structured_pattern: Option<PatternExpression>,
-        unit: Option<UnitOfMeasure>,
+        structured_pattern: Option<serde_utils::PyValue<PatternExpression>>,
+        unit: Option<serde_utils::PyValue<UnitOfMeasure>>,
         implicit_prefix: Option<String>,
         value_presence: Option<PresenceEnum>,
         equals_string: Option<String>,
@@ -8752,12 +9212,12 @@ impl SlotDefinition {
         exact_cardinality: Option<isize>,
         minimum_cardinality: Option<isize>,
         maximum_cardinality: Option<isize>,
-        has_member: Option<Box<AnonymousSlotExpression>>,
-        all_members: Option<Box<AnonymousSlotExpression>>,
-        none_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-        exactly_one_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-        any_of: Option<Vec<Box<AnonymousSlotExpression>>>,
-        all_of: Option<Vec<Box<AnonymousSlotExpression>>>,
+        has_member: Option<serde_utils::PyValue<Box<AnonymousSlotExpression>>>,
+        all_members: Option<serde_utils::PyValue<Box<AnonymousSlotExpression>>>,
+        none_of: Option<serde_utils::PyValue<Vec<Box<AnonymousSlotExpression>>>>,
+        exactly_one_of: Option<serde_utils::PyValue<Vec<Box<AnonymousSlotExpression>>>>,
+        any_of: Option<serde_utils::PyValue<Vec<Box<AnonymousSlotExpression>>>>,
+        all_of: Option<serde_utils::PyValue<Vec<Box<AnonymousSlotExpression>>>>,
         is_a: Option<String>,
         abstract_: Option<bool>,
         mixin: Option<bool>,
@@ -8765,24 +9225,23 @@ impl SlotDefinition {
         apply_to: Option<Vec<String>>,
         values_from: Option<Vec<uriorcurie>>,
         string_serialization: Option<String>,
-        name: String,
         id_prefixes: Option<Vec<ncname>>,
         id_prefixes_are_closed: Option<bool>,
         definition_uri: Option<uriorcurie>,
-        local_names: Option<HashMap<String, LocalName>>,
+        local_names: Option<serde_utils::PyValue<HashMap<String, LocalName>>>,
         conforms_to: Option<String>,
         implements: Option<Vec<uriorcurie>>,
         instantiates: Option<Vec<uriorcurie>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -8792,7 +9251,7 @@ impl SlotDefinition {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -8809,7 +9268,30 @@ impl SlotDefinition {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let array = array.map(|v| v.into_inner());
+        let path_rule = path_rule.map(|v| v.into_inner());
+        let type_mappings = type_mappings.map(|v| v.into_inner());
+        let range_expression = range_expression.map(|v| v.into_inner());
+        let enum_range = enum_range.map(|v| v.into_inner());
+        let bindings = bindings.map(|v| v.into_inner());
+        let minimum_value = minimum_value.map(|v| v.into_inner());
+        let maximum_value = maximum_value.map(|v| v.into_inner());
+        let structured_pattern = structured_pattern.map(|v| v.into_inner());
+        let unit = unit.map(|v| v.into_inner());
+        let has_member = has_member.map(|v| v.into_inner());
+        let all_members = all_members.map(|v| v.into_inner());
+        let none_of = none_of.map(|v| v.into_inner());
+        let exactly_one_of = exactly_one_of.map(|v| v.into_inner());
+        let any_of = any_of.map(|v| v.into_inner());
+        let all_of = all_of.map(|v| v.into_inner());
+        let local_names = local_names.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         SlotDefinition {
+            name,
             singular_name,
             domain,
             slot_uri,
@@ -8884,7 +9366,6 @@ impl SlotDefinition {
             apply_to,
             values_from,
             string_serialization,
-            name,
             id_prefixes,
             id_prefixes_are_closed,
             definition_uri,
@@ -8996,6 +9477,7 @@ impl serde_utils::InlinedPair for SlotDefinition {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -9014,16 +9496,23 @@ pub struct ClassExpression {
     pub slot_conditions: Option<HashMap<String, SlotDefinition>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ClassExpression {
     #[new]
+    #[pyo3(signature = (any_of=None, exactly_one_of=None, none_of=None, all_of=None, slot_conditions=None))]
     pub fn new(
-        any_of: Option<Vec<AnonymousClassExpression>>,
-        exactly_one_of: Option<Vec<AnonymousClassExpression>>,
-        none_of: Option<Vec<AnonymousClassExpression>>,
-        all_of: Option<Vec<AnonymousClassExpression>>,
-        slot_conditions: Option<HashMap<String, SlotDefinition>>,
+        any_of: Option<serde_utils::PyValue<Vec<AnonymousClassExpression>>>,
+        exactly_one_of: Option<serde_utils::PyValue<Vec<AnonymousClassExpression>>>,
+        none_of: Option<serde_utils::PyValue<Vec<AnonymousClassExpression>>>,
+        all_of: Option<serde_utils::PyValue<Vec<AnonymousClassExpression>>>,
+        slot_conditions: Option<serde_utils::PyValue<HashMap<String, SlotDefinition>>>,
     ) -> Self {
+        let any_of = any_of.map(|v| v.into_inner());
+        let exactly_one_of = exactly_one_of.map(|v| v.into_inner());
+        let none_of = none_of.map(|v| v.into_inner());
+        let all_of = all_of.map(|v| v.into_inner());
+        let slot_conditions = slot_conditions.map(|v| v.into_inner());
         ClassExpression {
             any_of,
             exactly_one_of,
@@ -9130,8 +9619,14 @@ impl<'py> FromPyObject<'py> for Box<ClassExpressionOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(
+    ClassExpressionOrSubtype = AnonymousClassExpression | ClassDefinition
+);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AnonymousClassExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -9318,26 +9813,28 @@ pub struct AnonymousClassExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AnonymousClassExpression {
     #[new]
+    #[pyo3(signature = (is_a=None, any_of=None, exactly_one_of=None, none_of=None, all_of=None, slot_conditions=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         is_a: Option<String>,
-        any_of: Option<Vec<Box<AnonymousClassExpression>>>,
-        exactly_one_of: Option<Vec<Box<AnonymousClassExpression>>>,
-        none_of: Option<Vec<Box<AnonymousClassExpression>>>,
-        all_of: Option<Vec<Box<AnonymousClassExpression>>>,
-        slot_conditions: Option<HashMap<String, Box<SlotDefinition>>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        any_of: Option<serde_utils::PyValue<Vec<Box<AnonymousClassExpression>>>>,
+        exactly_one_of: Option<serde_utils::PyValue<Vec<Box<AnonymousClassExpression>>>>,
+        none_of: Option<serde_utils::PyValue<Vec<Box<AnonymousClassExpression>>>>,
+        all_of: Option<serde_utils::PyValue<Vec<Box<AnonymousClassExpression>>>>,
+        slot_conditions: Option<serde_utils::PyValue<HashMap<String, Box<SlotDefinition>>>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -9347,7 +9844,7 @@ impl AnonymousClassExpression {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -9364,6 +9861,16 @@ impl AnonymousClassExpression {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let any_of = any_of.map(|v| v.into_inner());
+        let exactly_one_of = exactly_one_of.map(|v| v.into_inner());
+        let none_of = none_of.map(|v| v.into_inner());
+        let all_of = all_of.map(|v| v.into_inner());
+        let slot_conditions = slot_conditions.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         AnonymousClassExpression {
             is_a,
             any_of,
@@ -9434,6 +9941,7 @@ impl<'py> FromPyObject<'py> for Box<AnonymousClassExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassDefinition {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -9718,30 +10226,33 @@ pub struct ClassDefinition {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ClassDefinition {
     #[new]
+    #[pyo3(signature = (name, slots=None, slot_usage=None, attributes=None, class_uri=None, subclass_of=None, union_of=None, defining_slots=None, tree_root=None, unique_keys=None, rules=None, classification_rules=None, slot_names_unique=None, represents_relationship=None, disjoint_with=None, children_are_mutually_disjoint=None, any_of=None, exactly_one_of=None, none_of=None, all_of=None, slot_conditions=None, is_a=None, abstract_=None, mixin=None, mixins=None, apply_to=None, values_from=None, string_serialization=None, id_prefixes=None, id_prefixes_are_closed=None, definition_uri=None, local_names=None, conforms_to=None, implements=None, instantiates=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
+        name: String,
         slots: Option<Vec<String>>,
-        slot_usage: Option<HashMap<String, Box<SlotDefinition>>>,
-        attributes: Option<HashMap<String, Box<SlotDefinition>>>,
+        slot_usage: Option<serde_utils::PyValue<HashMap<String, Box<SlotDefinition>>>>,
+        attributes: Option<serde_utils::PyValue<HashMap<String, Box<SlotDefinition>>>>,
         class_uri: Option<uriorcurie>,
         subclass_of: Option<uriorcurie>,
         union_of: Option<Vec<String>>,
         defining_slots: Option<Vec<String>>,
         tree_root: Option<bool>,
-        unique_keys: Option<HashMap<String, Box<UniqueKey>>>,
-        rules: Option<Vec<Box<ClassRule>>>,
-        classification_rules: Option<Vec<Box<AnonymousClassExpression>>>,
+        unique_keys: Option<serde_utils::PyValue<HashMap<String, Box<UniqueKey>>>>,
+        rules: Option<serde_utils::PyValue<Vec<Box<ClassRule>>>>,
+        classification_rules: Option<serde_utils::PyValue<Vec<Box<AnonymousClassExpression>>>>,
         slot_names_unique: Option<bool>,
         represents_relationship: Option<bool>,
         disjoint_with: Option<Vec<String>>,
         children_are_mutually_disjoint: Option<bool>,
-        any_of: Option<Vec<Box<AnonymousClassExpression>>>,
-        exactly_one_of: Option<Vec<Box<AnonymousClassExpression>>>,
-        none_of: Option<Vec<Box<AnonymousClassExpression>>>,
-        all_of: Option<Vec<Box<AnonymousClassExpression>>>,
-        slot_conditions: Option<HashMap<String, Box<SlotDefinition>>>,
+        any_of: Option<serde_utils::PyValue<Vec<Box<AnonymousClassExpression>>>>,
+        exactly_one_of: Option<serde_utils::PyValue<Vec<Box<AnonymousClassExpression>>>>,
+        none_of: Option<serde_utils::PyValue<Vec<Box<AnonymousClassExpression>>>>,
+        all_of: Option<serde_utils::PyValue<Vec<Box<AnonymousClassExpression>>>>,
+        slot_conditions: Option<serde_utils::PyValue<HashMap<String, Box<SlotDefinition>>>>,
         is_a: Option<String>,
         abstract_: Option<bool>,
         mixin: Option<bool>,
@@ -9749,24 +10260,23 @@ impl ClassDefinition {
         apply_to: Option<Vec<String>>,
         values_from: Option<Vec<uriorcurie>>,
         string_serialization: Option<String>,
-        name: String,
         id_prefixes: Option<Vec<ncname>>,
         id_prefixes_are_closed: Option<bool>,
         definition_uri: Option<uriorcurie>,
-        local_names: Option<HashMap<String, LocalName>>,
+        local_names: Option<serde_utils::PyValue<HashMap<String, LocalName>>>,
         conforms_to: Option<String>,
         implements: Option<Vec<uriorcurie>>,
         instantiates: Option<Vec<uriorcurie>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -9776,7 +10286,7 @@ impl ClassDefinition {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -9793,7 +10303,24 @@ impl ClassDefinition {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let slot_usage = slot_usage.map(|v| v.into_inner());
+        let attributes = attributes.map(|v| v.into_inner());
+        let unique_keys = unique_keys.map(|v| v.into_inner());
+        let rules = rules.map(|v| v.into_inner());
+        let classification_rules = classification_rules.map(|v| v.into_inner());
+        let any_of = any_of.map(|v| v.into_inner());
+        let exactly_one_of = exactly_one_of.map(|v| v.into_inner());
+        let none_of = none_of.map(|v| v.into_inner());
+        let all_of = all_of.map(|v| v.into_inner());
+        let slot_conditions = slot_conditions.map(|v| v.into_inner());
+        let local_names = local_names.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         ClassDefinition {
+            name,
             slots,
             slot_usage,
             attributes,
@@ -9821,7 +10348,6 @@ impl ClassDefinition {
             apply_to,
             values_from,
             string_serialization,
-            name,
             id_prefixes,
             id_prefixes_are_closed,
             definition_uri,
@@ -9927,6 +10453,7 @@ impl serde_utils::InlinedPair for ClassDefinition {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassLevelRule {}
 #[derive(Debug, Clone, PartialEq)]
@@ -9991,8 +10518,12 @@ impl<'py> FromPyObject<'py> for Box<ClassLevelRuleOrSubtype> {
     }
 }
 
+#[cfg(feature = "stubgen")]
+::pyo3_stub_gen::impl_stub_type!(ClassLevelRuleOrSubtype = ClassRule);
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ClassRule {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -10175,27 +10706,29 @@ pub struct ClassRule {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ClassRule {
     #[new]
+    #[pyo3(signature = (preconditions=None, postconditions=None, elseconditions=None, bidirectional=None, open_world=None, rank=None, deactivated=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, categories=None, keywords=None))]
     pub fn new(
-        preconditions: Option<Box<AnonymousClassExpression>>,
-        postconditions: Option<Box<AnonymousClassExpression>>,
-        elseconditions: Option<Box<AnonymousClassExpression>>,
+        preconditions: Option<serde_utils::PyValue<Box<AnonymousClassExpression>>>,
+        postconditions: Option<serde_utils::PyValue<Box<AnonymousClassExpression>>>,
+        elseconditions: Option<serde_utils::PyValue<Box<AnonymousClassExpression>>>,
         bidirectional: Option<bool>,
         open_world: Option<bool>,
         rank: Option<isize>,
         deactivated: Option<bool>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -10205,7 +10738,7 @@ impl ClassRule {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -10221,6 +10754,14 @@ impl ClassRule {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let preconditions = preconditions.map(|v| v.into_inner());
+        let postconditions = postconditions.map(|v| v.into_inner());
+        let elseconditions = elseconditions.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         ClassRule {
             preconditions,
             postconditions,
@@ -10359,10 +10900,14 @@ pub mod array_expression_utl {
             ))
         }
     }
+
+    #[cfg(feature = "stubgen")]
+    ::pyo3_stub_gen::impl_stub_type!(maximum_number_dimensions_range = Anything | isize | bool);
 }
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ArrayExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -10541,24 +11086,26 @@ pub struct ArrayExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ArrayExpression {
     #[new]
+    #[pyo3(signature = (exact_number_dimensions=None, minimum_number_dimensions=None, maximum_number_dimensions=None, dimensions=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         exact_number_dimensions: Option<isize>,
         minimum_number_dimensions: Option<isize>,
         maximum_number_dimensions: Option<array_expression_utl::maximum_number_dimensions_range>,
-        dimensions: Option<Vec<DimensionExpression>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        dimensions: Option<serde_utils::PyValue<Vec<DimensionExpression>>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -10568,7 +11115,7 @@ impl ArrayExpression {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -10585,6 +11132,12 @@ impl ArrayExpression {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let dimensions = dimensions.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         ArrayExpression {
             exact_number_dimensions,
             minimum_number_dimensions,
@@ -10653,6 +11206,7 @@ impl<'py> FromPyObject<'py> for Box<ArrayExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct DimensionExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -10831,24 +11385,26 @@ pub struct DimensionExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl DimensionExpression {
     #[new]
+    #[pyo3(signature = (alias=None, maximum_cardinality=None, minimum_cardinality=None, exact_cardinality=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         alias: Option<String>,
         maximum_cardinality: Option<isize>,
         minimum_cardinality: Option<isize>,
         exact_cardinality: Option<isize>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -10858,7 +11414,7 @@ impl DimensionExpression {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -10875,6 +11431,11 @@ impl DimensionExpression {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         DimensionExpression {
             alias,
             maximum_cardinality,
@@ -10943,6 +11504,7 @@ impl<'py> FromPyObject<'py> for Box<DimensionExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct PatternExpression {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -11119,23 +11681,25 @@ pub struct PatternExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PatternExpression {
     #[new]
+    #[pyo3(signature = (syntax=None, interpolated=None, partial_match=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         syntax: Option<String>,
         interpolated: Option<bool>,
         partial_match: Option<bool>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -11145,7 +11709,7 @@ impl PatternExpression {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -11162,6 +11726,11 @@ impl PatternExpression {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         PatternExpression {
             syntax,
             interpolated,
@@ -11229,6 +11798,7 @@ impl<'py> FromPyObject<'py> for Box<PatternExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct ImportExpression {
     pub import_from: uriorcurie,
@@ -11408,23 +11978,25 @@ pub struct ImportExpression {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl ImportExpression {
     #[new]
+    #[pyo3(signature = (import_from, import_as=None, import_map=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         import_from: uriorcurie,
         import_as: Option<ncname>,
-        import_map: Option<HashMap<String, Setting>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        import_map: Option<serde_utils::PyValue<HashMap<String, Setting>>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -11434,7 +12006,7 @@ impl ImportExpression {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -11451,6 +12023,12 @@ impl ImportExpression {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let import_map = import_map.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         ImportExpression {
             import_from,
             import_as,
@@ -11518,15 +12096,18 @@ impl<'py> FromPyObject<'py> for Box<ImportExpression> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Setting {
     pub setting_key: ncname,
     pub setting_value: String,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Setting {
     #[new]
+    #[pyo3(signature = (setting_key, setting_value))]
     pub fn new(setting_key: ncname, setting_value: String) -> Self {
         Setting {
             setting_key,
@@ -11594,15 +12175,18 @@ impl serde_utils::InlinedPair for Setting {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Prefix {
     pub prefix_prefix: ncname,
     pub prefix_reference: uri,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Prefix {
     #[new]
+    #[pyo3(signature = (prefix_prefix, prefix_reference))]
     pub fn new(prefix_prefix: ncname, prefix_reference: uri) -> Self {
         Prefix {
             prefix_prefix,
@@ -11670,15 +12254,18 @@ impl serde_utils::InlinedPair for Prefix {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct LocalName {
     pub local_name_source: ncname,
     pub local_name_value: String,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl LocalName {
     #[new]
+    #[pyo3(signature = (local_name_source, local_name_value))]
     pub fn new(local_name_source: ncname, local_name_value: String) -> Self {
         LocalName {
             local_name_source,
@@ -11746,6 +12333,7 @@ impl serde_utils::InlinedPair for LocalName {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct Example {
     #[cfg_attr(feature = "serde", serde(default))]
@@ -11758,14 +12346,17 @@ pub struct Example {
     pub value_object: Option<Anything>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl Example {
     #[new]
+    #[pyo3(signature = (value=None, value_description=None, value_object=None))]
     pub fn new(
         value: Option<String>,
         value_description: Option<String>,
-        value_object: Option<Anything>,
+        value_object: Option<serde_utils::PyValue<Anything>>,
     ) -> Self {
+        let value_object = value_object.map(|v| v.into_inner());
         Example {
             value,
             value_description,
@@ -11798,6 +12389,7 @@ impl<'py> FromPyObject<'py> for Box<Example> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct AltDescription {
     #[cfg_attr(feature = "serde", serde(alias = "source"))]
@@ -11806,9 +12398,11 @@ pub struct AltDescription {
     pub alt_description_text: String,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl AltDescription {
     #[new]
+    #[pyo3(signature = (alt_description_source, alt_description_text))]
     pub fn new(alt_description_source: String, alt_description_text: String) -> Self {
         AltDescription {
             alt_description_source,
@@ -11882,6 +12476,7 @@ impl serde_utils::InlinedPair for AltDescription {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct PermissibleValue {
     pub text: String,
@@ -12077,27 +12672,29 @@ pub struct PermissibleValue {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl PermissibleValue {
     #[new]
+    #[pyo3(signature = (text, description=None, meaning=None, unit=None, instantiates=None, implements=None, is_a=None, mixins=None, extensions=None, annotations=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         text: String,
         description: Option<String>,
         meaning: Option<uriorcurie>,
-        unit: Option<UnitOfMeasure>,
+        unit: Option<serde_utils::PyValue<UnitOfMeasure>>,
         instantiates: Option<Vec<uriorcurie>>,
         implements: Option<Vec<uriorcurie>>,
         is_a: Option<String>,
         mixins: Option<Vec<String>>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -12107,7 +12704,7 @@ impl PermissibleValue {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -12124,6 +12721,12 @@ impl PermissibleValue {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let unit = unit.map(|v| v.into_inner());
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         PermissibleValue {
             text,
             description,
@@ -12230,6 +12833,7 @@ impl serde_utils::InlinedPair for PermissibleValue {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct UniqueKey {
     pub unique_key_name: String,
@@ -12405,23 +13009,25 @@ pub struct UniqueKey {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl UniqueKey {
     #[new]
+    #[pyo3(signature = (unique_key_name, unique_key_slots, consider_nulls_inequal=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         unique_key_name: String,
         unique_key_slots: Vec<String>,
         consider_nulls_inequal: Option<bool>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -12431,7 +13037,7 @@ impl UniqueKey {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -12448,6 +13054,11 @@ impl UniqueKey {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         UniqueKey {
             unique_key_name,
             unique_key_slots,
@@ -12550,6 +13161,7 @@ impl serde_utils::InlinedPair for UniqueKey {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "stubgen", gen_stub_pyclass)]
 #[cfg_attr(feature = "pyo3", pyclass(subclass, get_all, set_all))]
 pub struct TypeMapping {
     #[cfg_attr(feature = "serde", serde(alias = "framework"))]
@@ -12727,23 +13339,25 @@ pub struct TypeMapping {
     pub keywords: Option<Vec<String>>,
 }
 #[cfg(feature = "pyo3")]
+#[cfg_attr(feature = "stubgen", gen_stub_pymethods)]
 #[pymethods]
 impl TypeMapping {
     #[new]
+    #[pyo3(signature = (framework_key, mapped_type=None, string_serialization=None, extensions=None, annotations=None, description=None, alt_descriptions=None, title=None, deprecated=None, todos=None, notes=None, comments=None, examples=None, in_subset=None, from_schema=None, imported_from=None, source=None, in_language=None, see_also=None, deprecated_element_has_exact_replacement=None, deprecated_element_has_possible_replacement=None, aliases=None, structured_aliases=None, mappings=None, exact_mappings=None, close_mappings=None, related_mappings=None, narrow_mappings=None, broad_mappings=None, created_by=None, contributors=None, created_on=None, last_updated_on=None, modified_by=None, status=None, rank=None, categories=None, keywords=None))]
     pub fn new(
         framework_key: String,
         mapped_type: Option<String>,
         string_serialization: Option<String>,
-        extensions: Option<HashMap<String, ExtensionOrSubtype>>,
-        annotations: Option<HashMap<String, Annotation>>,
+        extensions: Option<serde_utils::PyValue<HashMap<String, ExtensionOrSubtype>>>,
+        annotations: Option<serde_utils::PyValue<HashMap<String, Annotation>>>,
         description: Option<String>,
-        alt_descriptions: Option<HashMap<String, AltDescription>>,
+        alt_descriptions: Option<serde_utils::PyValue<HashMap<String, AltDescription>>>,
         title: Option<String>,
         deprecated: Option<String>,
         todos: Option<Vec<String>>,
         notes: Option<Vec<String>>,
         comments: Option<Vec<String>>,
-        examples: Option<Vec<Example>>,
+        examples: Option<serde_utils::PyValue<Vec<Example>>>,
         in_subset: Option<Vec<String>>,
         from_schema: Option<uri>,
         imported_from: Option<String>,
@@ -12753,7 +13367,7 @@ impl TypeMapping {
         deprecated_element_has_exact_replacement: Option<uriorcurie>,
         deprecated_element_has_possible_replacement: Option<uriorcurie>,
         aliases: Option<Vec<String>>,
-        structured_aliases: Option<Vec<StructuredAlias>>,
+        structured_aliases: Option<serde_utils::PyValue<Vec<StructuredAlias>>>,
         mappings: Option<Vec<uriorcurie>>,
         exact_mappings: Option<Vec<uriorcurie>>,
         close_mappings: Option<Vec<uriorcurie>>,
@@ -12770,6 +13384,11 @@ impl TypeMapping {
         categories: Option<Vec<uriorcurie>>,
         keywords: Option<Vec<String>>,
     ) -> Self {
+        let extensions = extensions.map(|v| v.into_inner());
+        let annotations = annotations.map(|v| v.into_inner());
+        let alt_descriptions = alt_descriptions.map(|v| v.into_inner());
+        let examples = examples.map(|v| v.into_inner());
+        let structured_aliases = structured_aliases.map(|v| v.into_inner());
         TypeMapping {
             framework_key,
             mapped_type,
@@ -12869,3 +13488,13 @@ impl serde_utils::InlinedPair for TypeMapping {
         }
     }
 }
+
+/// Overwrite `left` with `right` unless `right` is `None`.
+fn overwrite_except_none<T>(left: &mut Option<T>, right: Option<T>) {
+    if right.is_some() {
+        *left = right;
+    }
+}
+
+#[cfg(feature = "stubgen")]
+define_stub_info_gatherer!(stub_info);

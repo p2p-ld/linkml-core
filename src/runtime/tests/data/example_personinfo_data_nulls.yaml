@@ -1,0 +1,11 @@
+objects:
+  - id: P:100
+    objecttype: https://w3id.org/linkml/examples/personinfo/Person
+    name: Null Collections Person
+    # multivalued scalar list
+    aliases: null
+    # inlined-as-list of class instances
+    has_employment_history: null
+    # inlined-as-dict of class instances
+    has_familial_relationships: null
+

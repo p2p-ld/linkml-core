@@ -1,10 +1,17 @@
 use std::collections::HashMap;
+use std::fmt;
+use std::fs::File;
+use std::io::{Read, Write};
+use std::path::Path;
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
+use crate::converter::Converter;
 use crate::identifier::{
     converter_from_schema, converter_from_schemas, Identifier, IdentifierError,
 };
-use curies::Converter;
+use crate::snapshot::{
+    ResolvedImport, SchemaEntry, SchemaViewSnapshot, SCHEMAVIEW_SNAPSHOT_VERSION,
+};
 use linkml_meta::SchemaDefinition;
 
 use crate::curie::curie2uri;
@@ -19,7 +26,41 @@ pub enum SchemaViewError {
     NoPrimarySchema(String),
     NotFound,
     NoConverterForSchema(String),
+    AddSchemaError(String),
+    SnapshotVersionMismatch { expected: u32, actual: u32 },
+    Serialization(String),
+    Deserialization(String),
+    Io(String),
+    SchemaViewMismatch,
 }
+
+impl fmt::Display for SchemaViewError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SchemaViewError::IdentifierError(err) => write!(f, "identifier error: {:?}", err),
+            SchemaViewError::NoPrimarySchema(schema) => {
+                write!(f, "no primary schema set (last seen: {schema})")
+            }
+            SchemaViewError::NotFound => write!(f, "item not found"),
+            SchemaViewError::NoConverterForSchema(schema) => {
+                write!(f, "no converter for schema {schema}")
+            }
+            SchemaViewError::AddSchemaError(msg) => write!(f, "failed to add schema: {msg}"),
+            SchemaViewError::SnapshotVersionMismatch { expected, actual } => write!(
+                f,
+                "snapshot version mismatch (expected {expected}, got {actual})"
+            ),
+            SchemaViewError::Serialization(msg) => write!(f, "serialization error: {msg}"),
+            SchemaViewError::Deserialization(msg) => write!(f, "deserialization error: {msg}"),
+            SchemaViewError::Io(msg) => write!(f, "io error: {msg}"),
+            SchemaViewError::SchemaViewMismatch => {
+                write!(f, "class views originate from different schema views")
+            }
+        }
+    }
+}
+
+impl std::error::Error for SchemaViewError {}
 
 impl From<IdentifierError> for SchemaViewError {
     fn from(err: IdentifierError) -> Self {
@@ -95,6 +136,150 @@ impl SchemaView {
         }
     }
 
+    /// Check whether two views reference the same underlying schema data.
+    pub fn is_same(&self, other: &SchemaView) -> bool {
+        Arc::ptr_eq(&self.data, &other.data)
+    }
+
+    /// Build a serializable snapshot of this `SchemaView`.
+    ///
+    /// The snapshot contains every schema definition, resolved import entry, and primary-schema
+    /// pointer so the view can be reconstructed elsewhere without re-running import resolution.
+    pub fn to_snapshot(&self) -> SchemaViewSnapshot {
+        let primary_schema = self.data.primary_schema.clone();
+        let mut schemas: Vec<SchemaEntry> = self
+            .data
+            .schema_definitions
+            .iter()
+            .map(|(schema_id, definition)| SchemaEntry {
+                schema_id: schema_id.clone(),
+                definition: definition.clone(),
+            })
+            .collect();
+        if let Some(primary) = &primary_schema {
+            schemas.sort_by(|a, b| {
+                let a_key = (
+                    a.schema_id.as_str() != primary.as_str(),
+                    a.schema_id.as_str(),
+                );
+                let b_key = (
+                    b.schema_id.as_str() != primary.as_str(),
+                    b.schema_id.as_str(),
+                );
+                a_key.cmp(&b_key)
+            });
+        } else {
+            schemas.sort_by(|a, b| a.schema_id.cmp(&b.schema_id));
+        }
+
+        let mut resolved_imports: Vec<ResolvedImport> = self
+            .data
+            .resolved_schema_imports
+            .iter()
+            .map(
+                |((importer_schema_id, import_reference), resolved_schema_id)| ResolvedImport {
+                    importer_schema_id: importer_schema_id.clone(),
+                    import_reference: import_reference.clone(),
+                    resolved_schema_id: resolved_schema_id.clone(),
+                },
+            )
+            .collect();
+        resolved_imports.sort_by(|a, b| {
+            let a_key = (
+                a.importer_schema_id.as_str(),
+                a.import_reference.as_str(),
+                a.resolved_schema_id.as_str(),
+            );
+            let b_key = (
+                b.importer_schema_id.as_str(),
+                b.import_reference.as_str(),
+                b.resolved_schema_id.as_str(),
+            );
+            a_key.cmp(&b_key)
+        });
+
+        SchemaViewSnapshot {
+            format_version: SCHEMAVIEW_SNAPSHOT_VERSION,
+            primary_schema,
+            schemas,
+            resolved_imports,
+        }
+    }
+
+    /// Create a `SchemaView` from a previously serialized snapshot.
+    ///
+    /// The resulting view mirrors the original including class/slot indexes once lazily rebuilt.
+    pub fn from_snapshot(snapshot: SchemaViewSnapshot) -> Result<Self, SchemaViewError> {
+        if snapshot.format_version != SCHEMAVIEW_SNAPSHOT_VERSION {
+            return Err(SchemaViewError::SnapshotVersionMismatch {
+                expected: SCHEMAVIEW_SNAPSHOT_VERSION,
+                actual: snapshot.format_version,
+            });
+        }
+        let mut view = SchemaView::new();
+        let mut entries = snapshot.schemas;
+
+        if let Some(primary) = snapshot.primary_schema.clone() {
+            if let Some(idx) = entries.iter().position(|entry| entry.schema_id == primary) {
+                let primary_entry = entries.remove(idx);
+                view.add_schema(primary_entry.definition)
+                    .map_err(SchemaViewError::AddSchemaError)?;
+            }
+        }
+
+        for entry in entries.into_iter() {
+            view.add_schema(entry.definition)
+                .map_err(SchemaViewError::AddSchemaError)?;
+        }
+
+        {
+            let data = Arc::make_mut(&mut view.data);
+            data.primary_schema = snapshot.primary_schema;
+            data.resolved_schema_imports = snapshot
+                .resolved_imports
+                .into_iter()
+                .map(|ri| {
+                    (
+                        (ri.importer_schema_id, ri.import_reference),
+                        ri.resolved_schema_id,
+                    )
+                })
+                .collect();
+        }
+
+        Ok(view)
+    }
+
+    /// Serialize this view into a YAML snapshot string.
+    pub fn to_snapshot_yaml(&self) -> Result<String, SchemaViewError> {
+        serde_yml::to_string(&self.to_snapshot())
+            .map_err(|e| SchemaViewError::Serialization(e.to_string()))
+    }
+
+    /// Deserialize a `SchemaView` from a YAML snapshot string.
+    pub fn from_snapshot_yaml(data: &str) -> Result<Self, SchemaViewError> {
+        let snapshot: SchemaViewSnapshot = serde_yml::from_str(data)
+            .map_err(|e| SchemaViewError::Deserialization(e.to_string()))?;
+        SchemaView::from_snapshot(snapshot)
+    }
+
+    /// Persist this view's snapshot to `path` in YAML format.
+    pub fn to_snapshot_file<P: AsRef<Path>>(&self, path: P) -> Result<(), SchemaViewError> {
+        let yaml = self.to_snapshot_yaml()?;
+        let mut file = File::create(path).map_err(|e| SchemaViewError::Io(e.to_string()))?;
+        file.write_all(yaml.as_bytes())
+            .map_err(|e| SchemaViewError::Io(e.to_string()))
+    }
+
+    /// Load a `SchemaView` snapshot stored in YAML format on disk.
+    pub fn from_snapshot_file<P: AsRef<Path>>(path: P) -> Result<Self, SchemaViewError> {
+        let mut file = File::open(path).map_err(|e| SchemaViewError::Io(e.to_string()))?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)
+            .map_err(|e| SchemaViewError::Io(e.to_string()))?;
+        SchemaView::from_snapshot_yaml(&contents)
+    }
+
     pub fn _get_resolved_schema_imports(&self) -> HashMap<(String, String), String> {
         // this is a private method to get the resolved schema imports
         // it is used in tests and should not be used in production code
@@ -102,11 +287,15 @@ impl SchemaView {
     }
 
     fn cache(&self) -> RwLockReadGuard<'_, SchemaViewCache> {
-        self.cache.read().expect("SchemaView RwLock poisoned")
+        self.cache
+            .read()
+            .unwrap_or_else(|poison| poison.into_inner())
     }
 
     fn write_cache(&self) -> RwLockWriteGuard<'_, SchemaViewCache> {
-        self.cache.write().expect("SchemaView RwLock poisoned")
+        self.cache
+            .write()
+            .unwrap_or_else(|poison| poison.into_inner())
     }
 
     pub fn get_tree_root_or(&self, class_name: Option<&str>) -> Option<ClassView> {
@@ -183,12 +372,29 @@ impl SchemaView {
         self.add_schema_with_import_ref(schema, None)
     }
 
-    /**
-     * Adds a schema to the view with an optional import reference.
-     * Import reference is a tuple containing the:
-     *    * schema_id of the schema that had the import statement
-     *    * the URI of the schema that was imported
-     */
+    /// Adds `schema` to the view and optionally records which unresolved import triggered it.
+    ///
+    /// # Arguments
+    /// * `schema` - The parsed [`SchemaDefinition`] to merge into this view.
+    /// * `import_reference` - When `Some`, identifies the importing schema (`schema_id`) and the
+    ///   import target `uri` that yielded `schema`. This mirrors the tuples returned by
+    ///   [`SchemaView::get_unresolved_schemas`].
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use linkml_schemaview::schemaview::SchemaView;
+    /// use linkml_meta::SchemaDefinition;
+    ///
+    /// let mut sv = SchemaView::new();
+    /// let schema: SchemaDefinition = serde_yml::from_str(
+    ///     "id: https://example.org/schema\nname: ExampleSchema\n",
+    /// )
+    /// .unwrap();
+    /// sv.add_schema_with_import_ref(schema, Some((
+    ///     "personinfo".to_string(),
+    ///     "https://example.org/personinfo.yaml".to_string(),
+    /// ))).unwrap();
+    /// ```
     pub fn add_schema_with_import_ref(
         &mut self,
         schema: SchemaDefinition,
@@ -228,6 +434,12 @@ impl SchemaView {
         self.data.schema_definitions.iter()
     }
 
+    /// Returns a converter built from every schema loaded into this view.
+    ///
+    /// Note that prefix collisions across schemas will resolve to whichever
+    /// expansion appears last; avoid this helper if you expect conflicting
+    /// CURIE mappings and instead use `converter_for_schema` with a specific
+    /// schema URI.
     pub fn converter(&self) -> Converter {
         converter_from_schemas(self.data.schema_definitions.values())
     }
@@ -674,6 +886,25 @@ impl SchemaView {
             .collect::<Vec<String>>();
     }
 
+    /// Retrieve a [`ClassView`] by its expanded URI.
+    pub fn get_class_by_uri(&self, uri: &str) -> Result<Option<ClassView>, SchemaViewError> {
+        let location = {
+            let cache = self.cache();
+            cache.class_uri_index.get(uri).cloned()
+        };
+        if let Some((schema_uri, class_name)) = location {
+            return self.get_class_by_schema(&schema_uri, &class_name);
+        }
+        if uri.contains("://") {
+            return Ok(None);
+        }
+        let conv = self.converter();
+        if let Ok(expanded) = Identifier::new(uri).to_uri(&conv) {
+            return self.get_class_by_uri(expanded.0.as_str());
+        }
+        Ok(None)
+    }
+
     pub fn get_slot_ids(&self) -> Vec<String> {
         return self
             .cache()
@@ -681,6 +912,97 @@ impl SchemaView {
             .keys()
             .cloned()
             .collect::<Vec<String>>();
+    }
+
+    /// Retrieve a [`SlotView`] by its expanded URI.
+    pub fn get_slot_by_uri(&self, uri: &str) -> Result<Option<SlotView>, SchemaViewError> {
+        let location = {
+            let cache = self.cache();
+            cache.slot_uri_index.get(uri).cloned()
+        };
+        if let Some((schema_uri, slot_name)) = location {
+            if let Some(schema) = self.data.schema_definitions.get(&schema_uri) {
+                if let Some(defs) = &schema.slot_definitions {
+                    if let Some(slot) = defs.get(&slot_name) {
+                        return Ok(Some(SlotView::new(
+                            slot_name.clone(),
+                            vec![slot.clone()],
+                            &schema.id,
+                            self,
+                        )));
+                    }
+                }
+            }
+            return Ok(None);
+        }
+        if uri.contains("://") {
+            return Ok(None);
+        }
+        let conv = self.converter();
+        if let Ok(expanded) = Identifier::new(uri).to_uri(&conv) {
+            return self.get_slot_by_uri(expanded.0.as_str());
+        }
+        Ok(None)
+    }
+
+    /// Return all classes as [`ClassView`]s across every schema in the view.
+    pub fn class_views(&self) -> Result<Vec<ClassView>, SchemaViewError> {
+        let mut out = Vec::new();
+        for (schema_uri, schema) in &self.data.schema_definitions {
+            if let Some(classes) = &schema.classes {
+                for class_name in classes.keys() {
+                    if let Some(cv) = self.get_class_by_schema(schema_uri, class_name)? {
+                        out.push(cv);
+                    }
+                }
+            }
+        }
+        Ok(out)
+    }
+
+    /// Return all enums as [`EnumView`]s across every schema in the view.
+    pub fn enum_views(&self) -> Result<Vec<EnumView>, SchemaViewError> {
+        let mut out = Vec::new();
+        for (schema_uri, schema) in &self.data.schema_definitions {
+            if let Some(enums) = &schema.enums {
+                if self.converter_for_schema(schema_uri).is_none() {
+                    return Err(SchemaViewError::NoConverterForSchema(schema_uri.clone()));
+                }
+                for enum_def in enums.values() {
+                    out.push(EnumView::new(enum_def, self, &schema.id));
+                }
+            }
+        }
+        Ok(out)
+    }
+
+    /// Return all unique slots referenced by the schemas as [`SlotView`]s.
+    pub fn slot_views(&self) -> Result<Vec<SlotView>, SchemaViewError> {
+        use std::collections::HashMap;
+
+        let mut slot_map: HashMap<String, SlotView> = HashMap::new();
+
+        // Include globally declared slot definitions.
+        for schema in self.data.schema_definitions.values() {
+            if let Some(slots) = &schema.slot_definitions {
+                for (slot_name, slot_def) in slots {
+                    slot_map.entry(slot_name.clone()).or_insert_with(|| {
+                        SlotView::new(slot_name.clone(), vec![slot_def.clone()], &schema.id, self)
+                    });
+                }
+            }
+        }
+
+        // Include slots referenced via classes (captures inline slot usage).
+        for class_view in self.class_views()? {
+            for slot in class_view.slots() {
+                slot_map
+                    .entry(slot.name.clone())
+                    .or_insert_with(|| slot.clone());
+            }
+        }
+
+        Ok(slot_map.into_values().collect())
     }
 
     pub fn get_slot(
